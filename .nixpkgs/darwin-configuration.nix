@@ -29,6 +29,7 @@ in
     pkgs.tree
     pkgs.wget
     pkgs.zip
+    pkgs.pstree
   ];
 
   # Auto upgrade nix package and the daemon service.
