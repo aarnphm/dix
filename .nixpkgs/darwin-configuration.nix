@@ -30,8 +30,20 @@ in
       pkgs.wget
       pkgs.zip
       pkgs.pstree
+      pkgs.bazel_5
       pkgs.enchant
       pkgs.vscode
+      pkgs.cmake
+      pkgs.gcc
+      pkgs.pkg-config
+      pkgs.swig
+      pkgs.openssl_3_0
+      pkgs.colima
+      pkgs.skopeo
+      # kubernetes
+      pkgs.minikube
+      pkgs.kubernetes
+      pkgs.kubernetes-helm
     ];
 
   # Auto upgrade nix package and the daemon service.
