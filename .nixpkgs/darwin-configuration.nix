@@ -22,6 +22,7 @@ in
       pkgs.fzf
       pkgs.git
       pkgs.gnupg
+      # golang
       go
       pkgs.jq
       pkgs.llvm
@@ -44,6 +45,10 @@ in
       pkgs.minikube
       pkgs.kubernetes
       pkgs.kubernetes-helm
+      pkgs.nnn
+      pkgs.ngrok
+      pkgs.buildkit
+      pkgs.postgresql
     ];
 
   # Auto upgrade nix package and the daemon service.
