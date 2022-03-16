@@ -23,7 +23,7 @@ in
       pkgs.git
       pkgs.gnupg
       # golang
-      go
+      /* go */
       pkgs.jq
       pkgs.llvm
       pkgs.ninja
@@ -48,7 +48,9 @@ in
       pkgs.nnn
       pkgs.ngrok
       pkgs.buildkit
-      pkgs.postgresql
+      pkgs.postgresql_14
+      pkgs.direnv
+      pkgs.nixFlakes
     ];
 
   # Auto upgrade nix package and the daemon service.
@@ -61,4 +63,8 @@ in
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
   system.stateVersion = 4;
+
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql_14;
+  services.postgresql.dataDir = "/data/postgresql";
 }
