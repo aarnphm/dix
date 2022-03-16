@@ -9,6 +9,7 @@ in
   environment.variables = { EDITOR = "neovim"; };
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
+  # nix-env -i /nix/store/ws2fbwf7xcmnhg2hlvq43qg22j06w5jb-niv-0.2.19-bin --option binary-caches https://cache.nixos.org
   environment.systemPackages =
     [
       pkgs.neovim
@@ -51,7 +52,6 @@ in
       postgresql
       pkgs.direnv
       pkgs.nixFlakes
-      pkgs.niv
     ];
 
   # Auto upgrade nix package and the daemon service.
