@@ -1,5 +1,5 @@
 {
-  description = "Martin's dotfiles";
+  description = "dix = dotfiles + nix";
 
   inputs = {
     nixpkgs-master.url = github:nixos/nixpkgs/master;
@@ -20,63 +20,143 @@
       flake = false;
     };
 
-    neovim-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "unstable";
-    };
   };
 
-  outputs = inputs@{ self, nixpkgs, darwin, home-manager, flake-utils, ... }:
-      flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" "aarch64-darwin" ] (system:
-      let
-        overlays = [ ];
-        pkgs =
-          import nixpkgs { inherit system overlays; config.allowBroken = true; };
-        # https://github.com/NixOS/nixpkgs/issues/140774#issuecomment-976899227
-        m1MacHsBuildTools =
-          pkgs.haskellPackages.override {
-            overrides = self: super:
-              let
-                workaround140774 = hpkg: with pkgs.haskell.lib;
-                  overrideCabal hpkg (drv: {
-                    enableSeparateBinOutput = false;
-                  });
-              in
-              {
-                ghcid = workaround140774 super.ghcid;
-                ormolu = workaround140774 super.ormolu;
-              };
-          };
-        project = returnShellEnv:
-          pkgs.haskellPackages.developPackage {
-            inherit returnShellEnv;
-            name = "haskell-template";
-            root = ./.;
-            withHoogle = false;
-            overrides = self: super: with pkgs.haskell.lib; {
-              # Use callCabal2nix to override Haskell dependencies here
-              # cf. https://tek.brick.do/K3VXJd8mEKO7
-            };
-            modifier = drv:
-              pkgs.haskell.lib.addBuildTools drv
-                (with (if system == "aarch64-darwin"
-                then m1MacHsBuildTools
-                else pkgs.haskellPackages); [
-                  # Specify your build/dev dependencies here. 
-                  cabal-fmt
-                  cabal-install
-                  ghcid
-                  haskell-language-server
-                  ormolu
-                  pkgs.nixpkgs-fmt
-                ]);
-          };
-      in
-      {
-        # Used by `nix build` & `nix run` (prod exe)
-        defaultPackage = project false;
+    outputs = inputs@{ self, nixpkgs, darwin, home-manager, flake-utils, ... }:
+    let
+      inherit (darwin.lib) darwinSystem;
+      inherit (nixpkgs.lib) nixosSystem;
+      inherit (home-manager.lib) homeManagerConfiguration;
+      inherit (flake-utils.lib) eachDefaultSystem eachSystem;
+      inherit (builtins) listToAttrs map;
 
-        # Used by `nix develop` (dev shell)
-        devShell = project true;
-      });
+      mkLib = nixpkgs:
+        nixpkgs.lib.extend
+          (final: prev: (import ./lib final) // home-manager.lib);
+
+      lib = (mkLib nixpkgs);
+
+      isDarwin = system: (builtins.elem system lib.platforms.darwin);
+      homePrefix = system: if isDarwin system then "/Users" else "/home";
+
+      # generate a base darwin configuration with the
+      # specified hostname, overlays, and any extraModules applied
+      mkDarwinConfig =
+        { system
+        , nixpkgs ? inputs.nixpkgs
+        , stable ? inputs.stable
+        , lib ? (mkLib inputs.nixpkgs)
+        , baseModules ? [
+            home-manager.darwinModules.home-manager
+            ./modules/darwin
+          ]
+        , extraModules ? [ ]
+        }:
+        darwinSystem {
+          inherit system;
+          modules = baseModules ++ extraModules;
+          specialArgs = { inherit inputs lib nixpkgs stable; };
+        };
+
+      # generate a home-manager configuration usable on any unix system
+      # with overlays and any extraModules applied
+      mkHomeConfig =
+        { username
+        , system ? "x86_64-linux"
+        , nixpkgs ? inputs.nixpkgs
+        , stable ? inputs.stable
+        , lib ? (mkLib inputs.nixpkgs)
+        , baseModules ? [
+            ./modules/home-manager
+            {
+              home.sessionVariables = {
+                NIX_PATH =
+                  "nixpkgs=${nixpkgs}:stable=${stable}\${NIX_PATH:+:}$NIX_PATH";
+              };
+            }
+          ]
+        , extraModules ? [ ]
+        }:
+        homeManagerConfiguration rec {
+          inherit system username;
+          homeDirectory = "${homePrefix system}/${username}";
+          extraSpecialArgs = { inherit inputs lib nixpkgs stable; };
+          configuration = {
+            imports = baseModules ++ extraModules ++ [ ./modules/overlays.nix ];
+          };
+        };
+    in
+    {
+      checks = listToAttrs (
+        # darwin checks
+        (map
+          (system: {
+            name = system;
+            value = {
+              darwin =
+                self.darwinConfigurations.randall-intel.config.system.build.toplevel;
+              darwinServer =
+                self.homeConfigurations.darwinServer.activationPackage;
+            };
+          })
+          lib.platforms.darwin) ++
+        # linux checks
+        (map
+          (system: {
+            name = system;
+            value = {
+              nixos = self.nixosConfigurations.phil.config.system.build.toplevel;
+              server = self.homeConfigurations.server.activationPackage;
+            };
+          })
+          lib.platforms.linux)
+      );
+
+      darwinConfigurations = {
+        randall = mkDarwinConfig {
+          system = "aarch64-darwin";
+          extraModules = [
+            ./profiles/personal.nix
+            ./modules/darwin/apps.nix
+          ];
+        };
+        randall-intel = mkDarwinConfig {
+          system = "x86_64-darwin";
+          extraModules = [
+            ./profiles/personal.nix
+            ./modules/darwin/apps.nix
+          ];
+        };
+        work = mkDarwinConfig {
+          system = "x86_64-darwin";
+          extraModules =
+            [ ./profiles/work.nix ./modules/darwin/apps-minimal.nix ];
+        };
+      };
+
+      homeConfigurations = {
+        server = mkHomeConfig {
+          username = "kclejeune";
+          extraModules = [ ./profiles/home-manager/personal.nix ];
+        };
+        darwinServer = mkHomeConfig {
+          username = "kclejeune";
+          system = "x86_64-darwin";
+          extraModules = [ ./profiles/home-manager/personal.nix ];
+        };
+        darwinServerM1 = mkHomeConfig {
+          username = "kclejeune";
+          system = "aarch64-darwin";
+          extraModules = [ ./profiles/home-manager/personal.nix ];
+        };
+        workServer = mkHomeConfig {
+          username = "lejeukc1";
+          extraModules = [ ./profiles/home-manager/work.nix ];
+        };
+        vagrant = mkHomeConfig {
+          username = "vagrant";
+          extraModules = [ ./profiles/home-manager/personal.nix ];
+        };
+      };
+    }
 }

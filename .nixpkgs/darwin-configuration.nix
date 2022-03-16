@@ -2,6 +2,7 @@
 
 let
   go = pkgs.callPackage ./go.nix { };
+  postgresql = pkgs.postgresql_14;
 in
 {
   nixpkgs.config.allowUnfree = true;
@@ -23,7 +24,6 @@ in
       pkgs.git
       pkgs.gnupg
       # golang
-      /* go */
       pkgs.jq
       pkgs.llvm
       pkgs.ninja
@@ -41,21 +41,22 @@ in
       pkgs.openssl_3_0
       pkgs.colima
       pkgs.skopeo
+      pkgs.nnn
       # kubernetes
       pkgs.minikube
       pkgs.kubernetes
       pkgs.kubernetes-helm
-      pkgs.nnn
       pkgs.ngrok
       pkgs.buildkit
-      pkgs.postgresql_14
+      postgresql
       pkgs.direnv
       pkgs.nixFlakes
+      pkgs.niv
     ];
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
-  # nix.package = pkgs.nix;
+  nix.package = pkgs.nix;
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   programs.zsh.enable = true; # default shell on catalina
@@ -65,6 +66,6 @@ in
   system.stateVersion = 4;
 
   services.postgresql.enable = true;
-  services.postgresql.package = pkgs.postgresql_14;
+  services.postgresql.package = postgresql;
   services.postgresql.dataDir = "/data/postgresql";
 }
