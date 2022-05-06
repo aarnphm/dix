@@ -10,3 +10,5 @@ darwin-rebuild switch
 ```
 
 enjoy
+
+`git update-index --assume-unchanged ./nix/nix.conf`
