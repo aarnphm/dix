@@ -12,61 +12,66 @@ in
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
   # nix-env -i /nix/store/ws2fbwf7xcmnhg2hlvq43qg22j06w5jb-niv-0.2.19-bin --option binary-caches https://cache.nixos.org
-  environment.systemPackages =with pkgs; [
-      vim
-      tmux
-      jdk
-      jre
-      openjdk17
-      asciinema
-      ccls
-      fd
-      fzf
-      git
-      gh
-      ghq
-      hub
-      gnupg
-      perl
-      jq
-      llvm
-      ninja
-      tree
-      wget
-      zip
-      pstree
-      bazel_5
-      enchant
-      vscode
-      cmake
-      gcc
-      pkg-config
-      swig
-      openssl_3_0
-      colima
-      skopeo
-      nnn
-      gnused
-      cachix
-      # kubernetes
-      minikube
-      kubernetes
-      kubernetes-helm
-      ngrok
-      buildkit
-      direnv
-      postgresql
-      # languages
-      go
-      stylua
-      selene
-      # nvim related
-      code-minimap
-      tree-sitter
-      gitui
-      any-nix-shell
-      sqlite
-    ];
+  environment.systemPackages = with pkgs; [
+    vim
+    tmux
+    jdk
+    jre
+    openjdk17
+    asciinema
+    ccls
+    fd
+    fzf
+    git
+    gh
+    ghq
+    hub
+    gnupg
+    perl
+    jq
+    llvm
+    ninja
+    tree
+    wget
+    zip
+    pstree
+    bazel_5
+    enchant
+    vscode
+    pkg-config
+    swig
+    openssl_3_0
+    colima
+    skopeo
+    nnn
+    gnused
+    cachix
+    ctags
+    # kubernetes
+    minikube
+    kubernetes
+    kubernetes-helm
+    ngrok
+    buildkit
+    direnv
+    postgresql
+    # languages
+    go
+    stylua
+    selene
+    # nvim related
+    code-minimap
+    tree-sitter
+    gitui
+    any-nix-shell
+    sqlite
+    dtach
+    cairo
+    earthly
+    rnix-lsp
+    nerdfonts
+    # rust
+  ];
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
@@ -110,13 +115,16 @@ in
       ];
 
       programs.neovim.plugins = [
-      {
-        plugin = pkgs.vimPlugins.sqlite-lua;
-        config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.dylib'";
-      }
+        {
+          plugin = pkgs.vimPlugins.sqlite-lua;
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.dylib'";
+        }
       ];
     };
   };
+
+
+  environment.variables.SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
 
   services.postgresql.enable = true;
   services.postgresql.package = postgresql;

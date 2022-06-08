@@ -4,19 +4,19 @@ let
   toGoKernel = platform:
     if platform.isDarwin then "darwin"
     else platform.parsed.kernel.name;
-    hashes = {
-      # Use `print-hashes.sh ${version}` to generate the list below
-      # https://raw.githubusercontent.com/NixOS/nixpkgs/master/pkgs/development/compilers/go/print-hashes.sh
-      darwin-amd64 = "765c021e372a87ce0bc58d3670ab143008dae9305a79e9fa83440425529bb636";
-      darwin-arm64 = "ffe45ef267271b9681ca96ca9b0eb9b8598dd82f7bb95b27af3eef2461dc3d2c";
-      linux-386 = "982487a0264626950c635c5e185df68ecaadcca1361956207578d661a7b03bee";
-      linux-amd64 = "550f9845451c0c94be679faf116291e7807a8d78b43149f9506c1b15eb89008c";
-      linux-arm64 = "06f505c8d27203f78706ad04e47050b49092f1b06dc9ac4fbee4f0e4d015c8d4";
-      linux-armv6l = "aa0d5516c8bd61654990916274d27491cfa229d322475502b247a8dc885adec5";
-      linux-ppc64le = "b821ff58d088c61adc5d7376179a342f325d8715a06abdeb6974f6450663ee60";
-      linux-s390x = "7d1727e08fef295f48aed2b8124a07e3752e77aea747fcc7aeb8892b8e2f2ad2";
+  hashes = {
+    # Use `print-hashes.sh ${version}` to generate the list below
+    # https://raw.githubusercontent.com/NixOS/nixpkgs/master/pkgs/development/compilers/go/print-hashes.sh
+    darwin-amd64 = "1f5f539ce0baa8b65f196ee219abf73a7d9cf558ba9128cc0fe4833da18b04f2";
+    darwin-arm64 = "6c7df9a2405f09aa9bab55c93c9c4ce41d3e58127d626bc1825ba5d0a0045d5c";
+    linux-386 = "956b01369102eae9f2b714616056c3576c707ce401f41b60385db2595edafbb1";
+    linux-amd64 = "e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc";
+    linux-arm64 = "fc4ad28d0501eaa9c9d6190de3888c9d44d8b5fb02183ce4ae93713f67b8a35b";
+    linux-armv6l = "570dc8df875b274981eaeabe228d0774985de42e533ffc8c7ff0c9a55174f697";
+    linux-ppc64le = "7d1791ec63cda9b41ca5990477236142ffab9b86cc30d99f50bd8c4598406b30";
+    linux-s390x = "6646779524f2ce630efd8a55a29993591f763bb717011f16146b3e9bae7bba17";
 
-    };
+  };
 
   toGoCPU = platform: {
     "i686" = "386";
@@ -27,7 +27,7 @@ let
     "powerpc64le" = "ppc64le";
   }.${platform.parsed.cpu.name} or (throw "Unsupported CPU ${platform.parsed.cpu.name}");
 
-  version = "1.17.3";
+  version = "1.18.2";
 
   toGoPlatform = platform: "${toGoKernel platform}-${toGoCPU platform}";
 
