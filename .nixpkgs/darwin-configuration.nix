@@ -5,6 +5,18 @@ let
 
   go = pkgs.callPackage ./go.nix { };
   postgresql = pkgs.postgresql_14;
+  awscli_v2_2_14 = import
+    (builtins.fetchTarball {
+      name = "awscli_v2_2_14";
+      url = "https://github.com/nixos/nixpkgs/archive/aab3c48aef2260867272bf6797a980e32ccedbe0.tar.gz";
+      # Hash obtained using `nix-prefetch-url --unpack <url>`
+      sha256 = "0mhihlpmizn7dhcd8pjj9wvb13fxgx4qqr24qgq79w1rhxzzk6mv";
+    })
+    { };
+  awscli = awscli_v2_2_14.awscli2;
+  # python related
+  lightgbm = pkgs.python310Packages.lightgbm;
+  pip = pkgs.python310Packages.pip;
 in
 {
   imports = [ <home-manager/nix-darwin> ];
@@ -29,6 +41,7 @@ in
     gnupg
     perl
     jq
+    lzma
     llvm
     ninja
     tree
@@ -55,10 +68,14 @@ in
     buildkit
     direnv
     postgresql
+    # aws
+    awscli
     # languages
     go
     stylua
     selene
+    python310
+    pip
     # nvim related
     code-minimap
     tree-sitter
@@ -70,7 +87,10 @@ in
     earthly
     rnix-lsp
     nerdfonts
-    # rust
+    # ml stuff
+    openblas
+    protobuf
+    lightgbm
   ];
 
   # Auto upgrade nix package and the daemon service.
@@ -125,6 +145,9 @@ in
 
 
   environment.variables.SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
+  environment.variables.PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
+  environment.variables.OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
+  environment.variables.LZMA_LIB_PATH = ''${pkgs.lzma.out}/lib'';
 
   services.postgresql.enable = true;
   services.postgresql.package = postgresql;
