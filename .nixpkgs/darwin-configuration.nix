@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   user = "aarnphm";
@@ -13,6 +13,12 @@ let
       sha256 = "0mhihlpmizn7dhcd8pjj9wvb13fxgx4qqr24qgq79w1rhxzzk6mv";
     })
     { };
+  protobuf = pkgs.fetchFromGitHub {
+    owner = "protocolbuffers";
+    repo = "protobuf";
+    rev = "13c8a056f9c9cc2823608f6cbd239dcb8b9f11e5";
+    sha256 = "1nkkb2lw3ci7hqsrrn7f3saa43m3s6cjvcqsdkwjbz4mrns0bg2m";
+  };
   awscli = awscli_v2_2_14.awscli2;
   # python related
   lightgbm = pkgs.python310Packages.lightgbm;
@@ -42,6 +48,8 @@ in
     perl
     jq
     lzma
+    readline
+    zlib
     llvm
     ninja
     tree
@@ -74,6 +82,7 @@ in
     go
     stylua
     selene
+    # python
     python310
     pip
     # nvim related
@@ -90,7 +99,8 @@ in
     # ml stuff
     openblas
     protobuf
-    lightgbm
+    # lightgbm
+    cairo
   ];
 
   # Auto upgrade nix package and the daemon service.
@@ -147,7 +157,8 @@ in
   environment.variables.SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
   environment.variables.PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
   environment.variables.OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
-  environment.variables.LZMA_LIB_PATH = ''${pkgs.lzma.out}/lib'';
+  # LD_LIBRARY_PATH
+  environment.variables.NIX_LD_LIBRARY_PATH = ''${pkgs.lib.makeLibraryPath [ pkgs.openssl pkgs.zlib pkgs.stdenv.cc.cc.lib pkgs.readline pkgs.lzma pkgs.protobuf pkgs.cairo ] }'';
 
   services.postgresql.enable = true;
   services.postgresql.package = postgresql;
