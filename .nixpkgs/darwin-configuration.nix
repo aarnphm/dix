@@ -26,16 +26,18 @@ let
   postgresql = pkgs.postgresql_14;
 in
 {
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system.stateVersion = 4;
+
   imports = [ ./common/security/touch.nix ];
 
   # Add ability to used TouchID for sudo authentication
   security.pam.enableSudoTouchIdAuth = true;
 
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 4;
-
-  users.users.${user}.home = "/Users/aarnphm";
+  users.users.${user} = {
+    home = ''/Users/${user}'';
+  };
 
   # auto gc
   nix = {
@@ -66,6 +68,15 @@ in
     config = {
       allowUnfree = true;
     };
+  };
+
+  # Networking
+  networking = {
+    knownNetworkServices = [ "Wi-Fi" ];
+    dns = [
+      "1.1.1.1"
+      "8.8.8.8"
+    ];
   };
 
   # List packages installed in system profile. To search by name, run:
@@ -173,7 +184,6 @@ in
       CPLUS_INCLUDE_PATH = ''${lzma.dev}/include'';
       NIX_LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ openssl zlib stdenv.cc.cc.lib readline lzma.dev protobuf cairo ] }'';
     };
-
   };
 
   fonts = {
@@ -186,7 +196,6 @@ in
   };
 
   services = {
-
     # Auto upgrade nix package and the daemon service.
     nix-daemon.enable = true;
 
