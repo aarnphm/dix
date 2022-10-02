@@ -1,12 +1,24 @@
 { config, pkgs, lib, ... }:
 
 let
-  user = "aarnphm";
+  inherit (pkgs) callPackage fetchFromGitHub;
+  inherit (builtins) fetchTarball;
+
+  username = "aarnphm";
+  homeDir = builtins.getEnv "HOME";
 
   go = pkgs.callPackage ./language/go/go.nix { };
+  pyenv-variables = {
+
+    CPPFLAGS = "-I$(xcrun --show-sdk-path)/usr/include -I${pkgs.xz.dev}/include -I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
+    CFLAGS = "-I${pkgs.openssl.dev}/include";
+    LDFLAGS = "-L${pkgs.zlib.dev}/lib -L${pkgs.libffi.dev}/lib -L${pkgs.readline.dev}/lib -L${pkgs.bzip2.dev}/lib -L${pkgs.openssl.dev}/lib -L${pkgs.xz.dev}/lib";
+    PYENV_ROOT = "${homeDir}/.pyenv";
+    PYENV_VIRTUALENV_DISABLE_PROMPT = "1"; # supress annoying warning for a feature I don't use
+  };
 
   awscli_v2_2_14 = import
-    (builtins.fetchTarball {
+    (fetchTarball {
       name = "awscli_v2_2_14";
       url = "https://github.com/nixos/nixpkgs/archive/aab3c48aef2260867272bf6797a980e32ccedbe0.tar.gz";
       # Hash obtained using `nix-prefetch-url --unpack <url>`
@@ -14,29 +26,22 @@ let
     })
     { };
 
-  protobuf = pkgs.fetchFromGitHub {
+  protobuf = fetchFromGitHub {
     owner = "protocolbuffers";
     repo = "protobuf";
     rev = "13c8a056f9c9cc2823608f6cbd239dcb8b9f11e5";
+    # Hash obtained using `nix-prefetch-url --unpack <url>`
     sha256 = "1nkkb2lw3ci7hqsrrn7f3saa43m3s6cjvcqsdkwjbz4mrns0bg2m";
   };
-
-  # python related
-  pip = pkgs.python310Packages.pip;
-  postgresql = pkgs.postgresql_14;
 in
 {
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 4;
-
-  imports = [ ./common/security/touch.nix ];
-
+  # imports TouchID features
   # Add ability to used TouchID for sudo authentication
   security.pam.enableSudoTouchIdAuth = true;
 
-  users.users.${user} = {
-    home = ''/Users/${user}'';
+  users.users.${username} = {
+    home = "/Users/${username}";
+    name = username;
   };
 
   # auto gc
@@ -45,7 +50,7 @@ in
       automatic = true;
       options = "--max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
     };
-    package = pkgs.nix;
+    package = pkgs.nixUnstable;
 
     # enable flake and experimental command
     extraOptions = ''
@@ -58,15 +63,42 @@ in
     '';
   };
 
+  # enable zsh by default
+  programs.nix-index.enable = true;
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    enableBashCompletion = true;
+    enableFzfHistory = true;
+    enableSyntaxHighlighting = true;
+    promptInit = "autoload -Uz promptinit && promptinit";
+  };
+
   nixpkgs = {
     overlays = [
       # add neovim overloay
       (import (builtins.fetchTarball {
         url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
       }))
+      (self: super: {
+        # https://github.com/nmattia/niv/issues/332#issuecomment-958449218
+        # TODO: remove this when upstream is fixed.
+        niv =
+          self.haskell.lib.compose.overrideCabal
+            (drv: { enableSeparateBinOutput = false; })
+            super.haskellPackages.niv;
+        python-appl-m1 = super.buildEnv {
+          name = "python-appl-m1";
+          paths = [
+            # A Python 3 interpreter with some packages
+            (self.python310.withPackages (ps: with ps; [ pynvim pip virtualenv pipx ]))
+          ];
+        };
+      })
     ];
     config = {
       allowUnfree = true;
+      allowBroken = true;
     };
   };
 
@@ -86,13 +118,28 @@ in
     systemPackages = with pkgs; [
       # emulator
       alacritty
-      kitty
       # editor
       vim
       neovim-nightly
+      # pyenv
+      readline
+      readline.dev
+      zlib
+      zlib.dev
+      libffi
+      libffi.dev
+      openssl
+      openssl.dev
+      bzip2
+      bzip2.dev
+      lzma
+      autoconf
+      openjdk
       # development
-      jre
-      openjdk17
+      terminal-notifier
+      grpcurl
+      sass
+      niv
       ccls
       fd
       fzf
@@ -103,32 +150,30 @@ in
       gnupg
       perl
       jq
-      lzma
-      readline
-      zlib
+      yq
       ninja
       tree
-      m-cli
+      btop
       wget
       zip
       pstree
       bazel_5
-      vscode
       swig
-      openssl_3_0
       colima
-      skopeo
       gnused
       ctags
+      llvmPackages_13.llvm
       # kubernetes
+      skopeo
       minikube
-      kubernetes
       kubernetes-helm
       ngrok
       k9s
       buildkit
+      podman
       direnv
-      postgresql
+      # postgres
+      postgresql_14
       # aws
       awscli_v2_2_14.awscli2
       eksctl
@@ -136,9 +181,6 @@ in
       go
       stylua
       selene
-      python310
-      pip
-      llvmPackages_latest.llvm
       coreutils
       nnn
       tmux
@@ -146,7 +188,6 @@ in
       cachix
       watch
       ripgrep
-      ssm-session-manager-plugin
       lima
       # Need for IntelliJ to format code
       terraform
@@ -161,7 +202,7 @@ in
       earthly
       rnix-lsp
       # python
-      pip
+      python-appl-m1
       enchant
       # ml stuff
       openblas
@@ -174,25 +215,24 @@ in
     ];
 
     # Setup environment variables to pass to zshrc
-    variables = with pkgs; {
-      EDITOR = ''${neovim-nightly}/bin/nvim'';
-      SQLITE_PATH = ''${sqlite.out}/lib/libsqlite3.dylib'';
-      PYENCHANT_LIBRARY_PATH = ''${enchant.out}/lib/libenchant-2.2.dylib'';
-      OPENBLAS = ''${openblas.out}/lib/libopenblas.dylib'';
-
-      # LD_LIBRARY_PATH
-      CPLUS_INCLUDE_PATH = ''${lzma.dev}/include'';
-      NIX_LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ openssl zlib stdenv.cc.cc.lib readline lzma.dev protobuf cairo ] }'';
-    };
+    variables = {
+      JAVA_HOME = "${pkgs.openjdk11}";
+      GOPATH = "${homeDir}/go";
+      PYTHON3_HOST_PROG = ''${pkgs.python-appl-m1}/bin/python3.10'';
+      EDITOR = ''${pkgs.neovim-nightly}/bin/nvim'';
+      SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
+      PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
+      OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
+      LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.out pkgs.zlib.out pkgs.stdenv.cc.cc.lib pkgs.readline.out pkgs.protobuf.out pkgs.cairo.out ] }:/usr/lib32:/usr/lib:${homeDir}/.local/lib:$LD_LIBRARY_PATH'';
+    } // pyenv-variables;
   };
 
+  # TODO: remove applications.text once https://github.com/LnL7/nix-darwin/issues/485 is resolved
   fonts = {
     fontDir.enable = true;
     fonts = with pkgs; [
-      recursive
-      (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
     ];
-
   };
 
   services = {
@@ -201,8 +241,32 @@ in
 
     postgresql = {
       enable = true;
-      package = postgresql;
+      package = pkgs.postgresql_14;
       dataDir = "/data/postgresql";
+    };
+  };
+
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system = {
+    stateVersion = 4;
+    activationScripts = {
+      # Disable fontrestore until it is fixed on Ventura
+      fonts.text = lib.mkForce ''
+        # Set up fonts.
+        echo "configuring fonts..." >&2
+        find -L "$systemConfig/Library/Fonts" -type f -print0 | while IFS= read -rd "" l; do
+            font=''${l##*/}
+            f=$(readlink -f "$l")
+            if [ ! -e "/Library/Fonts/$font" ]; then
+                echo "updating font $font..." >&2
+                ln -fn -- "$f" /Library/Fonts 2>/dev/null || {
+                  echo "Could not create hard link. Nix is probably on another filesystem. Copying the font instead..." >&2
+                  rsync -az --inplace "$f" /Library/Fonts
+                }
+            fi
+        done
+      '';
     };
   };
 }
