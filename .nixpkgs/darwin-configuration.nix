@@ -10,7 +10,7 @@ let
   go = pkgs.callPackage ./language/go/go.nix { };
   pyenv-variables = {
 
-    CPPFLAGS = "-I$(xcrun --show-sdk-path)/usr/include -I${pkgs.xz.dev}/include -I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
+    CPPFLAGS = "-I$(xcrun --show-sdk-path)/usr/include -I${pkgs.protobuf.out}/include -I${pkgs.xz.dev}/include -I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
     CFLAGS = "-I${pkgs.openssl.dev}/include";
     LDFLAGS = "-L${pkgs.zlib.dev}/lib -L${pkgs.libffi.dev}/lib -L${pkgs.readline.dev}/lib -L${pkgs.bzip2.dev}/lib -L${pkgs.openssl.dev}/lib -L${pkgs.xz.dev}/lib";
     PYENV_ROOT = "${homeDir}/.pyenv";
@@ -35,9 +35,11 @@ let
   };
 in
 {
+  imports = [ ./common/security.nix ];
   # imports TouchID features
   # Add ability to used TouchID for sudo authentication
   security.pam.enableSudoTouchIdAuth = true;
+  security.pam.enablePamTouchIdAuth = true;
 
   users.users.${username} = {
     home = "/Users/${username}";
@@ -171,6 +173,7 @@ in
       k9s
       buildkit
       podman
+      qemu
       direnv
       # postgres
       postgresql_14
@@ -223,7 +226,8 @@ in
       SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
       PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
       OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
-      LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.out pkgs.zlib.out pkgs.stdenv.cc.cc.lib pkgs.readline.out pkgs.protobuf.out pkgs.cairo.out ] }:/usr/lib32:/usr/lib:${homeDir}/.local/lib:$LD_LIBRARY_PATH'';
+      LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.out pkgs.zlib.out pkgs.stdenv.cc.cc.lib pkgs.readline.out pkgs.protobuf.out pkgs.cairo.out ] }:/usr/lib32:/usr/lib:${homeDir}/.local/lib'';
+      PATH = "${pkgs.protobuf.out}/bin:$PATH";
     } // pyenv-variables;
   };
 
