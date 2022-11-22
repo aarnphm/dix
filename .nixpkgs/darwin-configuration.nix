@@ -9,9 +9,7 @@ let
 
   go = pkgs.callPackage ./language/go/go.nix { };
   pyenv-variables = {
-
     CPPFLAGS = "-I$(xcrun --show-sdk-path)/usr/include -I${pkgs.protobuf.out}/include -I${pkgs.xz.dev}/include -I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
-    CFLAGS = "-I${pkgs.openssl.dev}/include";
     LDFLAGS = "-L${pkgs.zlib.dev}/lib -L${pkgs.libffi.dev}/lib -L${pkgs.readline.dev}/lib -L${pkgs.bzip2.dev}/lib -L${pkgs.openssl.dev}/lib -L${pkgs.xz.dev}/lib";
     PYENV_ROOT = "${homeDir}/.pyenv";
     PYENV_VIRTUALENV_DISABLE_PROMPT = "1"; # supress annoying warning for a feature I don't use
@@ -60,6 +58,7 @@ in
       experimental-features = nix-command flakes
       keep-outputs = true
       keep-derivations = true
+      trusted-users = root ${username}
     '' + lib.optionalString (pkgs.system == "aarch64-darwin") ''
       extra-platforms = x86_64-darwin aarch64-darwin
     '';
@@ -71,7 +70,6 @@ in
     enable = true;
     enableCompletion = true;
     enableBashCompletion = true;
-    enableFzfHistory = true;
     enableSyntaxHighlighting = true;
     promptInit = "autoload -Uz promptinit && promptinit";
   };
@@ -135,21 +133,17 @@ in
       bzip2
       bzip2.dev
       lzma
-      autoconf
+      lzma.dev
       openjdk
-      # development
-      terminal-notifier
       grpcurl
       sass
       niv
       ccls
       fd
-      fzf
       git
       gh
       ghq
       hub
-      gnupg
       perl
       jq
       yq
@@ -161,10 +155,8 @@ in
       pstree
       bazel_5
       swig
-      colima
       gnused
       ctags
-      llvmPackages_13.llvm
       # kubernetes
       skopeo
       minikube
@@ -191,12 +183,11 @@ in
       cachix
       watch
       ripgrep
-      lima
       # Need for IntelliJ to format code
       terraform
       # nvim related
-      code-minimap
-      tree-sitter
+      colima
+      lima
       gitui
       any-nix-shell
       sqlite
@@ -204,12 +195,18 @@ in
       cairo
       earthly
       rnix-lsp
+      nixfmt
       # python
       python-appl-m1
       enchant
       # ml stuff
       openblas
+      llvmPackages.openmp
+      boost
       protobuf
+      hdf5
+      hdf5.dev
+      cmake
     ];
 
     # add shell installed by nix to /etc/shells
@@ -231,7 +228,6 @@ in
     } // pyenv-variables;
   };
 
-  # TODO: remove applications.text once https://github.com/LnL7/nix-darwin/issues/485 is resolved
   fonts = {
     fontDir.enable = true;
     fonts = with pkgs; [
@@ -249,28 +245,6 @@ in
       dataDir = "/data/postgresql";
     };
   };
-
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
-  system = {
-    stateVersion = 4;
-    activationScripts = {
-      # Disable fontrestore until it is fixed on Ventura
-      fonts.text = lib.mkForce ''
-        # Set up fonts.
-        echo "configuring fonts..." >&2
-        find -L "$systemConfig/Library/Fonts" -type f -print0 | while IFS= read -rd "" l; do
-            font=''${l##*/}
-            f=$(readlink -f "$l")
-            if [ ! -e "/Library/Fonts/$font" ]; then
-                echo "updating font $font..." >&2
-                ln -fn -- "$f" /Library/Fonts 2>/dev/null || {
-                  echo "Could not create hard link. Nix is probably on another filesystem. Copying the font instead..." >&2
-                  rsync -az --inplace "$f" /Library/Fonts
-                }
-            fi
-        done
-      '';
-    };
-  };
 }
