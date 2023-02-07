@@ -157,6 +157,7 @@ in
       swig
       gnused
       ctags
+      delta
       # kubernetes
       skopeo
       minikube
@@ -201,7 +202,6 @@ in
       enchant
       # ml stuff
       openblas
-      llvmPackages.openmp
       boost
       protobuf
       hdf5
