@@ -2,21 +2,14 @@
 
 let
   inherit (pkgs) callPackage fetchFromGitHub;
-  inherit (builtins) fetchTarball;
 
   username = "aarnphm";
   homeDir = builtins.getEnv "HOME";
 
   go = pkgs.callPackage ./language/go/go.nix { };
-  pyenv-variables = {
-    CPPFLAGS = "-I$(xcrun --show-sdk-path)/usr/include -I${pkgs.protobuf.out}/include -I${pkgs.xz.dev}/include -I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
-    LDFLAGS = "-L${pkgs.zlib.dev}/lib -L${pkgs.libffi.dev}/lib -L${pkgs.readline.dev}/lib -L${pkgs.bzip2.dev}/lib -L${pkgs.openssl.dev}/lib -L${pkgs.xz.dev}/lib";
-    PYENV_ROOT = "${homeDir}/.pyenv";
-    PYENV_VIRTUALENV_DISABLE_PROMPT = "1"; # supress annoying warning for a feature I don't use
-  };
 
   awscli_v2_2_14 = import
-    (fetchTarball {
+    (builtins.fetchTarball {
       name = "awscli_v2_2_14";
       url = "https://github.com/nixos/nixpkgs/archive/aab3c48aef2260867272bf6797a980e32ccedbe0.tar.gz";
       # Hash obtained using `nix-prefetch-url --unpack <url>`
@@ -24,7 +17,7 @@ let
     })
     { };
 
-  protobuf = fetchFromGitHub {
+  protobuf = pkgs.fetchFromGitHub {
     owner = "protocolbuffers";
     repo = "protobuf";
     rev = "13c8a056f9c9cc2823608f6cbd239dcb8b9f11e5";
@@ -54,9 +47,10 @@ in
 
     # enable flake and experimental command
     extraOptions = ''
-      auto-optimise-store = true
+      auto-optimise-store = false
       experimental-features = nix-command flakes
       keep-outputs = true
+      keep-failed = false
       keep-derivations = true
       trusted-users = root ${username}
     '' + lib.optionalString (pkgs.system == "aarch64-darwin") ''
@@ -77,9 +71,9 @@ in
   nixpkgs = {
     overlays = [
       # add neovim overloay
-      (import (builtins.fetchTarball {
-        url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
-      }))
+      # (import (builtins.fetchTarball {
+      #   url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
+      # }))
       (self: super: {
         # https://github.com/nmattia/niv/issues/332#issuecomment-958449218
         # TODO: remove this when upstream is fixed.
@@ -116,11 +110,11 @@ in
   # nix-env -i /nix/store/ws2fbwf7xcmnhg2hlvq43qg22j06w5jb-niv-0.2.19-bin --option binary-caches https://cache.nixos.org
   environment = {
     systemPackages = with pkgs; [
-      # emulator
-      alacritty
       # editor
       vim
-      neovim-nightly
+      # luajit
+      # XXX: currently neovim-nightly is broken, use neovim --HEAD from brew
+      # neovim-nightly
       # pyenv
       readline
       readline.dev
@@ -134,38 +128,22 @@ in
       bzip2.dev
       lzma
       lzma.dev
-      openjdk
       grpcurl
       sass
       niv
-      ccls
-      fd
-      git
-      gh
-      ghq
-      hub
-      perl
       jq
       yq
-      ninja
       tree
       btop
-      wget
       zip
       pstree
-      bazel_5
       swig
-      gnused
-      ctags
-      delta
+      taplo
       # kubernetes
-      skopeo
-      minikube
       kubernetes-helm
       ngrok
       k9s
       buildkit
-      podman
       qemu
       direnv
       # postgres
@@ -177,7 +155,6 @@ in
       go
       stylua
       selene
-      coreutils
       nnn
       tmux
       asciinema
@@ -190,23 +167,16 @@ in
       colima
       lima
       gitui
+      lazygit
+      kind
       any-nix-shell
       sqlite
       dtach
-      cairo
       earthly
-      rnix-lsp
       nixfmt
       # python
       python-appl-m1
       enchant
-      # ml stuff
-      openblas
-      boost
-      protobuf
-      hdf5
-      hdf5.dev
-      cmake
     ];
 
     # add shell installed by nix to /etc/shells
@@ -219,13 +189,11 @@ in
       JAVA_HOME = "${pkgs.openjdk11}";
       GOPATH = "${homeDir}/go";
       PYTHON3_HOST_PROG = ''${pkgs.python-appl-m1}/bin/python3.10'';
-      EDITOR = ''${pkgs.neovim-nightly}/bin/nvim'';
       SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
       PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
       OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
-      LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.out pkgs.zlib.out pkgs.stdenv.cc.cc.lib pkgs.readline.out pkgs.protobuf.out pkgs.cairo.out ] }:/usr/lib32:/usr/lib:${homeDir}/.local/lib'';
       PATH = "${pkgs.protobuf.out}/bin:$PATH";
-    } // pyenv-variables;
+    };
   };
 
   fonts = {

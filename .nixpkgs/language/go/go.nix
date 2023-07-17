@@ -7,15 +7,14 @@ let
   hashes = {
     # Use `print-hashes.sh ${version}` to generate the list below
     # https://raw.githubusercontent.com/NixOS/nixpkgs/master/pkgs/development/compilers/go/print-hashes.sh
-    darwin-amd64 = "df6509885f65f0d7a4eaf3dfbe7dda327569787e8a0a31cbf99ae3a6e23e9ea8";
-    darwin-arm64 = "859e0a54b7fcea89d9dd1ec52aab415ac8f169999e5fdfb0f0c15b577c4ead5e";
-    linux-386 = "6f721fa3e8f823827b875b73579d8ceadd9053ad1db8eaa2393c084865fb4873";
-    linux-amd64 = "464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6";
-    linux-arm64 = "efa97fac9574fc6ef6c9ff3e3758fb85f1439b046573bf434cccb5e012bd00c8";
-    linux-armv6l = "25197c7d70c6bf2b34d7d7c29a2ff92ba1c393f0fb395218f1147aac2948fb93";
-    linux-ppc64le = "92bf5aa598a01b279d03847c32788a3a7e0a247a029dedb7c759811c2a4241fc";
-    linux-s390x = "58723eb8e3c7b9e8f5e97b2d38ace8fd62d9e5423eaa6cdb7ffe5f881cb11875";
-
+    darwin-amd64 = "777025500f62d14bb5a4923072cd97431887961d24de08433a60c2fe1120531d";
+    darwin-arm64 = "32864d6fe888714ca7b421b5997269c7f6349d7e2675c3a399133e521787608b";
+    linux-386 = "1420582fb43a15dbe94760fdd92171315414c4afc21ffe9d3b5875f9386ebe53";
+    linux-amd64 = "5a9ebcc65c1cce56e0d2dc616aff4c4cedcfbda8cc6f0288cc08cda3b18dcbf1";
+    linux-arm64 = "17700b6e5108e2a2c3b1a43cd865d3f9c66b7f1c5f0cec26d3672cc131cc0994";
+    linux-armv6l = "ee8550213c62812f90dbfd3d098195adedd450379fd4d3bb2c85607fd5a2d283";
+    linux-ppc64le = "bccbf89c83e0aab2911e57217159bf0fc49bb07c6eebd2c23ae30af18fc5368b";
+    linux-s390x = "4460deffbc01fe5f31fe226d296e366c0d6059b280743aea49bf81ab62ab8be8";
   };
 
   toGoCPU = platform: {
@@ -27,7 +26,7 @@ let
     "powerpc64le" = "ppc64le";
   }.${platform.parsed.cpu.name} or (throw "Unsupported CPU ${platform.parsed.cpu.name}");
 
-  version = "1.19";
+  version = "1.20";
 
   toGoPlatform = platform: "${toGoKernel platform}-${toGoCPU platform}";
 
