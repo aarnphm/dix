@@ -37,6 +37,8 @@ in
     name = username;
   };
 
+  documentation.enable = false;
+
   # auto gc
   nix = {
     gc = {
@@ -71,9 +73,9 @@ in
   nixpkgs = {
     overlays = [
       # add neovim overloay
-      # (import (builtins.fetchTarball {
-      #   url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
-      # }))
+      (import (builtins.fetchTarball {
+            url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
+          }))
       (self: super: {
         # https://github.com/nmattia/niv/issues/332#issuecomment-958449218
         # TODO: remove this when upstream is fixed.
@@ -112,9 +114,12 @@ in
     systemPackages = with pkgs; [
       # editor
       vim
-      # luajit
       # XXX: currently neovim-nightly is broken, use neovim --HEAD from brew
-      # neovim-nightly
+      neovim-nightly
+      buf
+      protolint
+      eclint
+      # alacritty
       # pyenv
       readline
       readline.dev
@@ -146,6 +151,7 @@ in
       buildkit
       qemu
       direnv
+      pplatex
       # postgres
       postgresql_14
       # aws
@@ -177,6 +183,7 @@ in
       # python
       python-appl-m1
       enchant
+      gitoxide
     ];
 
     # add shell installed by nix to /etc/shells
@@ -186,7 +193,6 @@ in
 
     # Setup environment variables to pass to zshrc
     variables = {
-      JAVA_HOME = "${pkgs.openjdk11}";
       GOPATH = "${homeDir}/go";
       PYTHON3_HOST_PROG = ''${pkgs.python-appl-m1}/bin/python3.10'';
       SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
