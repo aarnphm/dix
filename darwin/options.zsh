@@ -39,6 +39,16 @@ bindkey '^H'    backward-delete-char
 bindkey '^[[3~' delete-char
 bindkey '^[[3;5~' delete-word
 
+## jump ##
+bindkey  '^[[H' beginning-of-line
+bindkey  '^[[F' end-of-line
+bindkey '^[[1~' beginning-of-line
+bindkey '^[[4~' end-of-line
+bindkey '^[[7~' beginning-of-line
+bindkey '^[[8~' end-of-line
+bindkey '^U' backward-kill-line
+bindkey '^[^?' delete-char-or-list
+
 ## move ##
 bindkey '^[h' backward-char
 bindkey '^[j' down-line-or-history
@@ -60,6 +70,16 @@ bindkey '^S' history-incremental-pattern-search-forward
 bindkey '^[u' undo
 bindkey '^[r' redo
 bindkey -s "^T" "^[Isudo ^[A" # "t" for "toughguy"
+
+## completion ##
+# vim hjkl
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+# shift-tab
+bindkey '^[[Z' reverse-menu-complete
+bindkey -M menuselect '^[[Z' reverse-menu-complete
 
 # edit command-line using editor (like fc command)
 autoload -U edit-command-line

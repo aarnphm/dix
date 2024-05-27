@@ -107,7 +107,7 @@ in
         # misc
         SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
         PAPERSPACE_INSTALL = "${vars.homeDir}/.paperspace";
-        PATH = "${pkgs.protobuf.out}/bin:$PAPERSPACE_INSTALL/bin:$PATH";
+        PATH = "${pkgs.protobuf.out}/bin:$PAPERSPACE_INSTALL/bin:${vars.homeDir}/.orbstack/bin:$PATH";
         # fzf
         FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
         FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
@@ -169,7 +169,7 @@ in
       bwpass = "[[ -f $HOME/bw.pass ]] && cat $HOME/bw.pass | sed -n 1p | pbcopy";
 
       # nix-commands
-      nrb = "darwin-rebuild switch -I $WORKSPACE/dix --flake \".#appl-mbp16\"";
+      nrb = "pushd ${vars.wsDir}/dix &>/dev/null && darwin-rebuild switch --flake \".#appl-mbp16\" && popd &>/dev/null";
       ned = "$EDITOR ${vars.wsDir}/dix/darwin/appl-mbp16.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
@@ -215,10 +215,11 @@ in
       delta
 
       # languages
-      # TODO: setup python, pyenv, openjdk, rust, nvm
+      # TODO: setup python, pyenv, openjdk, rust
       go
       sass
       protobuf
+      nodejs_20
       # tools for language, lsp, linter, etc.
       tree-sitter
       eclint
@@ -278,6 +279,9 @@ in
       enableFzfHistory = true; # ctrl-r
       enableSyntaxHighlighting = true;
       promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      loginShellInit = ''
+        source ${vars.homeDir}/.orbstack/shell/init.zsh 2>/dev/null || :
+      '';
       interactiveShellInit = ''
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
         eval "$(${pkgs.zoxide.out}/bin/zoxide init --cmd j zsh)"
