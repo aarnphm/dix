@@ -1,10 +1,22 @@
-{ inputs, nixpkgs, darwin, vars, neovim, ... }:
+{ inputs, nixpkgs, darwin, vars, editor, neovim, ... }:
 
 let
   system = "aarch64-darwin";
   pkgs = import nixpkgs {
     inherit system;
-    overlays = [ neovim.overlays.default ];
+    overlays = [
+      neovim.overlays.default
+      (self: super: {
+        aarnphm-editor = pkgs.stdenv.mkDerivation {
+          name = "aarnphm-editor";
+          src = editor;
+          buildCommand = ''
+            mkdir -p $out/nvim
+            cp -r $src/* $out/nvim
+          '';
+        };
+      })
+    ];
     config = {
       allowUnfree = true;
     };

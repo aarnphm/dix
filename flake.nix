@@ -2,7 +2,9 @@
   description = "appl-mbp16 and adjacents";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs = {
+      url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    };
 
     darwin = {
       url = "github:LnL7/nix-darwin";
@@ -12,9 +14,14 @@
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
     };
+
+    editor = {
+      url = "github:aarnphm/editor";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, darwin, neovim, nixpkgs }:
+  outputs = inputs@{ self, darwin, neovim, nixpkgs, editor }:
     let
       vars = {
         # dir
@@ -27,15 +34,13 @@
         # general based
         user = "aarnphm";
         terminal = "alacritty";
-        apperance = "light"; # dark | light
-        colorscheme = "rose-pine";
       };
     in
     {
       darwinConfigurations = (
         import ./darwin {
           inherit (nixpkgs) lib;
-          inherit inputs nixpkgs darwin vars neovim;
+          inherit inputs nixpkgs darwin vars editor neovim;
         }
       );
 

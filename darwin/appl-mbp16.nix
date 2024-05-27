@@ -15,11 +15,12 @@ let
     OPENLLM_DISABLE_WARNING = "False";
   };
   pyenv_root = ''${vars.homeDir}/.pyenv'';
+  userDir = ''/Users/${vars.user}'';
 in
 {
   # Users
   users.users.${vars.user} = {
-    home = "/Users/${vars.user}";
+    home = userDir;
     shell = pkgs.zsh;
   };
 
@@ -41,7 +42,9 @@ in
 
   # System preferences
   system = {
-    activationScripts.postActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
+    activationScripts.postActivation.text = ''
+      ln -sf /etc/nvim ${userDir}/.config/nvim
+    '';
     # Set Git commit hash for darwin-version.
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
     # Used for backwards compatibility, please read the changelog before changing.
@@ -79,6 +82,9 @@ in
     package = pkgs.nix;
     settings = {
       experimental-features = "nix-command flakes";
+      trusted-users = [ "root" "${vars.user}" ];
+      trusted-substituters = [ "https://nix-community.cachix.org" ];
+      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
     };
     gc = {
       automatic = true;
@@ -90,8 +96,8 @@ in
   environment = {
     darwinConfig = "${vars.wsDir}/dix";
     etc = {
-      "completions.d" = {
-        source = "${./completions.d}";
+      "nvim" = {
+        source = "${pkgs.aarnphm-editor}/nvim";
       };
     };
     # shells related
@@ -197,13 +203,13 @@ in
 
     systemPackages = with pkgs; [
       # nix
-      niv
       cachix
 
       # editor
       vim
       neovim-developer
       alacritty
+      aarnphm-editor
 
       # kubernetes
       kubernetes-helm
@@ -241,6 +247,7 @@ in
       tree-sitter
       eclint
       nixfmt-rfc-style
+      nixpkgs-fmt
       grpcurl
       taplo
       stylua
@@ -304,7 +311,7 @@ in
       loginShellInit = ''
         source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
 
-        fpath+=(/etc/completions.d ${pkgs.zsh-completions}/share/zsh/site-functions)
+        fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
       '';
       interactiveShellInit = ''
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
