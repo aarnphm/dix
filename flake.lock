@@ -23,11 +23,11 @@
     "editor": {
       "flake": false,
       "locked": {
-        "lastModified": 1716811230,
-        "narHash": "sha256-OySEDaSY5vV6nHYkcYAziVLEAE04J8WqRdS15IStmCQ=",
+        "lastModified": 1716846162,
+        "narHash": "sha256-RvFBg1mrB6ynJv2cTo+wlUiNf2fGgWxqJX6b0urdl+w=",
         "owner": "aarnphm",
         "repo": "editor",
-        "rev": "a29d8649dddd569836d981e41e334d4d14544633",
+        "rev": "741ef6403b113431a84c1c8bc768950a35cd22d3",
         "type": "github"
       },
       "original": {
