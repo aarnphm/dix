@@ -3,12 +3,10 @@ function tflibs() {
 }
 
 function venv() {
-    name="${1:-venv}"
+    name="${1:-.venv}"
     if [[ ! -d "$name" ]]; then
-        pip freeze | grep "virtualenv" &>/dev/null || pip install virtualenv;
-        python -m virtualenv "$name" --download
+        uv venv "${PWD}/$name"
         source "$name/bin/activate"
-        pip install "protobuf<3.20"
     else
         source "$name/bin/activate"
     fi
@@ -73,38 +71,6 @@ esac
 
 __exec_command_with_tmux "ssh $args"
 }
-
-function print_default() {
-echo -e "$*"
-}
-
-function print_info() {
-echo -e "\e[1;36m$*\e[m" # cyan
-}
-
-function print_notice() {
-echo -e "\e[1;35m$*\e[m" # magenta
-}
-
-function print_success() {
-echo -e "\e[1;32m$*\e[m" # green
-}
-
-function print_warning() {
-echo -e "\e[1;33m$*\e[m" # yellow
-}
-
-function print_error() {
-echo -e "\e[1;31m$*\e[m" # red
-}
-
-function print_debug() {
-echo -e "\e[1;34m$*\e[m" # blue
-}
-
-#==============================================================#
-##         New Commands                                      ##
-#==============================================================#
 
 function comment(){
 sed -i "$1"' s/^/#/' "$2"

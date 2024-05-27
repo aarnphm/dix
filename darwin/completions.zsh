@@ -18,8 +18,6 @@ zstyle ':completion:*' verbose true # provide verbose completion information
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:*:*' option-stacking yes
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.cache/zsh/
 
 ## correction
 # run rehash on completion so new installed program are found automatically:
@@ -122,7 +120,6 @@ zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec)|prompt_*)'
 zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
 # ps
 zstyle ':completion:*:processes' command 'ps x -o pid,s,args'
-
 # sudo
 zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin
 
@@ -143,6 +140,10 @@ zstyle ':completion:*:history-words' stop yes
 zstyle ':completion:*:history-words' remove-all-dups yes
 zstyle ':completion:*:history-words' list false
 zstyle ':completion:*:history-words' menu yes
+
+# conda
+zstyle ":conda_zsh_completion:*" use-groups true
+zstyle ":conda_zsh_completion:*" sort-envs-by-time true
 
 # bentoml
 zstyle ":bentoml:*" use-groups true

@@ -35,7 +35,7 @@ in
     knownNetworkServices = [ "Wi-Fi" ];
     dns = [ "1.1.1.1" "8.8.8.8" ];
     computerName = "appl-mbp16";
-    hostName = "apple-mbp16";
+    hostName = "appl-mbp16";
   };
 
   # System preferences
@@ -88,15 +88,26 @@ in
 
   environment = {
     darwinConfig = "${vars.wsDir}/dix";
-
+    etc = {
+      "completions.d" = {
+        source = "${./completions.d}";
+      };
+    };
     # shells related
     shells = with pkgs; [ zsh ];
     variables = lib.mkMerge [
       xdg
       bentoml
       {
+        # fzf
+        FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
+        FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
         # language
         GOPATH = "${pkgs.go.out}";
+        PYENV_ROOT = "$HOME/.pyenv";
+        PYENV_SHELL = "${pkgs.zsh.out}/bin/zsh";
+        # UV_PYTHON = "${pkgs.python-appl-mbp16.out}/bin/python3";
+        # PYTHON3_HOST_PROG = "${pkgs.python-appl-mbp16.out}/bin/python3";
         # set nix-index to $HOME/.cache
         NIX_INDEX_DATABASE = "${vars.cacheDir}/nix-index/";
         # editors
@@ -105,12 +116,11 @@ in
         WORKSPACE = "${vars.wsDir}";
         SHELL = "${pkgs.zsh}/bin/zsh";
         # misc
+        PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
+        OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
         SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
-        PAPERSPACE_INSTALL = "${vars.homeDir}/.paperspace";
-        PATH = "${pkgs.protobuf.out}/bin:$PAPERSPACE_INSTALL/bin:${vars.homeDir}/.orbstack/bin:$PATH";
-        # fzf
-        FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
-        FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
+        PAPERSPACE_INSTALL = "$HOME/.paperspace";
+        PATH = "$HOME/.cargo/bin:${pkgs.protobuf.out}/bin:$PAPERSPACE_INSTALL/bin:$HOME/.orbstack/bin:$PATH";
       }
     ];
     shellAliases = {
@@ -177,8 +187,10 @@ in
 
       # program opts
       cat = "${pkgs.bat.out}/bin/bat";
-      ipynb = "jupyter notebook --autoreload --debug";
+      # python
       pip = "uv pip";
+      # python3 = "${pkgs.python-appl-mbp16.out}/bin/python3";
+      ipynb = "jupyter notebook --autoreload --debug";
     };
 
     systemPackages = with pkgs; [
@@ -215,11 +227,13 @@ in
       delta
 
       # languages
-      # TODO: setup python, pyenv, openjdk, rust
+      # TODO: setup openjdk
       go
       sass
       protobuf
       nodejs_20
+      rustup
+      pyenv
       # tools for language, lsp, linter, etc.
       tree-sitter
       eclint
@@ -233,6 +247,8 @@ in
       sqlite
       postgresql_14
       llvm_17
+      openblas
+      enchant
 
       # terminal
       # TODO: GPG
@@ -260,7 +276,6 @@ in
       ffmpeg
       cmake
       dtach
-      enchant
       zstd
       gnused
       gnupg
@@ -279,18 +294,25 @@ in
       enableFzfHistory = true; # ctrl-r
       enableSyntaxHighlighting = true;
       promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      shellInit = ''
+        [[ -d ${vars.homeDir}/.cargo/env ]] && . "${vars.homeDir}/.cargo/env"
+      '';
       loginShellInit = ''
         source ${vars.homeDir}/.orbstack/shell/init.zsh 2>/dev/null || :
+
+        fpath+=(/etc/completions.d)
       '';
       interactiveShellInit = ''
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
         eval "$(${pkgs.zoxide.out}/bin/zoxide init --cmd j zsh)"
+        eval "$(${pkgs.pyenv.out}/bin/pyenv init -)"
         ${pkgs.any-nix-shell.out}/bin/any-nix-shell zsh --info-right | source /dev/stdin
 
         source ${./completions.zsh}
         source ${./functions.zsh}
         source ${./options.zsh}
         source ${./p10k.zsh}
+        source /etc/completions.d/pyenv.zsh
       '';
     };
   };

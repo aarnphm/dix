@@ -4,8 +4,10 @@ let
   system = "aarch64-darwin";
   pkgs = import nixpkgs {
     inherit system;
-    config.allowUnfree = true;
     overlays = [ neovim.overlays.default ];
+    config = {
+      allowUnfree = true;
+    };
   };
 in
 {

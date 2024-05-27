@@ -6,6 +6,7 @@ WORDCHARS='*?_-.[]~&;!#$%^(){}<>|'
 
 unsetopt clobber
 unsetopt hist_verify
+unsetopt extendedglob
 
 setopt prompt_subst
 setopt notify
@@ -16,7 +17,6 @@ setopt pushd_ignore_dups
 setopt pushd_silent
 setopt pushd_to_home
 setopt cdable_vars
-setopt extendedglob
 setopt extended_history
 setopt append_history
 setopt share_history
