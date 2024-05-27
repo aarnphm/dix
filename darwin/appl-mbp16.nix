@@ -304,7 +304,7 @@ in
       loginShellInit = ''
         source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
 
-        fpath+=(/etc/completions.d ${pkgs.zsh-completions}/src)
+        fpath+=(/etc/completions.d ${pkgs.zsh-completions}/share/zsh/site-functions)
       '';
       interactiveShellInit = ''
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
