@@ -14,6 +14,7 @@ let
     OPENLLM_DEV_BUILD = "True";
     OPENLLM_DISABLE_WARNING = "False";
   };
+  pyenv_root = ''${vars.homeDir}/.pyenv'';
 in
 {
   # Users
@@ -104,23 +105,23 @@ in
         FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
         # language
         GOPATH = "${pkgs.go.out}";
-        PYENV_ROOT = "$HOME/.pyenv";
-        PYENV_SHELL = "${pkgs.zsh.out}/bin/zsh";
-        # UV_PYTHON = "${pkgs.python-appl-mbp16.out}/bin/python3";
-        # PYTHON3_HOST_PROG = "${pkgs.python-appl-mbp16.out}/bin/python3";
+        PYENV_ROOT = "${pyenv_root}";
+        UV_PYTHON = ''${pyenv_root}/shims/python'';
+        PYTHON3_HOST_PROG = ''${pyenv_root}/shims/python'';
         # set nix-index to $HOME/.cache
         NIX_INDEX_DATABASE = "${vars.cacheDir}/nix-index/";
         # editors
-        EDITOR = "${vars.editor}";
-        VISUAL = "${vars.editor}";
+        EDITOR = "${pkgs.neovim-developer}/bin/nvim";
+        VISUAL = "${pkgs.neovim-developer}/bin/nvim";
         WORKSPACE = "${vars.wsDir}";
         SHELL = "${pkgs.zsh}/bin/zsh";
         # misc
-        PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant.out}/lib/libenchant-2.2.dylib'';
-        OPENBLAS = ''${pkgs.openblas.out}/lib/libopenblas.dylib'';
-        SQLITE_PATH = ''${pkgs.sqlite.out}/lib/libsqlite3.dylib'';
+        PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
+        OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
+        SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
         PAPERSPACE_INSTALL = "$HOME/.paperspace";
-        PATH = "$HOME/.cargo/bin:${pkgs.protobuf.out}/bin:$PAPERSPACE_INSTALL/bin:$HOME/.orbstack/bin:$PATH";
+        PATH = lib.concatStringsSep ":" [ ''${pyenv_root}/shims'' "${lib.makeBinPath [ "$HOME/.cargo" pkgs.protobuf "$PAPERSPACE_INSTALL" "$HOME/.orbstack" ]}" "$PATH" ];
+        LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.dev pkgs.zlib.dev pkgs.xz.dev pkgs.stdenv.cc.cc.lib pkgs.readline.dev pkgs.protobuf pkgs.cairo ]}'';
       }
     ];
     shellAliases = {
@@ -189,7 +190,8 @@ in
       cat = "${pkgs.bat.out}/bin/bat";
       # python
       pip = "uv pip";
-      # python3 = "${pkgs.python-appl-mbp16.out}/bin/python3";
+      python3 = ''${pyenv_root}/shims/python'';
+      python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" pyenv install "$@"'';
       ipynb = "jupyter notebook --autoreload --debug";
     };
 
@@ -234,6 +236,7 @@ in
       nodejs_20
       rustup
       pyenv
+      xz
       # tools for language, lsp, linter, etc.
       tree-sitter
       eclint
@@ -251,9 +254,9 @@ in
       enchant
 
       # terminal
-      # TODO: GPG
       any-nix-shell
       zsh-powerlevel10k
+      zsh-completions
       direnv
       tmux
       jq
@@ -279,6 +282,7 @@ in
       zstd
       gnused
       gnupg
+      hyperfine
     ];
   };
 
@@ -298,9 +302,9 @@ in
         [[ -d ${vars.homeDir}/.cargo/env ]] && . "${vars.homeDir}/.cargo/env"
       '';
       loginShellInit = ''
-        source ${vars.homeDir}/.orbstack/shell/init.zsh 2>/dev/null || :
+        source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
 
-        fpath+=(/etc/completions.d)
+        fpath+=(/etc/completions.d ${pkgs.zsh-completions}/src)
       '';
       interactiveShellInit = ''
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
@@ -312,7 +316,6 @@ in
         source ${./functions.zsh}
         source ${./options.zsh}
         source ${./p10k.zsh}
-        source /etc/completions.d/pyenv.zsh
       '';
     };
   };

@@ -18,7 +18,7 @@
     let
       vars = {
         # dir
-        homeDir = builtins.getEnv "HOME";
+        homeDir = "$HOME";
         wsDir = "$HOME/workspace";
         configDir = "$HOME/.config";
         localDir = "$HOME/.local";
@@ -26,7 +26,6 @@
 
         # general based
         user = "aarnphm";
-        editor = "nvim";
         terminal = "alacritty";
         apperance = "light"; # dark | light
         colorscheme = "rose-pine";

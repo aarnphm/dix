@@ -76,40 +76,6 @@ function comment(){
 sed -i "$1"' s/^/#/' "$2"
 }
 
-function 256color() {
-clear
-for code in {000..255}; do
-    print -nP -- "%F{$code}$code %f";
-    if [ $((${code} % 16)) -eq 15 ]; then
-        echo ""
-    fi
-done
-}
-
-function ascii_color_code() {
-seq 30 47 | xargs -i{} printf "\x1b[%dm#\x1b[0m %d\n" {} {}
-}
-
-
-function find_no_new_line_at_end_of_file() {
-find * -type f -print0 | xargs -0 -L1 bash -c 'test "$(tail -c 1 "$0")" && echo "No new line at end of $0"'
-}
-
-
-function get_stdin_and_args() {
-local __str
-if [ -p /dev/stdin ]; then
-    if [ "`echo $@`" == "" ]; then
-        __str=`cat -`
-    else
-        __str="$@"
-    fi
-else
-    __str="$@"
-fi
-echo "$__str"
-}
-
 function ltrim() {
 local input
 input=$(get_stdin_and_args "$@")
@@ -132,33 +98,6 @@ function trim_all_whitespace() {
 local input
 input=$(get_stdin_and_args "$@")
 echo "$input" | tr -d ' '
-}
-
-function convert_ascii_to_hex() {
-echo -n "$@" | xxd -ps -c 200
-}
-
-function convert_hex_to_ascii() {
-echo -n "$@" | xxd -ps -r
-}
-
-function convert_hex_to_formatted_hex() {
-echo -n "$@" | sed 's/[[:xdigit:]]\{2\}/\\x&/g'
-}
-
-
-function zsh-profiler() {
-ZSHRC_PROFILE=1 zsh -i -c zprof
-}
-
-function zsh-detailed() {
-logf=$(ls -tm $ZDATADIR/logs | head -n1)
-sed -i '0,/PROFILE_STARTUP/s/false/true/' $ZDOTDIR/.zshrc
-dtime="$HOME/.local/bin/sort-timings-zsh $ZDATADIR/logs/$logf | head"
-echo "Getting runtime..."
-zsh -i -c $dtime
-echo "done."
-sed -i '0,/PROFILE_STARTUP/s/true/false/' $ZDOTDIR/.zshrc
 }
 
 function timeshell() {

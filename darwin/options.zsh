@@ -1,16 +1,7 @@
-# options now
-HISTORY_IGNORE="(ls|cd|pwd|zsh|exit|cd ..)"
-LISTMAX=1000
-KEYTIMEOUT=1
-WORDCHARS='*?_-.[]~&;!#$%^(){}<>|'
-
-unsetopt clobber
-unsetopt hist_verify
 unsetopt extendedglob
 
-setopt prompt_subst
+setopt prompt_sp
 setopt notify
-setopt correct
 setopt autopushd
 setopt multios
 setopt pushd_ignore_dups
