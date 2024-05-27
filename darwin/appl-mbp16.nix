@@ -14,9 +14,6 @@ let
     OPENLLM_DEV_BUILD = "True";
     OPENLLM_DISABLE_WARNING = "False";
   };
-  zshOptions = pkgs.lib.readFile ./options.zsh;
-  zshFunctions = pkgs.lib.readFile ./functions.zsh;
-  zshCompletions = pkgs.lib.readFile ./completions.zsh;
 in
 {
   # Users
@@ -158,6 +155,7 @@ in
       gsp = "${pkgs.git.out}/bin/git stash pop";
       gckb = "${pkgs.git.out}/bin/git checkout -b";
       gck = "${pkgs.git.out}/bin/git checkout";
+      gdf = "${pkgs.git.out}/bin/git diff";
       gprc = "${pkgs.gh.out}/bin/gh pr create";
 
       # editor
@@ -214,6 +212,7 @@ in
       gitui
       lazygit
       git-lfs
+      delta
 
       # languages
       # TODO: setup python, pyenv, openjdk, rust, nvm
@@ -236,6 +235,8 @@ in
 
       # terminal
       # TODO: GPG
+      any-nix-shell
+      zsh-powerlevel10k
       direnv
       tmux
       jq
@@ -255,7 +256,6 @@ in
       tmux
       asciinema
       watch
-      any-nix-shell
       ffmpeg
       cmake
       dtach
@@ -264,7 +264,6 @@ in
       gnused
       gnupg
     ];
-
   };
 
 
@@ -276,18 +275,24 @@ in
     };
     zsh = {
       enable = true;
-      enableFzfCompletion = true;
       enableFzfHistory = true; # ctrl-r
       enableSyntaxHighlighting = true;
+      promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       interactiveShellInit = ''
-
-        # shell configuration
-        unsetopt EXTENDED_GLOB # no expanding glob
-
         eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
         eval "$(${pkgs.zoxide.out}/bin/zoxide init --cmd j zsh)"
         ${pkgs.any-nix-shell.out}/bin/any-nix-shell zsh --info-right | source /dev/stdin
+
+        source ${./completions.zsh}
+        source ${./functions.zsh}
+        source ${./options.zsh}
+        source ${./p10k.zsh}
       '';
     };
   };
 }
+
+
+
+
+
