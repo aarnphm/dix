@@ -11,8 +11,8 @@ let
           name = "aarnphm-editor";
           src = editor;
           buildCommand = ''
-            mkdir -p $out/nvim
-            cp -r $src/* $out/nvim
+            mkdir -p $out
+            cp -r $src/* $out
           '';
         };
       })

@@ -97,7 +97,7 @@ in
     darwinConfig = "${vars.wsDir}/dix";
     etc = {
       "nvim" = {
-        source = "${pkgs.aarnphm-editor}/nvim";
+        source = "${pkgs.aarnphm-editor.outPath}";
       };
     };
     # shells related
