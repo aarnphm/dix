@@ -15,6 +15,13 @@ let
     OPENLLM_DISABLE_WARNING = "False";
   };
   pyenv_root = "$HOME/.pyenv";
+
+  sketchybar-full = pkgs.sketchybar.overrideAttrs (oldAttrs: {
+    installPhase = oldAttrs.installPhase + ''
+      mkdir -p $out/plugins
+      cp -r ./plugins $out
+    '';
+  });
 in
 {
   home-manager.users.${user} = {
@@ -38,8 +45,107 @@ in
   services = {
     # Auto upgrade nix package and the daemon service.
     nix-daemon.enable = true;
-    # testing sketchbar lol
-    sketchybar.enable = true;
+    yabai = {
+      enable = true;
+      enableScriptingAddition = true;
+      config = {
+        layout = "float";
+        auto_balance = "off";
+        split_ratio = "0.50";
+        window_border = "on";
+        window_border_width = "2";
+        window_placement = "first_child";
+        focus_follows_mouse = "off";
+        mouse_follows_focus = "autoraise";
+        top_padding = "5";
+        bottom_padding = "5";
+        left_padding = "5";
+        right_padding = "5";
+        window_gap = "5";
+        menubar_opacity = "0.0";
+      };
+      extraConfig = ''
+        yabai -m window --focus east
+        yabai -m rule --add title='Preferences' manage=off layer=above
+        yabai -m rule --add title='^(Opening)' manage=off layer=above
+        yabai -m rule --add title='Library' manage=off layer=above
+        yabai -m rule --add app='System Settings' manage=off layer=above
+        yabai -m rule --add app='Activity Monitor' manage=off layer=above
+        yabai -m rule --add app='Notion' manage=off layer=above
+        yabai -m rule --add app='Finder' manage=off layer=above
+        yabai -m rule --add app='^System Information$' manage=off layer=above
+      '';
+    };
+    skhd = {
+      enable = true;
+      skhdConfig = ''
+        ctrl - cmd - return : ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
+      '';
+    };
+    # testing sketchybar lol
+    sketchybar = {
+      enable = true;
+      package = sketchybar-full;
+      extraPackages = with pkgs; [ lua54Packages.lua jq ];
+      config = ''
+        PLUGIN_DIR="${sketchybar-full.out}/plugins"
+
+        sketchybar --bar height=40 topmost="window"
+
+        default=(
+          padding_left=5
+          padding_right=5
+          icon.font="BerkeleyMono Nerd Font Mono:17.0"
+          label.font="BerkeleyMono Nerd Font Mono:14.0"
+          icon.color=0xffffffff
+          label.color=0xffffffff
+          icon.padding_left=4
+          icon.padding_right=4
+          label.padding_left=4
+          label.padding_right=4
+        )
+        sketchybar --default "''${default[@]}"
+
+        SPACE_ICONS=("1" "2" "3" "4")
+        for i in "''${!SPACE_ICONS[@]}"
+        do
+          sid="$(($i+1))"
+          space=(
+            space="$sid"
+            icon="''${SPACE_ICONS[i]}"
+            icon.padding_left=7
+            icon.padding_right=7
+            background.color=0x40ffffff
+            background.corner_radius=5
+            background.height=25
+            label.drawing=off
+            script="$PLUGIN_DIR/space.sh"
+            click_script="yabai -m space --focus $sid"
+          )
+          sketchybar --add space space."$sid" left --set space."$sid" "''${space[@]}"
+        done
+
+        sketchybar --add item chevron left \
+                    --set chevron icon= label.drawing=off \
+                    --add item front_app left \
+                    --set front_app icon.drawing=off script="$PLUGIN_DIR/front_app.sh" \
+                    --subscribe front_app front_app_switched
+
+        sketchybar --add item clock right \
+                   --set clock update_freq=10 icon=  script="$PLUGIN_DIR/clock.sh" \
+                   --add item volume right \
+                   --set volume script="$PLUGIN_DIR/volume.sh" \
+                   --subscribe volume volume_change \
+                   --add item battery right \
+                   --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+                   --subscribe battery system_woke power_source_change
+      '';
+    };
+  };
+
+  fonts = {
+    fontDir.enable = true;
+    fonts = with pkgs; [ sketchybar-app-font nerdfonts ];
   };
 
   # Networking
@@ -63,8 +169,8 @@ in
         NSAutomaticSpellingCorrectionEnabled = false;
       };
       dock = {
-        autohide = false;
-        largesize = 36;
+        autohide = true;
+        largesize = 48;
         tilesize = 24;
         magnification = true;
         mineffect = "genie";
@@ -93,8 +199,8 @@ in
     };
     gc = {
       automatic = true;
-      interval.Day = 7;
-      options = "--delete-older-than 7d";
+      interval.Hour = 3;
+      options = "--delete-older-than 7d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
     };
   };
 
@@ -118,7 +224,7 @@ in
         GOPATH = "${pkgs.go.out}";
         PYENV_ROOT = "${pyenv_root}";
         UV_PYTHON = ''${pyenv_root}/shims/python'';
-        PYTHON3_HOST_PROG = ''${pyenv_root}/shims/python'';
+        PYTHON3_HOST_PROG = ''${pkgs.python-nvim}/bin/python'';
         NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
         # misc
         PAPERSPACE_INSTALL = "$HOME/.paperspace";
@@ -197,7 +303,7 @@ in
       pip = "uv pip";
       python3 = ''${pyenv_root}/shims/python'';
       python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" pyenv install "$@"'';
-      ipynb = "jupyter notebook --autoreload --debug";
+      ipynb = "python -m jupyter notebook --autoreload --debug";
     };
 
     systemPackages = with pkgs; [
@@ -208,6 +314,7 @@ in
       vim
       neovim-developer
       alacritty
+      python-nvim
       nvim-config # see aarnphm/editor
       emulators # see aarnphm/emulators
 

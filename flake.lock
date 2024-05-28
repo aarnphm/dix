@@ -23,11 +23,11 @@
     "emulator-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1716922613,
-        "narHash": "sha256-uywzFC3Xurb/ZNfgUS+pOH6rrpbUi5jTJyn4QpUCvT0=",
+        "lastModified": 1716926670,
+        "narHash": "sha256-M01mjLzGrDV+KU/k6bWOJrIkGG+/3OoVhZ7IPjA+w0g=",
         "ref": "refs/heads/main",
-        "rev": "42095542a9adefa3ce03bef569ad11a3fb65175e",
-        "revCount": 35,
+        "rev": "0b31cb7b97defc354074972574102f639d1e3d7d",
+        "revCount": 37,
         "type": "git",
         "url": "ssh://git@github.com/aarnphm/emulators.git"
       },
@@ -206,11 +206,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1716908526,
-        "narHash": "sha256-Zl6e/sEVDh07K47XxDGPsXTYT4nI6llUDbQ4xMIwp7k=",
+        "lastModified": 1716930911,
+        "narHash": "sha256-t4HT5j3Jy7skRB5PINnxcEBCkgE89rGBpwTI7YS4Ffo=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "373ead20606efa9181cd15ba19a5deac7ead1492",
+        "rev": "a9b36cbe9292a649222b89fdb9ae9907e9c74086",
         "type": "github"
       },
       "original": {

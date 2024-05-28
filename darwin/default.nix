@@ -7,6 +7,7 @@ let
     overlays = [
       neovim.overlays.default
       (self: super: {
+        python-nvim = super.buildEnv { name = "python-nvim"; paths = [ (self.python311.withPackages (ps: with ps; [ pynvim ])) ]; };
         nvim-config = pkgs.stdenv.mkDerivation {
           name = "nvim-config";
           src = inputs.nvim-config;
