@@ -2,49 +2,35 @@
   description = "appl-mbp16 and adjacents";
 
   inputs = {
-    nixpkgs = {
-      url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    };
-
+    # system stuff
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    neovim = {
-      url = "github:nix-community/neovim-nightly-overlay";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    editor = {
+    neovim.url = "github:nix-community/neovim-nightly-overlay";
+    nvim-config = {
       url = "github:aarnphm/editor";
       flake = false;
     };
+
+    # shell stuff
+    flake-utils.url = "github:numtide/flake-utils";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = inputs@{ self, darwin, neovim, nixpkgs, editor }:
-    let
-      vars = {
-        # dir
-        homeDir = "$HOME";
-        wsDir = "$HOME/workspace";
-        configDir = "$HOME/.config";
-        localDir = "$HOME/.local";
-        cacheDir = "$HOME/.cache";
-
-        # general based
-        user = "aarnphm";
-        terminal = "alacritty";
-      };
-    in
+  outputs = { self, nixpkgs, darwin, home-manager, neovim, nvim-config, ... }@inputs:
     {
       darwinConfigurations = (
         import ./darwin {
           inherit (nixpkgs) lib;
-          inherit inputs nixpkgs darwin vars editor neovim;
+          inherit inputs nixpkgs darwin home-manager neovim nvim-config;
         }
       );
-
-      # Expose the package set, including overlays, for convenience.
-      darwinPackages = self.darwinConfigurations."appl-mbp16".pkgs;
     };
 }

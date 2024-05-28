@@ -1,10 +1,10 @@
-{ inputs, lib, pkgs, vars, ... }:
+{ inputs, lib, pkgs, user, ... }:
 let
   xdg = {
-    XDG_CONFIG_HOME = "${vars.configDir}";
-    XDG_DATA_HOME = "${vars.localDir}/share";
-    XDG_BIN_HOME = "${vars.localDir}/bin";
-    XDG_CACHE_HOME = "${vars.cacheDir}";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME = "$HOME/.local/share";
+    XDG_BIN_HOME = "$HOME/.local/bin";
+    XDG_CACHE_HOME = "$HOME/.cache";
   };
   # work
   bentoml = {
@@ -14,23 +14,22 @@ let
     OPENLLM_DEV_BUILD = "True";
     OPENLLM_DISABLE_WARNING = "False";
   };
-  pyenv_root = ''${vars.homeDir}/.pyenv'';
-  userDir = ''/Users/${vars.user}'';
+  pyenv_root = "$HOME/.pyenv";
 in
 {
   # Users
-  users.users.${vars.user} = {
-    home = userDir;
+  users.users.${user} = {
     shell = pkgs.zsh;
+    createHome = true;
   };
 
   # add PAM
   security.pam.enableSudoTouchIdAuth = true;
 
   # Auto upgrade nix package and the daemon service.
-  services = {
-    nix-daemon.enable = true;
-  };
+  services.nix-daemon.enable = true;
+  # testing sketchbar lol
+  services.sketchybar.enable = true;
 
   # Networking
   networking = {
@@ -42,11 +41,7 @@ in
 
   # System preferences
   system = {
-    activationScripts.extraUserActivation.text = ''
-      if ! [[ -d ${userDir}/.config/nvim ]]; then
-        ln -sf /etc/nvim ${userDir}/.config/nvim
-      fi
-    '';
+    activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
     # Set Git commit hash for darwin-version.
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
     # Used for backwards compatibility, please read the changelog before changing.
@@ -84,30 +79,30 @@ in
     package = pkgs.nix;
     settings = {
       experimental-features = "nix-command flakes";
-      trusted-users = [ "root" "${vars.user}" ];
+      trusted-users = [ "root" "${user}" ];
       trusted-substituters = [ "https://nix-community.cachix.org" ];
       trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
     };
     gc = {
       automatic = true;
-      interval.Day = 7; #Hours, minutes
+      interval.Day = 7;
       options = "--delete-older-than 7d";
     };
   };
 
   environment = {
-    darwinConfig = "${vars.wsDir}/dix";
-    etc = {
-      "nvim" = {
-        source = "${pkgs.aarnphm-editor}";
-      };
-    };
     # shells related
     shells = with pkgs; [ zsh ];
     variables = lib.mkMerge [
       xdg
       bentoml
       {
+        WORKSPACE = "$HOME/workspace";
+        # editors
+        SHELL = "${pkgs.zsh}/bin/zsh";
+        EDITOR = "${pkgs.neovim-developer}/bin/nvim";
+        VISUAL = "${pkgs.neovim-developer}/bin/nvim";
+        MANPAGER = "${pkgs.neovim-developer}/bin/nvim +Man!";
         # fzf
         FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
         FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
@@ -116,19 +111,13 @@ in
         PYENV_ROOT = "${pyenv_root}";
         UV_PYTHON = ''${pyenv_root}/shims/python'';
         PYTHON3_HOST_PROG = ''${pyenv_root}/shims/python'';
-        # set nix-index to $HOME/.cache
-        NIX_INDEX_DATABASE = "${vars.cacheDir}/nix-index/";
-        # editors
-        EDITOR = "${pkgs.neovim-developer}/bin/nvim";
-        VISUAL = "${pkgs.neovim-developer}/bin/nvim";
-        WORKSPACE = "${vars.wsDir}";
-        SHELL = "${pkgs.zsh}/bin/zsh";
+        NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
         # misc
-        PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
+        PAPERSPACE_INSTALL = "$HOME/.paperspace";
         OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
         SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
-        PAPERSPACE_INSTALL = "$HOME/.paperspace";
-        PATH = lib.concatStringsSep ":" [ ''${pyenv_root}/shims'' "${lib.makeBinPath [ "$HOME/.cargo" pkgs.protobuf "$PAPERSPACE_INSTALL" "$HOME/.orbstack" ]}" "$PATH" ];
+        PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
+        PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf "$PAPERSPACE_INSTALL" ]}" "$PATH" ];
         LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.dev pkgs.zlib.dev pkgs.xz.dev pkgs.stdenv.cc.cc.lib pkgs.readline.dev pkgs.protobuf pkgs.cairo ]}'';
       }
     ];
@@ -141,7 +130,7 @@ in
       ll = "${pkgs.eza.out}/bin/eza -la --group-directories-first -snew --icons";
 
       # safe rm
-      rm = "${pkgs.rm-improved.out}/bin/rip --graveyard ${vars.localDir}/share/Trash";
+      rm = "${pkgs.rm-improved.out}/bin/rip --graveyard $HOME/.local/share/Trash";
 
       # git
       g = "${pkgs.git.out}/bin/git";
@@ -188,8 +177,8 @@ in
       bwpass = "[[ -f $HOME/bw.pass ]] && cat $HOME/bw.pass | sed -n 1p | pbcopy";
 
       # nix-commands
-      nrb = "pushd ${vars.wsDir}/dix &>/dev/null && darwin-rebuild switch --flake \".#appl-mbp16\" && popd &>/dev/null";
-      ned = "$EDITOR ${vars.wsDir}/dix/darwin/appl-mbp16.nix";
+      nrb = "pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake \".#appl-mbp16\" && popd &>/dev/null";
+      ned = "$EDITOR $WORKSPACE/dix/darwin/appl-mbp16.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";
@@ -211,7 +200,7 @@ in
       vim
       neovim-developer
       alacritty
-      aarnphm-editor
+      nvim-config # see aarnphm/editor
 
       # kubernetes
       kubernetes-helm
@@ -308,7 +297,7 @@ in
       enableSyntaxHighlighting = true;
       promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       shellInit = ''
-        [[ -d ${vars.homeDir}/.cargo/env ]] && . "${vars.homeDir}/.cargo/env"
+        [[ -d $HOME/.cargo ]] && . "$HOME/.cargo/env"
       '';
       loginShellInit = ''
         source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
@@ -329,8 +318,3 @@ in
     };
   };
 }
-
-
-
-
-

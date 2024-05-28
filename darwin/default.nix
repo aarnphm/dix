@@ -1,15 +1,15 @@
-{ inputs, nixpkgs, darwin, vars, editor, neovim, ... }:
-
+{ inputs, nixpkgs, darwin, home-manager, neovim, nvim-config, ... }:
 let
   system = "aarch64-darwin";
+  user = "aarnphm";
   pkgs = import nixpkgs {
     inherit system;
     overlays = [
       neovim.overlays.default
       (self: super: {
-        aarnphm-editor = pkgs.stdenv.mkDerivation {
-          name = "aarnphm-editor";
-          src = editor;
+        nvim-config = pkgs.stdenv.mkDerivation {
+          name = "nvim-config";
+          src = nvim-config;
           buildCommand = ''
             mkdir -p $out
             cp -r $src/* $out
@@ -25,7 +25,15 @@ in
 {
   appl-mbp16 = darwin.lib.darwinSystem {
     inherit system;
-    specialArgs = { inherit inputs system pkgs vars; };
-    modules = [ ./appl-mbp16.nix ];
+    specialArgs = { inherit inputs system user pkgs; };
+    modules = [
+      ./appl-mbp16.nix
+      home-manager.darwinModules.home-manager
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.users."${user}" = import ./home.nix;
+      }
+    ];
   };
 }
