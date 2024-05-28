@@ -42,8 +42,10 @@ in
 
   # System preferences
   system = {
-    activationScripts.postActivation.text = ''
-      ln -sf /etc/nvim ${userDir}/.config/nvim
+    activationScripts.extraUserActivation.text = ''
+      if ! [[ -d ${userDir}/.config/nvim ]]; then
+        ln -sf /etc/nvim ${userDir}/.config/nvim
+      fi
     '';
     # Set Git commit hash for darwin-version.
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
@@ -97,7 +99,7 @@ in
     darwinConfig = "${vars.wsDir}/dix";
     etc = {
       "nvim" = {
-        source = "${pkgs.aarnphm-editor.outPath}";
+        source = "${pkgs.aarnphm-editor}";
       };
     };
     # shells related
