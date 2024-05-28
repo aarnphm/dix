@@ -20,6 +20,22 @@
         "type": "github"
       }
     },
+    "emulator-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1716922613,
+        "narHash": "sha256-uywzFC3Xurb/ZNfgUS+pOH6rrpbUi5jTJyn4QpUCvT0=",
+        "ref": "refs/heads/main",
+        "rev": "42095542a9adefa3ce03bef569ad11a3fb65175e",
+        "revCount": 35,
+        "type": "git",
+        "url": "ssh://git@github.com/aarnphm/emulators.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/aarnphm/emulators.git"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -274,22 +290,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_3": {
-      "locked": {
-        "lastModified": 1708475490,
-        "narHash": "sha256-g1v0TsWBQPX97ziznfJdWhgMyMGtoBFs102xSYO4syU=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "0e74ca98a74bc7270d28838369593635a5db3260",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nvim-config": {
       "flake": false,
       "locked": {
@@ -309,12 +309,12 @@
     "root": {
       "inputs": {
         "darwin": "darwin",
+        "emulator-config": "emulator-config",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "neovim": "neovim",
         "nixpkgs": "nixpkgs_2",
-        "nvim-config": "nvim-config",
-        "treefmt-nix": "treefmt-nix"
+        "nvim-config": "nvim-config"
       }
     },
     "systems": {
@@ -329,24 +329,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "treefmt-nix": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "lastModified": 1715940852,
-        "narHash": "sha256-wJqHMg/K6X3JGAE9YLM0LsuKrKb4XiBeVaoeMNlReZg=",
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "rev": "2fba33a182602b9d49f0b2440513e5ee091d838b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "treefmt-nix",
         "type": "github"
       }
     }

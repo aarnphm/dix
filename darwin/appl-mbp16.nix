@@ -17,19 +17,30 @@ let
   pyenv_root = "$HOME/.pyenv";
 in
 {
+  home-manager.users.${user} = {
+    home.stateVersion = "24.11";
+  };
+
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system.stateVersion = 4;
+
   # Users
   users.users.${user} = {
     shell = pkgs.zsh;
+    home = "/Users/${user}";
     createHome = true;
   };
 
   # add PAM
   security.pam.enableSudoTouchIdAuth = true;
 
-  # Auto upgrade nix package and the daemon service.
-  services.nix-daemon.enable = true;
-  # testing sketchbar lol
-  services.sketchybar.enable = true;
+  services = {
+    # Auto upgrade nix package and the daemon service.
+    nix-daemon.enable = true;
+    # testing sketchbar lol
+    sketchybar.enable = true;
+  };
 
   # Networking
   networking = {
@@ -44,9 +55,6 @@ in
     activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
     # Set Git commit hash for darwin-version.
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
-    # Used for backwards compatibility, please read the changelog before changing.
-    # $ darwin-rebuild changelog
-    stateVersion = 4;
     # default settings within System Preferences
     defaults = {
       NSGlobalDomain = {
@@ -201,6 +209,7 @@ in
       neovim-developer
       alacritty
       nvim-config # see aarnphm/editor
+      emulators # see aarnphm/emulators
 
       # kubernetes
       kubernetes-helm

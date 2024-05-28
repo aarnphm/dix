@@ -14,22 +14,27 @@
     };
 
     neovim.url = "github:nix-community/neovim-nightly-overlay";
+
+    # config stuff
     nvim-config = {
       url = "github:aarnphm/editor";
+      flake = false;
+    };
+    emulator-config = {
+      url = "git+ssh://git@github.com/aarnphm/emulators.git";
       flake = false;
     };
 
     # shell stuff
     flake-utils.url = "github:numtide/flake-utils";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = { self, nixpkgs, darwin, home-manager, neovim, nvim-config, ... }@inputs:
+  outputs = { self, nixpkgs, darwin, home-manager, neovim, ... }@inputs:
     {
       darwinConfigurations = (
         import ./darwin {
           inherit (nixpkgs) lib;
-          inherit inputs nixpkgs darwin home-manager neovim nvim-config;
+          inherit inputs nixpkgs darwin home-manager neovim;
         }
       );
     };

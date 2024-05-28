@@ -1,4 +1,4 @@
-{ inputs, nixpkgs, darwin, home-manager, neovim, nvim-config, ... }:
+{ inputs, nixpkgs, darwin, home-manager, neovim, ... }:
 let
   system = "aarch64-darwin";
   user = "aarnphm";
@@ -9,7 +9,15 @@ let
       (self: super: {
         nvim-config = pkgs.stdenv.mkDerivation {
           name = "nvim-config";
-          src = nvim-config;
+          src = inputs.nvim-config;
+          buildCommand = ''
+            mkdir -p $out
+            cp -r $src/* $out
+          '';
+        };
+        emulators = pkgs.stdenv.mkDerivation {
+          name = "emulators";
+          src = inputs.emulator-config;
           buildCommand = ''
             mkdir -p $out
             cp -r $src/* $out
