@@ -4,7 +4,7 @@
   inputs = {
     # system stuff
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    darwin = {
+    nix-darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -15,11 +15,11 @@
 
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     # config stuff
-    nvim-config = {
+    nvim-nix = {
       url = "github:aarnphm/editor";
       flake = false;
     };
-    emulator-config = {
+    emulator-nix = {
       url = "git+ssh://git@github.com/aarnphm/emulators.git";
       flake = false;
     };
@@ -28,18 +28,44 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, darwin, home-manager, neovim, ... }@inputs:
-    let
-      system = "aarch64-darwin";
-      pkgs = import nixpkgs { inherit system; };
-      common-zsh = import ./shells { inherit pkgs; };
-    in
-    {
-      darwinConfigurations = (
-        import ./darwin {
-          inherit (nixpkgs) lib;
-          inherit inputs nixpkgs system darwin home-manager common-zsh neovim;
-        }
-      );
-    };
+  outputs = { self, nixpkgs, nix-darwin, home-manager, neovim, nvim-nix, emulator-nix, ... }@inputs: {
+    darwinOverlays = [
+      (self: super: {
+        aarnphm = super.aarnphm or { } // {
+          inherit nvim-nix emulator-nix;
+        };
+      })
+      # custom packages
+      (import ./nixpkgs/overlays/common.zsh)
+      # general overlays
+      neovim.overlays.default
+    ];
+
+    packages.aarch64-darwin =
+      let
+        system = "aarch64-darwin";
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = self.darwinOverlays;
+          config = {
+            allowUnfree = true;
+          };
+        };
+      in
+      {
+        aarnphm = pkgs.aarnphm;
+        python = pkgs.python3.pkgs.callPackage ({ buildEnv, python, pynvim }: buildEnv {
+          name = "${python.name}-tools";
+          paths = [ pynvim ];
+        });
+      };
+
+    darwinConfigurations = (
+      import ./darwin {
+        inherit (nixpkgs) lib;
+        system = "aarch64-darwin";
+        inherit inputs nixpkgs nix-darwin home-manager neovim;
+      }
+    );
+  };
 }

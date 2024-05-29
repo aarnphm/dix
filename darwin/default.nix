@@ -1,41 +1,11 @@
-{ inputs, nixpkgs, system, darwin, home-manager, common-zsh, neovim, ... }:
+{ inputs, nixpkgs, system, nix-darwin, home-manager, ... }:
 let
   user = "aarnphm";
-  system = "aarch64-darwin";
-  pkgs = import nixpkgs {
-    inherit system;
-    overlays = [
-      neovim.overlays.default
-      (self: super: {
-        common-zsh = common-zsh;
-        python-nvim = super.buildEnv { name = "python-nvim"; paths = [ (self.python311.withPackages (ps: with ps; [ pynvim ])) ]; };
-        nvim-config = pkgs.stdenv.mkDerivation {
-          name = "nvim-config";
-          src = inputs.nvim-config;
-          buildCommand = ''
-            mkdir -p $out
-            cp -r $src/* $out
-          '';
-        };
-        emulators = pkgs.stdenv.mkDerivation {
-          name = "emulators";
-          src = inputs.emulator-config;
-          buildCommand = ''
-            mkdir -p $out
-            cp -r $src/* $out
-          '';
-        };
-      })
-    ];
-    config = {
-      allowUnfree = true;
-    };
-  };
 in
 {
-  appl-mbp16 = darwin.lib.darwinSystem {
+  appl-mbp16 = nix-darwin.lib.darwinSystem {
     inherit system;
-    specialArgs = { inherit inputs system user pkgs; };
+    specialArgs = { inherit inputs system user; pkgs = nixpkgs; };
     modules = [
       ./appl-mbp16.nix
       home-manager.darwinModules.home-manager

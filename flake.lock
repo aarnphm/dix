@@ -1,33 +1,13 @@
 {
   "nodes": {
-    "darwin": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1716511055,
-        "narHash": "sha256-5Fe/DGgvMhPEMl9VdVxv3zvwRcwNDmW5eRJ0gk72w7U=",
-        "owner": "LnL7",
-        "repo": "nix-darwin",
-        "rev": "0bea8222f6e83247dd13b055d83e64bce02ee532",
-        "type": "github"
-      },
-      "original": {
-        "owner": "LnL7",
-        "repo": "nix-darwin",
-        "type": "github"
-      }
-    },
-    "emulator-config": {
+    "emulator-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1716926670,
-        "narHash": "sha256-M01mjLzGrDV+KU/k6bWOJrIkGG+/3OoVhZ7IPjA+w0g=",
+        "lastModified": 1716987533,
+        "narHash": "sha256-y5aA+kPkvIg1sGKdeN70Oi7Hwdw0iNGo6SJTsWuRKs0=",
         "ref": "refs/heads/main",
-        "rev": "0b31cb7b97defc354074972574102f639d1e3d7d",
-        "revCount": 37,
+        "rev": "e8fdcd927d54d7a07e7108c6ea807f5c2b96d0e3",
+        "revCount": 39,
         "type": "git",
         "url": "ssh://git@github.com/aarnphm/emulators.git"
       },
@@ -258,6 +238,26 @@
         "type": "github"
       }
     },
+    "nix-darwin": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1716511055,
+        "narHash": "sha256-5Fe/DGgvMhPEMl9VdVxv3zvwRcwNDmW5eRJ0gk72w7U=",
+        "owner": "LnL7",
+        "repo": "nix-darwin",
+        "rev": "0bea8222f6e83247dd13b055d83e64bce02ee532",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LnL7",
+        "repo": "nix-darwin",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1716588411,
@@ -290,14 +290,14 @@
         "type": "github"
       }
     },
-    "nvim-config": {
+    "nvim-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1716846162,
-        "narHash": "sha256-RvFBg1mrB6ynJv2cTo+wlUiNf2fGgWxqJX6b0urdl+w=",
+        "lastModified": 1716947372,
+        "narHash": "sha256-Ha5g1kCauh1EWzokG2YzkLjTn28WkySr0er3f8R8vSg=",
         "owner": "aarnphm",
         "repo": "editor",
-        "rev": "741ef6403b113431a84c1c8bc768950a35cd22d3",
+        "rev": "4dc78a09a1b8aa0d49e249ce8022da50c2897f03",
         "type": "github"
       },
       "original": {
@@ -308,13 +308,13 @@
     },
     "root": {
       "inputs": {
-        "darwin": "darwin",
-        "emulator-config": "emulator-config",
+        "emulator-nix": "emulator-nix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "neovim": "neovim",
+        "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_2",
-        "nvim-config": "nvim-config"
+        "nvim-nix": "nvim-nix"
       }
     },
     "systems": {
