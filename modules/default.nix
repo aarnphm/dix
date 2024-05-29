@@ -1,1 +1,3 @@
-_: [ ./configuration.nix ./system.nix ./envvar.nix ]
+{
+  imports = [ ./configuration.nix ./system.nix ./envvar.nix ./zsh.nix ];
+}

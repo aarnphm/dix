@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 with lib;
 {
   options.yabai = {
@@ -30,7 +30,7 @@ with lib;
           left_padding = "5";
           right_padding = "5";
           window_gap = "5";
-          menubar_opacity = "0.0";
+          menubar_opacity = "1.0";
         };
         extraConfig = ''
           yabai -m window --focus east

@@ -2,7 +2,7 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
 
-  environment.shells = pkgs.zsh;
+  environment.shells = with pkgs; [ zsh ];
 
   nix.settings = {
     auto-optimise-store = true;

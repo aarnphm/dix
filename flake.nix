@@ -48,7 +48,6 @@
         (import ./overlays/packages-overrides.nix)
         (import ./overlays/vim-packages.nix)
       ];
-
       darwinConfigurations = {
         appl-mbp16 = nix-darwin.lib.darwinSystem {
           inherit system;

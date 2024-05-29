@@ -1,5 +1,8 @@
-[
-  ./skhd.nix
-  ./yabai.nix
-  ./sketchybar.nix
-]
+{
+  imports = [
+    ./skhd.nix
+    ./yabai.nix
+    ./sketchybar.nix
+  ];
+}
+

@@ -25,7 +25,7 @@
     FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
     # language
     GOPATH = "${pkgs.go.out}";
-    UV_PYTHON = ''$(${pkgs.pyenv} root)/shims/python'';
+    UV_PYTHON = ''$(${pkgs.pyenv}/bin/pyenv root)/shims/python'';
     PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';
     NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
     # misc

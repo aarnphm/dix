@@ -9,7 +9,7 @@ self: super:
     });
   };
   pyenv = super.pyenv.overrideAttrs (oldAttrs: {
-    installPhase = oldAttrs.installPhase + ''
+    installPhase = ''
       runHook preInstall
 
       mkdir -p "$out"
