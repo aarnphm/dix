@@ -1,4 +1,4 @@
-{ inputs, lib, pkgs, user, ... }:
+{ pkgs, lib, user, ... }:
 let
   xdg = {
     XDG_CONFIG_HOME = "$HOME/.config";
@@ -15,22 +15,13 @@ let
     OPENLLM_DISABLE_WARNING = "False";
   };
   pyenv_root = "$HOME/.pyenv";
-
-  sketchybar-full = pkgs.sketchybar.overrideAttrs (oldAttrs: {
-    installPhase = oldAttrs.installPhase + ''
-      mkdir -p $out/plugins
-      cp -r ./plugins $out
-    '';
-  });
 in
 {
+  imports = [ ../modules/nix-config.nix ];
+
   home-manager.users.${user} = {
     home.stateVersion = "24.11";
   };
-
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 4;
 
   # Users
   users.users.${user} = {
@@ -43,8 +34,6 @@ in
   security.pam.enableSudoTouchIdAuth = true;
 
   services = {
-    # Auto upgrade nix package and the daemon service.
-    nix-daemon.enable = true;
     yabai = {
       enable = true;
       enableScriptingAddition = true;
@@ -66,29 +55,24 @@ in
       };
       extraConfig = ''
         yabai -m window --focus east
-        yabai -m rule --add title='Preferences' manage=off layer=above
         yabai -m rule --add title='^(Opening)' manage=off layer=above
-        yabai -m rule --add title='Library' manage=off layer=above
-        yabai -m rule --add app='System Settings' manage=off layer=above
-        yabai -m rule --add app='Activity Monitor' manage=off layer=above
         yabai -m rule --add app='Notion' manage=off layer=above
-        yabai -m rule --add app='Finder' manage=off layer=above
-        yabai -m rule --add app='^System Information$' manage=off layer=above
+        yabai -m rule --add title="(Copy|Bin|About This Mac|Info)" manage=off
+        yabai -m rule --add app="^(Calculator|System Settings|System Preferences|System Information|Activity Monitor|[sS]tats|yabai|[Jj]et[Bb]rains [Tt]ool[Bb]ox)$" manage=off
       '';
     };
     skhd = {
       enable = true;
       skhdConfig = ''
-        ctrl - cmd - return : ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
+        ctrl - cmd - t: ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
       '';
     };
     # testing sketchybar lol
     sketchybar = {
       enable = true;
-      package = sketchybar-full;
-      extraPackages = with pkgs; [ lua54Packages.lua jq ];
+      package = pkgs.dix.sketchybar;
       config = ''
-        PLUGIN_DIR="${sketchybar-full.out}/plugins"
+        PLUGIN_DIR="${pkgs.dix.sketchybar}/plugins"
 
         sketchybar --bar height=40 topmost="window"
 
@@ -145,7 +129,14 @@ in
 
   fonts = {
     fontDir.enable = true;
-    fonts = with pkgs; [ sketchybar-app-font ];
+    fonts = with pkgs; [
+      sketchybar-app-font
+      (nerdfonts.override {
+        fonts = [
+          "FiraCode"
+        ];
+      })
+    ];
   };
 
   # Networking
@@ -159,8 +150,6 @@ in
   # System preferences
   system = {
     activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
-    # Set Git commit hash for darwin-version.
-    configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
     # default settings within System Preferences
     defaults = {
       NSGlobalDomain = {
@@ -189,21 +178,6 @@ in
     };
   };
 
-  nix = {
-    package = pkgs.nix;
-    settings = {
-      experimental-features = "nix-command flakes";
-      trusted-users = [ "root" "${user}" ];
-      trusted-substituters = [ "https://nix-community.cachix.org" ];
-      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
-    };
-    gc = {
-      automatic = true;
-      interval.Hour = 3;
-      options = "--delete-older-than 7d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
-    };
-  };
-
   environment = {
     # shells related
     shells = with pkgs; [ zsh ];
@@ -217,14 +191,15 @@ in
         EDITOR = "${pkgs.neovim-developer}/bin/nvim";
         VISUAL = "${pkgs.neovim-developer}/bin/nvim";
         MANPAGER = "${pkgs.neovim-developer}/bin/nvim +Man!";
+        LSCOLORS = "ExFxBxDxCxegedabagacad";
         # fzf
         FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
         FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
         # language
         GOPATH = "${pkgs.go.out}";
         PYENV_ROOT = "${pyenv_root}";
-        UV_PYTHON = ''${pyenv_root}/shims/python'';
-        PYTHON3_HOST_PROG = ''${pkgs.python-nvim}/bin/python'';
+        UV_PYTHON = ''${pyenv_root}/shims/;python'';
+        PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';
         NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
         # misc
         PAPERSPACE_INSTALL = "$HOME/.paperspace";
@@ -319,10 +294,6 @@ in
       vim
       neovim-developer
       alacritty
-      python-nvim
-      nvim-config # see aarnphm/editor
-      emulators # see aarnphm/emulators
-      common-zsh
 
       # kubernetes
       kubernetes-helm
@@ -432,7 +403,7 @@ in
         )
       '';
       interactiveShellInit = ''
-        source ${pkgs.common-zsh}/share/zsh/common.plugin.zsh
+        source ${pkgs.zsh-dix}/share/zsh/dix.plugin.zsh
         source ${pkgs.zsh-f-sy-h}/share/zsh/site-functions/F-Sy-H.plugin.zsh
         source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
       '';

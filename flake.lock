@@ -290,22 +290,6 @@
         "type": "github"
       }
     },
-    "nvim-nix": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1716947372,
-        "narHash": "sha256-Ha5g1kCauh1EWzokG2YzkLjTn28WkySr0er3f8R8vSg=",
-        "owner": "aarnphm",
-        "repo": "editor",
-        "rev": "4dc78a09a1b8aa0d49e249ce8022da50c2897f03",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aarnphm",
-        "repo": "editor",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "emulator-nix": "emulator-nix",
@@ -314,7 +298,7 @@
         "neovim": "neovim",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_2",
-        "nvim-nix": "nvim-nix"
+        "vim-nix": "vim-nix"
       }
     },
     "systems": {
@@ -329,6 +313,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "vim-nix": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1716947372,
+        "narHash": "sha256-Ha5g1kCauh1EWzokG2YzkLjTn28WkySr0er3f8R8vSg=",
+        "owner": "aarnphm",
+        "repo": "editor",
+        "rev": "4dc78a09a1b8aa0d49e249ce8022da50c2897f03",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aarnphm",
+        "repo": "editor",
         "type": "github"
       }
     }
