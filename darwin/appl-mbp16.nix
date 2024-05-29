@@ -145,7 +145,7 @@ in
 
   fonts = {
     fontDir.enable = true;
-    fonts = with pkgs; [ sketchybar-app-font nerdfonts ];
+    fonts = with pkgs; [ sketchybar-app-font ];
   };
 
   # Networking
@@ -238,6 +238,10 @@ in
     shellAliases = {
       reload = "exec -l $SHELL";
       afk = "pmset displaysleepnow";
+      ".." = "cd ..";
+      "..." = "cd ../..";
+      "...." = "cd ../../..";
+      "....." = "cd ../../../..";
 
       # ls-replacement
       ls = "${pkgs.eza.out}/bin/eza";
@@ -278,6 +282,7 @@ in
       gckb = "${pkgs.git.out}/bin/git checkout -b";
       gck = "${pkgs.git.out}/bin/git checkout";
       gdf = "${pkgs.git.out}/bin/git diff";
+      gb = "${pkgs.git.out}/bin/git branches";
       gprc = "${pkgs.gh.out}/bin/gh pr create";
 
       # editor
@@ -291,7 +296,7 @@ in
       bwpass = "[[ -f $HOME/bw.pass ]] && cat $HOME/bw.pass | sed -n 1p | pbcopy";
 
       # nix-commands
-      nrb = "pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake \".#appl-mbp16\" && popd &>/dev/null";
+      nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';
       ned = "$EDITOR $WORKSPACE/dix/darwin/appl-mbp16.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
@@ -317,6 +322,7 @@ in
       python-nvim
       nvim-config # see aarnphm/editor
       emulators # see aarnphm/emulators
+      common-zsh
 
       # kubernetes
       kubernetes-helm
@@ -371,6 +377,9 @@ in
       any-nix-shell
       zsh-powerlevel10k
       zsh-completions
+      zsh-f-sy-h
+      zsh-history-substring-search
+
       direnv
       tmux
       jq
@@ -410,27 +419,28 @@ in
     zsh = {
       enable = true;
       enableFzfHistory = true; # ctrl-r
-      enableSyntaxHighlighting = true;
       promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       shellInit = ''
         [[ -d $HOME/.cargo ]] && . "$HOME/.cargo/env"
       '';
       loginShellInit = ''
+        eval "$(${pkgs.pyenv}/bin/pyenv init -)"
         source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
 
-        fpath+=(${pkgs.zsh-completions}/share/zsh/site-functions)
+        fpath+=(
+          ${pkgs.zsh-completions}/share/zsh/site-functions
+        )
       '';
       interactiveShellInit = ''
-        eval "$(${pkgs.direnv.out}/bin/direnv hook zsh)"
-        eval "$(${pkgs.zoxide.out}/bin/zoxide init --cmd j zsh)"
-        eval "$(${pkgs.pyenv.out}/bin/pyenv init -)"
-        ${pkgs.any-nix-shell.out}/bin/any-nix-shell zsh --info-right | source /dev/stdin
-
-        source ${./completions.zsh}
-        source ${./functions.zsh}
-        source ${./options.zsh}
-        source ${./p10k.zsh}
+        source ${pkgs.common-zsh}/share/zsh/common.plugin.zsh
+        source ${pkgs.zsh-f-sy-h}/share/zsh/site-functions/F-Sy-H.plugin.zsh
+        source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
       '';
     };
   };
+  environment.etc."zshrc.local".text = ''
+    eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
+    eval "$(${pkgs.zoxide}/bin/zoxide init --cmd j zsh)"
+    ${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right | source /dev/stdin
+  '';
 }

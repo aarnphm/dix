@@ -14,7 +14,6 @@
     };
 
     neovim.url = "github:nix-community/neovim-nightly-overlay";
-
     # config stuff
     nvim-config = {
       url = "github:aarnphm/editor";
@@ -30,11 +29,16 @@
   };
 
   outputs = { self, nixpkgs, darwin, home-manager, neovim, ... }@inputs:
+    let
+      system = "aarch64-darwin";
+      pkgs = import nixpkgs { inherit system; };
+      common-zsh = import ./shells { inherit pkgs; };
+    in
     {
       darwinConfigurations = (
         import ./darwin {
           inherit (nixpkgs) lib;
-          inherit inputs nixpkgs darwin home-manager neovim;
+          inherit inputs nixpkgs system darwin home-manager common-zsh neovim;
         }
       );
     };

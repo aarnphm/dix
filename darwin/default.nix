@@ -1,12 +1,13 @@
-{ inputs, nixpkgs, darwin, home-manager, neovim, ... }:
+{ inputs, nixpkgs, system, darwin, home-manager, common-zsh, neovim, ... }:
 let
-  system = "aarch64-darwin";
   user = "aarnphm";
+  system = "aarch64-darwin";
   pkgs = import nixpkgs {
     inherit system;
     overlays = [
       neovim.overlays.default
       (self: super: {
+        common-zsh = common-zsh;
         python-nvim = super.buildEnv { name = "python-nvim"; paths = [ (self.python311.withPackages (ps: with ps; [ pynvim ])) ]; };
         nvim-config = pkgs.stdenv.mkDerivation {
           name = "nvim-config";
