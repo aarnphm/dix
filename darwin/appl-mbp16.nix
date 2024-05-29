@@ -12,8 +12,8 @@
     createHome = true;
   };
 
-  skhd.enable = true;
-  yabai.enable = true;
+  skhd.enable = false;
+  yabai.enable = false;
   sketchybar.enable = false;
   zsh.enable = true;
 
