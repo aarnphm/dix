@@ -1,4 +1,16 @@
-{ pkgs, lib, ... }: {
+{ pkgs, lib, ... }:
+let
+  ld_path = lib.makeLibraryPath [
+    pkgs.openssl.dev
+    pkgs.zlib.dev
+    pkgs.xz.dev
+    pkgs.stdenv.cc.cc.lib
+    pkgs.readline.dev
+    pkgs.protobuf
+    pkgs.cairo
+  ];
+in
+{
   # xdg
   XDG_CONFIG_HOME = "$HOME/.config";
   XDG_DATA_HOME = "$HOME/.local/share";
@@ -33,5 +45,5 @@
   SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
   PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
   PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf "$PAPERSPACE_INSTALL" ]}" "$PATH" ];
-  LD_LIBRARY_PATH = ''${lib.makeLibraryPath [ pkgs.openssl.dev pkgs.zlib.dev pkgs.xz.dev pkgs.stdenv.cc.cc.lib pkgs.readline.dev pkgs.protobuf pkgs.cairo ]}'';
+  LD_LIBRARY_PATH = ld_path;
 }
