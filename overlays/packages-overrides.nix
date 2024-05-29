@@ -8,5 +8,18 @@ self: super:
       '';
     });
   };
+  pyenv = super.pyenv.overrideAttrs (oldAttrs: {
+    installPhase = oldAttrs.installPhase + ''
+      runHook preInstall
+
+      mkdir -p "$out"
+      cp -R bin "$out/bin"
+      cp -R libexec "$out/libexec"
+      cp -R plugins "$out/plugins"
+      cp -R completions "$out/completions"
+
+      runHook postInstall
+    '';
+  });
 }
 

@@ -2,6 +2,8 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
 
+  environment.shells = pkgs.zsh;
+
   nix.settings = {
     auto-optimise-store = true;
     experimental-features = "nix-command flakes";
@@ -18,4 +20,10 @@
 
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
+
+  programs.nix-index.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 }
