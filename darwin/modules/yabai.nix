@@ -17,19 +17,19 @@ with lib;
         enable = true;
         enableScriptingAddition = true;
         config = {
-          layout = "float";
+          layout = "bsp";
           auto_balance = "off";
           split_ratio = "0.50";
-          window_border = "on";
+          window_border = "off";
           window_border_width = "2";
-          window_placement = "first_child";
+          window_placement = "second_child";
           focus_follows_mouse = "off";
           mouse_follows_focus = "autoraise";
           top_padding = "5";
           bottom_padding = "5";
           left_padding = "5";
           right_padding = "5";
-          window_gap = "5";
+          window_gap = "10";
           menubar_opacity = "1.0";
         };
         extraConfig = ''

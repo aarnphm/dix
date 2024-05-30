@@ -17,7 +17,7 @@ with lib;
         enable = true;
         package = pkgs.skhd;
         skhdConfig = ''
-          ctrl - cmd - t: ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
+          ctrl + cmd - 0x11: ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
         '';
       };
     };

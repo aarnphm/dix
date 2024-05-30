@@ -44,6 +44,6 @@ in
   OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
   SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
   PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
-  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf "$PAPERSPACE_INSTALL" ]}" "$PATH" ];
+  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf pkgs.skhd "$PAPERSPACE_INSTALL" ]}" "$PATH" ];
   LD_LIBRARY_PATH = ld_path;
 }
