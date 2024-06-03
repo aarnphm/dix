@@ -2,14 +2,12 @@ unsetopt extendedglob
 unsetopt beep
 
 setopt prompt_sp
-setopt prompt_subst
 setopt correct
 setopt autopushd
 setopt multios
 setopt pushd_ignore_dups
 setopt pushd_silent
 setopt pushd_to_home
-setopt cdable_vars
 setopt extended_history
 setopt append_history
 setopt hist_reduce_blanks

@@ -18,7 +18,7 @@ in
   XDG_CACHE_HOME = "$HOME/.cache";
 
   # bentoml
-  BENTOML_HOME = "$XDG_DATA_HOME/bentoml";
+  BENTOML_HOME = "$HOME/.local/share/bentoml";
   BENTOML_DO_NOT_TRACK = "True";
   BENTOML_BUNDLE_LOCAL_BUILD = "True";
   OPENLLM_DEV_BUILD = "True";

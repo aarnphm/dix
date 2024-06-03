@@ -37,6 +37,8 @@ with pkgs; [
   sass
   protobuf
   nodejs_20
+  nodePackages_latest.pnpm
+  pnpm-shell-completion
   rustup
   pyenv
   xz

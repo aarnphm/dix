@@ -4,15 +4,10 @@ unsetopt menu_complete
 unsetopt flowcontrol
 setopt auto_menu
 setopt complete_in_word
-setopt always_to_end
 
 autoload -Uz add-zle-hook-widget
 
 zstyle ':completion:*' menu select
-zstyle ':completion:*' special-dirs true
-
-# ignore cases
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
 # use completions cache
 zstyle ':completion:*' use-cache on
@@ -23,17 +18,12 @@ zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
 zstyle ':completion:*' verbose yes
 zstyle ':completion:*' completer _expand _complete _match _prefix _approximate _list _history
-zstyle ':completion:*:*files' ignored-patterns '*?.o' '*?~' '*\#'
-zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:descriptions' format "$fg[yellow]%B--- %d%b"
 zstyle ':completion:*:messages' format '%d'
 zstyle ':completion:*:warnings' format "$fg[red]No matches for:$reset_color %d"
 zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
 zstyle ':completion:*' group-name ''
-
-# ambiguous completions
-zstyle ':completion:*' insert-unambiguous true
 
 # ls color goes hard
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}

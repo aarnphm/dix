@@ -1,9 +1,6 @@
-{ pkgs, inputs, ... }: {
-  services.nix-daemon.enable = true;
-  nix.package = pkgs.nix;
-
+{ pkgs, ... }: {
   environment.shells = with pkgs; [ zsh ];
-
+  nix.package = pkgs.nix;
   nix.settings = {
     auto-optimise-store = true;
     experimental-features = "nix-command flakes";
@@ -16,14 +13,5 @@
     automatic = true;
     interval.Hour = 3;
     options = "--delete-older-than 7d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
-  };
-
-  # Set Git commit hash for darwin-version.
-  system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
-
-  programs.nix-index.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
   };
 }

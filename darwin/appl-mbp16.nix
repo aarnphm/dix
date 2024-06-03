@@ -1,4 +1,4 @@
-{ pkgs, user, ... }: {
+{ pkgs, user, inputs, ... }: {
   imports = [ ./modules ../modules ];
 
   home-manager.users.${user} = {
@@ -91,7 +91,72 @@
     pip = "uv pip";
     python3 = ''$(${pkgs.pyenv}/bin/pyenv root)/shims/python'';
     python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" pyenv install "$@"'';
-    ipynb = "python -m jupyter notebook --autoreload --debug";
-    ipy = "python -m ipython";
+    ipynb = "jupyter notebook --autoreload --debug";
+    ipy = "ipython";
+  };
+
+  services.nix-daemon.enable = true;
+  # Set Git commit hash for darwin-version.
+  system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
+
+  fonts = {
+    fontDir.enable = true;
+    fonts = with pkgs; [
+      sketchybar-app-font
+      (nerdfonts.override {
+        fonts = [
+          "FiraCode"
+        ];
+      })
+    ];
+  };
+
+  # Networking
+  networking = {
+    knownNetworkServices = [ "Wi-Fi" ];
+    dns = [ "1.1.1.1" "8.8.8.8" ];
+    computerName = "appl-mbp16";
+    hostName = "appl-mbp16";
+  };
+
+  # add PAM
+  security.pam.enableSudoTouchIdAuth = false;
+
+  # System preferences
+  system = {
+    activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
+    # default settings within System Preferences
+    defaults = {
+      NSGlobalDomain = {
+        KeyRepeat = 1;
+        NSAutomaticCapitalizationEnabled = false;
+        NSAutomaticSpellingCorrectionEnabled = false;
+      };
+      dock = {
+        autohide = true;
+        largesize = 48;
+        tilesize = 24;
+        magnification = true;
+        mineffect = "genie";
+        orientation = "bottom";
+        showhidden = false;
+        show-recents = false;
+      };
+      finder = {
+        AppleShowAllFiles = true;
+        QuitMenuItem = false;
+      };
+      trackpad = {
+        Clicking = true;
+        TrackpadRightClick = true;
+      };
+    };
+  };
+
+
+  programs.nix-index.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
   };
 }

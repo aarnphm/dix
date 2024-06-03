@@ -12,6 +12,11 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-utils.url = "github:numtide/flake-utils";
 
     # config stuff
@@ -22,36 +27,33 @@
     emulator-nix.flake = false;
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, flake-utils, neovim, vim-nix, emulator-nix, ... }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nix-index-database, neovim, vim-nix, emulator-nix, ... }@inputs:
     let
+      isDarwin = system: (builtins.elem system nixpkgs.lib.platforms.darwin);
+      homePrefix = system: if isDarwin system then "/Users" else "/home";
+
       user = "aarnphm";
       system = "aarch64-darwin";
-      pkgs = import nixpkgs {
-        inherit system;
+
+      darwin-pkgs = import nixpkgs {
+        system = "aarch64-darwin";
         overlays = self.darwinOverlays;
+        config = { allowUnfree = true; };
+      };
+      linux-pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        overlays = self.linuxOverlays;
         config = { allowUnfree = true; };
       };
     in
     {
-      darwinOverlays = [
-        neovim.overlays.default
-        # custom packages
-        (self: super: {
-          dix = super.dix or { } // { inherit vim-nix emulator-nix; };
+      packages.aarch64-darwin = { dix = darwin-pkgs.dix; };
+      packages.x86_64-linux = { dix = linux-pkgs.dix; };
 
-          python3-tools = super.buildEnv {
-            name = "python3-tools";
-            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
-          };
-        })
-        (import ./overlays/dix.zsh)
-        (import ./overlays/packages-overrides.nix)
-        (import ./overlays/vim-packages.nix)
-      ];
       darwinConfigurations = {
         appl-mbp16 = nix-darwin.lib.darwinSystem {
           inherit system;
-          specialArgs = { inherit self inputs system user pkgs; };
+          specialArgs = { inherit self inputs system user; pkgs = darwin-pkgs; };
           modules = [
             ./darwin/appl-mbp16.nix
             home-manager.darwinModules.home-manager
@@ -63,6 +65,37 @@
           ];
         };
       };
-      darwinPackages = self.darwinConfigurations."apple-mbp16".pkgs;
+
+      darwinOverlays = [
+        neovim.overlays.default
+        # custom packages
+        (self: super: {
+          dix = super.dix or { } // { inherit vim-nix emulator-nix; };
+
+          python3-tools = super.buildEnv {
+            name = "python3-tools";
+            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
+          };
+        })
+        (import ./overlays/zsh-dix.nix)
+        (import ./overlays/packages-overrides.nix)
+        (import ./overlays/vim-packages.nix)
+      ];
+
+      linuxOverlays = [
+        neovim.overlays.default
+        # custom packages
+        (self: super: {
+          dix = super.dix or { } // { inherit vim-nix emulator-nix; };
+
+          python3-tools = super.buildEnv {
+            name = "python3-tools";
+            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
+          };
+        })
+        (import ./overlays/zsh-dix.nix)
+        (import ./overlays/packages-overrides.nix)
+        (import ./overlays/vim-packages.nix)
+      ];
     };
 }
