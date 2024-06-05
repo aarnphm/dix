@@ -32,7 +32,6 @@ with pkgs; [
   delta
 
   # languages
-  # TODO: setup openjdk
   go
   sass
   protobuf

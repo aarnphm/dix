@@ -12,11 +12,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-index-database = {
-      url = "github:nix-community/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     flake-utils.url = "github:numtide/flake-utils";
 
     # config stuff
@@ -27,7 +22,7 @@
     emulator-nix.flake = false;
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, nix-index-database, neovim, vim-nix, emulator-nix, ... }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, neovim, vim-nix, emulator-nix, ... }@inputs:
     let
       isDarwin = system: (builtins.elem system nixpkgs.lib.platforms.darwin);
       homePrefix = system: if isDarwin system then "/Users" else "/home";

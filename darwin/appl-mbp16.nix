@@ -120,7 +120,7 @@
   };
 
   # add PAM
-  security.pam.enableSudoTouchIdAuth = false;
+  security.pam.enableSudoTouchIdAuth = true;
 
   # System preferences
   system = {

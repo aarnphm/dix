@@ -31,12 +31,12 @@ in
   VISUAL = "${pkgs.neovim-developer}/bin/nvim";
   MANPAGER = "${pkgs.neovim-developer}/bin/nvim +Man!";
   LSCOLORS = "ExFxBxDxCxegedabagacad";
+  TERM = "xterm-256color";
   # fzf
   FZF_DEFAULT_OPTS = ''--no-mouse --bind "?:toggle-preview,ctrl-a:select-all,ctrl-d:preview-page-down,ctrl-u:preview-page-up"'';
   FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
   # language
-  GOPATH = "${pkgs.go.out}";
-  UV_PYTHON = ''$(${pkgs.pyenv}/bin/pyenv root)/shims/python'';
+  GOPATH = "$HOME/go";
   PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';
   NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
   # misc
