@@ -1,9 +1,5 @@
 { config, pkgs, ... }:
 {
-  home.file.".config/nvim" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${pkgs.vimPlugins.vim-nix}";
-    recursive = true;
-  };
   home.file.".config/git" = {
     source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/git";
     recursive = true;
