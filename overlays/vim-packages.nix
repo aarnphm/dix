@@ -42,6 +42,10 @@ in
 
     npmWorkspace = "apps/cli";
 
+    postInstall = ''
+      installShellCompletion --zsh --name _bw <($out/bin/bw completion --shell zsh)
+    '';
+
     meta = {
       mainProgram = "bw";
     };

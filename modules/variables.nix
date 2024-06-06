@@ -31,7 +31,7 @@ in
   VISUAL = "${pkgs.neovim-developer}/bin/nvim";
   MANPAGER = "${pkgs.neovim-developer}/bin/nvim +Man!";
   LSCOLORS = "ExFxBxDxCxegedabagacad";
-  TERM = "xterm-256color";
+  SIMPLE_BACKGROUND = "dark";
   # fzf
   FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
   # language

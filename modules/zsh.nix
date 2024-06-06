@@ -28,7 +28,6 @@ with lib;
 
           fpath+=(
             ${pkgs.zsh-completions}/share/zsh/site-functions
-            ${pkgs.zsh-dix}/share/zsh/site-functions
           )
         '';
         interactiveShellInit = ''
