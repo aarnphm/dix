@@ -1,5 +1,7 @@
 unsetopt extendedglob
 unsetopt beep
+unsetopt menu_complete
+unsetopt flowcontrol
 
 setopt prompt_sp
 setopt correct
@@ -10,17 +12,22 @@ setopt pushd_silent
 setopt pushd_to_home
 setopt extended_history
 setopt append_history
+setopt share_history
 setopt hist_reduce_blanks
 setopt hist_save_no_dups
 setopt hist_no_store
 setopt hist_expand
 setopt hist_ignore_all_dups
 setopt inc_append_history
+setopt auto_menu
+setopt complete_in_word
+setopt always_to_end
+
 
 # NOTE: Keybinding
-# stty intr '^C'
-# stty susp '^Z'
-# stty stop undef
+stty intr '^C'
+stty susp '^Z'
+stty stop undef
 bindkey -v
 
 ## delete ##
@@ -51,12 +58,7 @@ bindkey '^[[1;5D' backward-word
 autoload -U history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
-bindkey "^[p" history-beginning-search-backward
-bindkey "^[n" history-beginning-search-forward
-bindkey '^R' history-incremental-pattern-search-backward
 bindkey '^S' history-incremental-pattern-search-forward
 
 ## edit ##
-bindkey '^[u' undo
-bindkey '^[r' redo
 bindkey -s "^T" "^[Isudo ^[A" # "t" for "toughguy"

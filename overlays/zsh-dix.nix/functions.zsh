@@ -1,7 +1,3 @@
-tflibs() {
-    python -c "import tensorflow as tf;print(f'include: {tf.sysconfig.get_include()}\nlib: {tf.sysconfig.get_lib()}\n')"
-}
-
 rsign-discord() {
   find /Applications/Discord.app/Contents/Frameworks -d -type d -iname "*.app" | while read -r dir; do
     sudo codesign --remove-signature "$dir"
@@ -62,44 +58,44 @@ esac
 __exec_command_with_tmux "ssh $args"
 }
 
-comment(){
-sed -i "$1"' s/^/#/' "$2"
+comment() {
+    sed -i "$1"' s/^/#/' "$2"
 }
 
 ltrim() {
-local input
-input=$(get_stdin_and_args "$@")
-printf "%s" "`expr "$input" : "^[[:space:]]*\(.*[^[:space:]]\)"`"
+    local input
+    input=$(get_stdin_and_args "$@")
+    printf "%s" "`expr "$input" : "^[[:space:]]*\(.*[^[:space:]]\)"`"
 }
 
 rtrim() {
-local input
-input=$(get_stdin_and_args "$@")
-printf "%s" "`expr "$input" : "^\(.*[^[:space:]]\)[[:space:]]*$"`"
+    local input
+    input=$(get_stdin_and_args "$@")
+    printf "%s" "`expr "$input" : "^\(.*[^[:space:]]\)[[:space:]]*$"`"
 }
 
 trim() {
-local input
-input=$(get_stdin_and_args "$@")
-printf "%s" "$(rtrim "$(ltrim "$input")")"
+    local input
+    input=$(get_stdin_and_args "$@")
+    printf "%s" "$(rtrim "$(ltrim "$input")")"
 }
 
 trim_whitespace() {
-local input
-input=$(get_stdin_and_args "$@")
-echo "$input" | tr -d ' '
+    local input
+    input=$(get_stdin_and_args "$@")
+    echo "$input" | tr -d ' '
 }
 
 timeshell() {
-TIMESHELL=1 zsh -c 'for i in $(seq 1 10); do time $SHELL -c -i exit; done'
+    TIMESHELL=1 zsh -c 'for i in $(seq 1 10); do time $SHELL -c -i exit; done'
 }
 
 ## docker ##
 dockerclean() {
-# remove first none images
-docker rmi -f $(docker images -a | grep "^<none>" | awk '{print $3}') 2> /dev/null;
-# now remove none container
-docker rmi -f $(docker ps -a -f status=exited -q) 2> /dev/null;
+    # remove first none images
+    docker rmi -f $(docker images -a | grep "^<none>" | awk '{print $3}') 2> /dev/null;
+    # now remove none container
+    docker rmi -f $(docker ps -a -f status=exited -q) 2> /dev/null;
 }
 
 dockerrmi() {
@@ -109,46 +105,46 @@ docker rmi -f $(docker images --filter=reference="$1" -q) 2> /dev/null;
 
 # Select a docker container to remove
 drm() {
-local cid
-cid=$(docker ps -a | sed 1d | fzf -q "$1" | awk '{print $1}')
+    local cid
+    cid=$(docker ps -a | sed 1d | fzf -q "$1" | awk '{print $1}')
 
-[ -n "$cid" ] && docker rm "$cid"
+    [ -n "$cid" ] && docker rm "$cid"
 }
 
 # Select a running docker container to stop
 ds() {
-local cid
-cid=$(docker ps | sed 1d | fzf -q "$1" | awk '{print $1}')
+    local cid
+    cid=$(docker ps | sed 1d | fzf -q "$1" | awk '{print $1}')
 
-[ -n "$cid" ] && docker stop "$cid"
+    [ -n "$cid" ] && docker stop "$cid"
 }
 
 # Displays user owned processes status.
 psu() {
-ps -U "${1:-$LOGNAME}" -o 'pid,%cpu,%mem,command' "${(@)argv[2,-1]}"
+    ps -U "${1:-$LOGNAME}" -o 'pid,%cpu,%mem,command' "${(@)argv[2,-1]}"
 }
 
 # Create a new directory and enter it
 mkd() {
-mkdir -p "$@" && cd "$_";
+    mkdir -p "$@" && cd "$_";
 }
 
 listen() {
-sudo lsof -iTCP:"$@" -sTCP:LISTEN;
+    sudo lsof -iTCP:"$@" -sTCP:LISTEN;
 }
 
 # Determine size of a file or total size of a directory
 fs() {
-if du -b /dev/null > /dev/null 2>&1; then
-    local arg=-sbh;
-else
-    local arg=-sh;
-fi
-if [[ -n "$@" ]]; then
-    du $arg -- "$@";
-else
-    du $arg .[^.]* ./*;
-fi;
+    if du -b /dev/null > /dev/null 2>&1; then
+        local arg=-sbh;
+    else
+        local arg=-sh;
+    fi
+    if [[ -n "$@" ]]; then
+        du $arg -- "$@";
+    else
+        du $arg .[^.]* ./*;
+    fi;
 }
 
 venv() {

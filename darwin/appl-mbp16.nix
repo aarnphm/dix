@@ -29,6 +29,7 @@
     # ls-replacement
     ls = "${pkgs.eza}/bin/eza";
     ll = "${pkgs.eza}/bin/eza -la --group-directories-first -snew --icons always";
+    sudo = "nocorrect sudo";
 
     # safe rm
     rm = "${pkgs.rm-improved}/bin/rip --graveyard $HOME/.local/share/Trash";
@@ -93,6 +94,7 @@
     python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" pyenv install "$@"'';
     ipynb = "jupyter notebook --autoreload --debug";
     ipy = "ipython";
+    k = "${pkgs.kubectl}/bin/kubectl";
   };
 
   services.nix-daemon.enable = true;

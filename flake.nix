@@ -3,7 +3,7 @@
 
   inputs = {
     # system stuff
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/master";
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,9 +24,6 @@
 
   outputs = { self, nixpkgs, nix-darwin, home-manager, neovim, vim-nix, emulator-nix, ... }@inputs:
     let
-      isDarwin = system: (builtins.elem system nixpkgs.lib.platforms.darwin);
-      homePrefix = system: if isDarwin system then "/Users" else "/home";
-
       user = "aarnphm";
       system = "aarch64-darwin";
 
