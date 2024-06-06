@@ -319,11 +319,11 @@
     "vim-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1717608957,
-        "narHash": "sha256-Lsn6gnvYrvO27ypk6+GkXIehCkbd3xQumT9WsSlN8LI=",
+        "lastModified": 1717609681,
+        "narHash": "sha256-MpeVVbuCMJHjoIIZWbaguPAtMgO0VhGl7SX+Q5WryDs=",
         "owner": "aarnphm",
         "repo": "editor",
-        "rev": "003e8dd437f7f2b85c06ad96a87d885eb361190b",
+        "rev": "db6cf6aa2fd1fef0187fe1b207c07d851807aef6",
         "type": "github"
       },
       "original": {

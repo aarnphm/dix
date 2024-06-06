@@ -23,12 +23,14 @@ with lib;
         loginShellInit = ''
           eval "$(${pkgs.pyenv}/bin/pyenv init -)"
           source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
+          eval "$(${pkgs.fzf}/bin/fzf --zsh)"
 
           fpath+=(
             ${pkgs.zsh-completions}/share/zsh/site-functions
           )
         '';
         interactiveShellInit = ''
+          source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
           source ${pkgs.zsh-dix}/share/zsh/dix.plugin.zsh
           source ${pkgs.zsh-f-sy-h}/share/zsh/site-functions/F-Sy-H.plugin.zsh
           source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh

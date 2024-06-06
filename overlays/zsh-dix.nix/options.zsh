@@ -60,24 +60,3 @@ bindkey '^S' history-incremental-pattern-search-forward
 bindkey '^[u' undo
 bindkey '^[r' redo
 bindkey -s "^T" "^[Isudo ^[A" # "t" for "toughguy"
-
-## completion ##
-# vim hjkl
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'j' vi-down-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
-# shift-tab
-bindkey '^[[Z' reverse-menu-complete
-bindkey -M menuselect '^[[Z' reverse-menu-complete
-
-# edit command-line using editor (like fc command)
-autoload -U edit-command-line
-zle -N edit-command-line
-bindkey '^xe' edit-command-line
-bindkey '^x^e' edit-command-line
-
-## etc ##
-bindkey '^X*' expand-word
-# stack command
-zle -N show_buffer_stack
