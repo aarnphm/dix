@@ -60,7 +60,6 @@ with pkgs; [
 
   # terminal
   any-nix-shell
-  zsh-powerlevel10k
   zsh-completions
   zsh-f-sy-h
   zsh-history-substring-search

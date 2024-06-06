@@ -16,7 +16,7 @@ with lib;
         enableFzfHistory = true; # ctrl-r
         enableFzfCompletion = true;
         promptInit = ''
-          source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+          source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh
           ${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right | source /dev/stdin
         '';
         shellInit = ''
@@ -32,13 +32,6 @@ with lib;
         '';
         interactiveShellInit = ''
           source ${pkgs.zsh-dix}/share/zsh/dix.plugin.zsh
-
-          # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-          # Initialization code that may require console input (password prompts, [y/n]
-          # confirmations, etc.) must go above this block; everything else may go below.
-          if [[ -r "$${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-$${(%):-%n}.zsh" ]]; then
-            source "$${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-$${(%):-%n}.zsh"
-          fi
         '';
       };
     };
