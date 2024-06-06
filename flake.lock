@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "bitwarden-cli": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1715632516,
+        "narHash": "sha256-Dz7EActqXd97kNxEaNINj2O6TLZWEgHHg1lOIa2+Lt4=",
+        "owner": "bitwarden",
+        "repo": "clients",
+        "rev": "14001d651f9b011a0153f988641a2152569574db",
+        "type": "github"
+      },
+      "original": {
+        "owner": "bitwarden",
+        "ref": "cli-v2024.4.1",
+        "repo": "clients",
+        "type": "github"
+      }
+    },
     "emulator-nix": {
       "flake": false,
       "locked": {
@@ -292,6 +309,7 @@
     },
     "root": {
       "inputs": {
+        "bitwarden-cli": "bitwarden-cli",
         "emulator-nix": "emulator-nix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",

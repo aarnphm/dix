@@ -7,6 +7,7 @@ with pkgs; [
   vim
   neovim-developer
   alacritty
+  bitwarden-cli
 
   # kubernetes
   kubernetes-helm
@@ -79,7 +80,10 @@ with pkgs; [
   fd
   fzf
   bat
+  sd
   ripgrep
+  hexyl
+  catimg
   tmux
   asciinema
   watch

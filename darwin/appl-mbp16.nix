@@ -77,7 +77,8 @@
     cx = "chmod +x";
     freeport = "sudo fuser -k $@";
     copy = "pbcopy";
-    bwpass = "[[ -f $HOME/bw.pass ]] && cat $HOME/bw.pass | sed -n 1p | pbcopy";
+    bwpass = "[[ -f $HOME/bw.master ]] && cat $HOME/bw.master | sed -n 1p | pbcopy";
+    password = "${pkgs.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
 
     # nix-commands
     nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';

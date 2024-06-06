@@ -1,21 +1,53 @@
 zmodload -i zsh/complist
 
 # use completions cache
-zstyle ':completion:*' menu no
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
-
+# ls color goes hard
+zstyle ':completion:*' list-colors ''
+# enable hidden files on completion
+zstyle ':completion:*' special-dirs true
+# disable menu for fzf-tab
+zstyle ':completion:*' menu no
+# hide parents
+zstyle ':completion:*' ignored-patterns '.|..|.DS_Store|**/.|**/..|**/.DS_Store|**/.git|__pycache__|**/__pycache__|.mypy_cache|.ipynb_checkpoints|.ruff_cache'
+# hide `..` and `.` from file menu
+zstyle ':completion:*' ignore-parents 'parent pwd directory'
 # details completions menu formatting and messages
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
 zstyle ':completion:*:descriptions' format '[%d]'
 
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath'
-zstyle ':fzf-tab:*' switch-group '<' '>'
+zstyle ':fzf-tab:*' switch-group '[' ']'
+# use the same layout as others and respect my default
+local fzf_flags
+zstyle -a ':fzf-tab:*' fzf-flags fzf_flags
+fzf_flags=( "${fzf_flags[@]}" '--layout=reverse-list' )
+zstyle ':fzf-tab:*' fzf-flags $fzf_flags
 
-# ls color goes hard
-zstyle ':completion:*' list-colors ''
+# complete `ls` / `cat` / etc
+zstyle ':fzf-tab:complete:(\\|*/|)(ls|gls|bat|eza|cat|cd|rm|cp|mv|ln|nano|nvim|vim|open|tree|source):*' \
+  fzf-preview \
+  '_fzf_complete_realpath "$realpath"'
+
+# complete `make`
+zstyle ':fzf-tab:complete:(\\|*/|)make:*' fzf-preview \
+  'case "$group" in
+  "[make target]")
+    make -n "$word" | _fzf_complete_realpath
+    ;;
+  "[make variable]")
+    make -pq | rg "^$word =" | _fzf_complete_realpath
+    ;;
+  "[file]")
+    _fzf_complete_realpath "$realpath"
+    ;;
+  esac'
+
+# complete `killall`
+zstyle ':completion:*:*:killall:*:*' command 'ps -u "$USERNAME" -o comm'
+zstyle ':fzf-tab:complete:(\\|*/|)killall:*' fzf-preview \
+  'ps aux | rg "$word" | _fzf_complete_realpath'
 
 # ignores unavailable commands
 zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec)|prompt_*)'
