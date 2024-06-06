@@ -17,7 +17,7 @@ with lib;
         enable = true;
         package = pkgs.skhd;
         skhdConfig = ''
-          ctrl + cmd - 0x11: ${pkgs.alacritty}/Applications/Alacritty.app/Contents/MacOS/alacritty
+          ctrl + cmd - 0x11: osascript -e 'tell application "Alacritty" to activate' || ${pkgs.alacritty}/bin/alacritty
         '';
       };
     };

@@ -34,6 +34,7 @@ in
   SIMPLE_BACKGROUND = "dark";
   # fzf
   FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
+  FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
   # language
   GOPATH = "$HOME/go";
   PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';

@@ -13,7 +13,6 @@ with lib;
     programs = {
       zsh = {
         enable = true;
-        enableFzfHistory = true; # ctrl-r
         enableFzfCompletion = true;
         promptInit = ''
           source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh

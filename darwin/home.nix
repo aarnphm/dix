@@ -4,6 +4,9 @@
     source = config.lib.file.mkOutOfStoreSymlink "${pkgs.vimPlugins.vim-nix}";
     recursive = true;
   };
+  home.file.".fzfrc".text = ''
+    --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+  '';
   home.file.".zshenv".text = ''
     _fzf_complete_realpath () {
       # Can be customized to behave differently for different objects.
