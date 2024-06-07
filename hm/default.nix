@@ -81,7 +81,8 @@
       freeport = "sudo fuser -k $@";
       copy = "pbcopy";
       bwpass = "[[ -f $HOME/bw.master ]] && cat $HOME/bw.master | sed -n 1p | pbcopy";
-      password = "${pkgs.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
+      generate-password = "${pkgs.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
+      lock-workflow = ''${pkgs.fd}/bin/fd -Hg "*.yml" .github --exec-batch docker run -it --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.4.0 update'';
 
       # nix-commands
       nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';
