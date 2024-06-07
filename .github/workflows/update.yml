@@ -39,7 +39,6 @@ jobs:
       - id: meta
         run: |
           echo "sha=$(curl -SsL "https://api.github.com/repos/${{ env.REPO }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT
-          gpg-agent --daemon
       - run: |
           git add flake.lock
           git commit -S -sm "chore(lockfile): auto update flake.lock [${{ steps.meta.outputs.sha }}]"
