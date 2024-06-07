@@ -113,6 +113,8 @@
         (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
         (import ./overlays/vim-packages.nix)
+        # specifics to darwin
+        (import ./overlays/darwin-applications.nix)
       ];
 
       linuxOverlays = [

@@ -96,4 +96,6 @@ with pkgs; [
   gnused
   gnupg
   hyperfine
+] ++ lib.optionals (pkgs.stdenv.isDarwin) [
+  OrbStack
 ]

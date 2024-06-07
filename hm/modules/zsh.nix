@@ -77,12 +77,15 @@ with lib;
         '';
         profileExtra = ''
           eval "$(${pkgs.pyenv}/bin/pyenv init -)"
-          source $HOME/.orbstack/shell/init.zsh 2>/dev/null || :
 
           fpath+=(
             ${pkgs.zsh-completions}/share/zsh/site-functions
           )
-        '';
+        '' + (if pkgs.stdenv.isDarwin then ''
+          fpath+=(
+            ${pkgs.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh
+          )
+        '' else "");
       };
     };
   };
