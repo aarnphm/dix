@@ -41,7 +41,7 @@ jobs:
           git_commit_gpgsign: true
           git_tag_gpgsign: true
       - name: lock the thing
-        run: nix flake update
+        run: nix flake update --debug
       - name: Get infos
         id: meta
         run: |
