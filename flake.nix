@@ -9,7 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
@@ -33,7 +33,6 @@
   outputs = { self, nixpkgs, nix-darwin, home-manager, neovim, vim-nix, emulator-nix, bitwarden-cli, ... }@inputs:
     let
       user = "aarnphm";
-      system = "aarch64-darwin";
 
       darwin-pkgs = import nixpkgs {
         system = "aarch64-darwin";
@@ -52,15 +51,20 @@
 
       darwinConfigurations = {
         appl-mbp16 = nix-darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = { inherit self inputs system user; pkgs = darwin-pkgs; };
+          system = "aarch64-darwin";
+          specialArgs = { inherit self inputs user; pkgs = darwin-pkgs; };
           modules = [
             ./darwin/appl-mbp16.nix
             home-manager.darwinModules.home-manager
             {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users."${user}" = import ./darwin/home.nix;
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users."${user}" = { imports = [ ./hm ]; };
+                backupFileExtension = "backup-from-hm";
+                extraSpecialArgs = { inherit user; pkgs = darwin-pkgs; };
+                verbose = true;
+              };
             }
           ];
         };

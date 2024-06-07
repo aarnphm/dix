@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
+with lib;
 let
-  ld_path = lib.makeLibraryPath [
+  ld_path = makeLibraryPath [
     pkgs.openssl.dev
     pkgs.zlib.dev
     pkgs.xz.dev
