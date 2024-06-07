@@ -21,7 +21,7 @@
       flake = false;
     };
     emulator-nix = {
-      url = "git+ssh://git@github.com/aarnphm/emulators.git/main";
+      url = "git+ssh://git@github.com/aarnphm/emulators.git?ref=main";
       flake = false;
     };
     bitwarden-cli = {
