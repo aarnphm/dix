@@ -24,10 +24,10 @@
     shellAliases = {
       reload = "exec -l $SHELL";
       afk = "pmset displaysleepnow";
-      ".." = "${pkgs.eza}/bin/eza ..";
-      "..." = "${pkgs.eza}/bin/eza ../..";
-      "...." = "${pkgs.eza}/bin/eza ../../..";
-      "....." = "${pkgs.eza}/bin/eza ../../../..";
+      ".." = "__zoxide_z ..";
+      "..." = "__zoxide_z ../..";
+      "...." = "__zoxide_z ../../..";
+      "....." = "__zoxide_z ../../../..";
 
       # ls-replacement
       ls = "${pkgs.eza}/bin/eza";
