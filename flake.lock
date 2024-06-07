@@ -1,19 +1,18 @@
 {
   "nodes": {
-    "bitwarden-cli": {
+    "editor-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1715632516,
-        "narHash": "sha256-Dz7EActqXd97kNxEaNINj2O6TLZWEgHHg1lOIa2+Lt4=",
-        "owner": "bitwarden",
-        "repo": "clients",
-        "rev": "14001d651f9b011a0153f988641a2152569574db",
+        "lastModified": 1717764385,
+        "narHash": "sha256-n3PQpWOElTX8Fi+a9gn0Bji5dsePDORm/3OZOXchfAo=",
+        "owner": "aarnphm",
+        "repo": "editor",
+        "rev": "5e103e8fa022c9a411b0e623e8d37fb8bae2c6e4",
         "type": "github"
       },
       "original": {
-        "owner": "bitwarden",
-        "ref": "cli-v2024.4.1",
-        "repo": "clients",
+        "owner": "aarnphm",
+        "repo": "editor",
         "type": "github"
       }
     },
@@ -295,11 +294,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1717747212,
-        "narHash": "sha256-XoboxBny1Gh1Q+cKQ9cN5NY5+LfTO1kVbuUgKj3olNI=",
+        "lastModified": 1717766826,
+        "narHash": "sha256-s+CdwZV1teHf502L83h6IZbKbIRMETAYN+Anch3Ry4Y=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "80f0c4b41969d219eed366f85aac3c8e60b7eba3",
+        "rev": "de986200b9cb45d2210d7b760ec31a317d20933c",
         "type": "github"
       },
       "original": {
@@ -311,14 +310,13 @@
     },
     "root": {
       "inputs": {
-        "bitwarden-cli": "bitwarden-cli",
+        "editor-nix": "editor-nix",
         "emulator-nix": "emulator-nix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "neovim": "neovim",
         "nix-darwin": "nix-darwin",
-        "nixpkgs": "nixpkgs_2",
-        "vim-nix": "vim-nix"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {
@@ -333,22 +331,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "vim-nix": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1717747840,
-        "narHash": "sha256-YT/37R8TQSGtExf6FFgj5wgZHVFTMIQIlxjkLK0aOcc=",
-        "owner": "aarnphm",
-        "repo": "editor",
-        "rev": "ff99bd0170c46391b5c6b465ab053949c05fddf8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aarnphm",
-        "repo": "editor",
         "type": "github"
       }
     }

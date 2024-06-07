@@ -71,7 +71,7 @@ with lib;
               fi
             else
               # This is not a directory and not a file, just print the string.
-              ${pkgs.eza.out}/bin/eza -1 --color=always "$realpath" | fold -w "$FZF_PREVIEW_COLUMNS"
+              echo "$realpath" | fold -w "$FZF_PREVIEW_COLUMNS"
             fi
           }
         '';

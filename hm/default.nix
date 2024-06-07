@@ -9,6 +9,18 @@
   bat.enable = true;
   alacritty.enable = true;
 
+  xdg = {
+    enable = true;
+    configFile = {
+      "nvim" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}";
+        recursive = true;
+      };
+      "zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/keymap.json";
+      "zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/settings.json";
+    };
+  };
+
   home.username = user;
 
   home.homeDirectory = pkgs.lib.mkForce (
@@ -103,15 +115,8 @@
     };
   };
 
-  home.file.".config/nvim" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${pkgs.vimPlugins.vim-nix}";
-    recursive = true;
-  };
   home.file.".fzfrc".text = ''
-    --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%' --preview='_fzf_complete_realpath {}'
   '';
-  home.file.".config/zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/keymap.json";
-  home.file.".config/zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/settings.json";
+  home.file.".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}/.vimrc";
 }
-
-

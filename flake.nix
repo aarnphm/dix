@@ -12,11 +12,13 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # utilities
     flake-utils.url = "github:numtide/flake-utils";
 
     # config stuff
     neovim.url = "github:nix-community/neovim-nightly-overlay";
-    vim-nix = {
+    editor-nix = {
       url = "github:aarnphm/editor";
       flake = false;
     };
@@ -24,23 +26,9 @@
       url = "git+ssh://git@github.com/aarnphm/emulators.git?ref=main";
       flake = false;
     };
-    bitwarden-cli = {
-      url = "github:bitwarden/clients/cli-v2024.4.1";
-      flake = false;
-    };
   };
 
-  outputs =
-    { self
-    , nixpkgs
-    , nix-darwin
-    , home-manager
-    , neovim
-    , vim-nix
-    , emulator-nix
-    , bitwarden-cli
-    , ...
-    }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }@inputs:
     let
       user = "aarnphm";
 
@@ -96,12 +84,12 @@
         };
       };
 
-      darwinOverlays = [
+      darwinOverlays = with inputs; [
         neovim.overlays.default
         # custom packages
         (self: super: {
           dix = super.dix or { } // {
-            inherit vim-nix emulator-nix bitwarden-cli;
+            inherit editor-nix emulator-nix;
           };
 
           python3-tools = super.buildEnv {
@@ -112,17 +100,16 @@
         (import ./overlays/zsh-dix.nix)
         (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
-        (import ./overlays/vim-packages.nix)
         # specifics to darwin
         (import ./overlays/darwin-applications.nix)
       ];
 
-      linuxOverlays = [
+      linuxOverlays = with inputs; [
         neovim.overlays.default
         # custom packages
         (self: super: {
           dix = super.dix or { } // {
-            inherit vim-nix emulator-nix bitwarden-cli;
+            inherit editor-nix emulator-nix;
           };
 
           python3-tools = super.buildEnv {
@@ -133,7 +120,6 @@
         (import ./overlays/zsh-dix.nix)
         (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
-        (import ./overlays/vim-packages.nix)
       ];
     };
 }

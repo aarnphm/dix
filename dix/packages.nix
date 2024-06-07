@@ -8,6 +8,7 @@ with pkgs; [
   neovim-developer
   alacritty
   bitwarden-cli
+  paperspace-cli
 
   # kubernetes
   kubernetes-helm
@@ -38,6 +39,7 @@ with pkgs; [
   go
   sass
   protobuf
+  deno
   nodejs_20
   nodePackages_latest.pnpm
   pnpm-shell-completion

@@ -218,3 +218,10 @@ _venv_auto_activate() {
 
 chpwd_functions+=(_venv_auto_activate)
 precmd_functions=(_venv_auto_activate $precmd_functions)
+
+
+show_keymaps() {
+  bindkey -L | rg -v '^#' | fzf --preview '_fzf_complete_realpath {}' --preview-window up:50%
+}
+zle -N show_keymaps
+bindkey '^P' show_keymaps

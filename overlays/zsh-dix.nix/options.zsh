@@ -61,4 +61,4 @@ zle -N history-beginning-search-forward-end history-search-end
 bindkey '^S' history-incremental-pattern-search-forward
 
 ## edit ##
-bindkey -s "^T" "^[Isudo ^[A" # "t" for "toughguy"
+bindkey -s "^A" "^[Isudo ^[A" # "t" for "toughguy"

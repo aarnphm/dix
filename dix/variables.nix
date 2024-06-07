@@ -13,10 +13,7 @@ let
 in
 {
   # xdg
-  XDG_CONFIG_HOME = "$HOME/.config";
-  XDG_DATA_HOME = "$HOME/.local/share";
   XDG_BIN_HOME = "$HOME/.local/bin";
-  XDG_CACHE_HOME = "$HOME/.cache";
 
   # bentoml
   BENTOML_HOME = "$HOME/.local/share/bentoml";
@@ -35,13 +32,13 @@ in
   SIMPLE_BACKGROUND = "dark";
   # fzf
   FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
+  FZF_DEFAULT_COMMAND = ''${pkgs.ripgrep.out}/bin/rg --files --no-ignore-vcs --hidden'';
   FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
   # language
   GOPATH = "$HOME/go";
   PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';
   NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
   # misc
-  PAPERSPACE_INSTALL = "$HOME/.paperspace";
   OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
   SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
   PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
