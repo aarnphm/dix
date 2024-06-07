@@ -20,11 +20,11 @@
     "emulator-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1717700409,
-        "narHash": "sha256-t6fFWE9Z37TjSie0GN1AbXD41oQvGjhYGIAigVOFgWI=",
+        "lastModified": 1717734746,
+        "narHash": "sha256-VBoRQ2P8jA+uB6etFlpJpA170z/3A/2CYtzTbvY82i8=",
         "ref": "refs/heads/main",
-        "rev": "9f589ab5a585376170142da7b02dc54650549c46",
-        "revCount": 41,
+        "rev": "258e8c92d71e98038ade9a93d9a365985d8fce5d",
+        "revCount": 42,
         "type": "git",
         "url": "ssh://git@github.com/aarnphm/emulators.git"
       },
@@ -294,11 +294,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1717715544,
-        "narHash": "sha256-Y4naZk/eO6dcXtnGycbzmdtTNliPYM1GhqOJCC7Z55w=",
+        "lastModified": 1717733237,
+        "narHash": "sha256-QO36AMa5+QjbNetyfKp2y/NjJ9+VbhsqDZMubIsKcOQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f25aab11459d434ba91c7c13295425dca4b3260f",
+        "rev": "074e00af9b1af6c8b9aaf20ec46bfe6f91cdd2e1",
         "type": "github"
       },
       "original": {

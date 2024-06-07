@@ -30,29 +30,50 @@
     };
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, neovim, vim-nix, emulator-nix, bitwarden-cli, ... }@inputs:
+  outputs =
+    { self
+    , nixpkgs
+    , nix-darwin
+    , home-manager
+    , neovim
+    , vim-nix
+    , emulator-nix
+    , bitwarden-cli
+    , ...
+    }@inputs:
     let
       user = "aarnphm";
 
       darwin-pkgs = import nixpkgs {
         system = "aarch64-darwin";
         overlays = self.darwinOverlays;
-        config = { allowUnfree = true; };
+        config = {
+          allowUnfree = true;
+        };
       };
       linux-pkgs = import nixpkgs {
         system = "x86_64-linux";
         overlays = self.linuxOverlays;
-        config = { allowUnfree = true; };
+        config = {
+          allowUnfree = true;
+        };
       };
     in
     {
-      packages.aarch64-darwin = { dix = darwin-pkgs.dix; };
-      packages.x86_64-linux = { dix = linux-pkgs.dix; };
+      packages.aarch64-darwin = {
+        dix = darwin-pkgs.dix;
+      };
+      packages.x86_64-linux = {
+        dix = linux-pkgs.dix;
+      };
 
       darwinConfigurations = {
         appl-mbp16 = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
-          specialArgs = { inherit self inputs user; pkgs = darwin-pkgs; };
+          specialArgs = {
+            inherit self inputs user;
+            pkgs = darwin-pkgs;
+          };
           modules = [
             ./darwin/appl-mbp16.nix
             home-manager.darwinModules.home-manager
@@ -60,9 +81,14 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users."${user}" = { imports = [ ./hm ]; };
+                users."${user}" = {
+                  imports = [ ./hm ];
+                };
                 backupFileExtension = "backup-from-hm";
-                extraSpecialArgs = { inherit user; pkgs = darwin-pkgs; };
+                extraSpecialArgs = {
+                  inherit user;
+                  pkgs = darwin-pkgs;
+                };
                 verbose = true;
               };
             }
@@ -74,7 +100,9 @@
         neovim.overlays.default
         # custom packages
         (self: super: {
-          dix = super.dix or { } // { inherit vim-nix emulator-nix bitwarden-cli; };
+          dix = super.dix or { } // {
+            inherit vim-nix emulator-nix bitwarden-cli;
+          };
 
           python3-tools = super.buildEnv {
             name = "python3-tools";
@@ -82,6 +110,7 @@
           };
         })
         (import ./overlays/zsh-dix.nix)
+        (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
         (import ./overlays/vim-packages.nix)
       ];
@@ -90,7 +119,9 @@
         neovim.overlays.default
         # custom packages
         (self: super: {
-          dix = super.dix or { } // { inherit vim-nix emulator-nix bitwarden-cli; };
+          dix = super.dix or { } // {
+            inherit vim-nix emulator-nix bitwarden-cli;
+          };
 
           python3-tools = super.buildEnv {
             name = "python3-tools";
@@ -98,6 +129,7 @@
           };
         })
         (import ./overlays/zsh-dix.nix)
+        (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
         (import ./overlays/vim-packages.nix)
       ];

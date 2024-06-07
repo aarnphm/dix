@@ -24,9 +24,11 @@ with pkgs; [
   kind
   skopeo
   earthly
+  buildifier
 
   # git
   git
+  git-forest
   gitui
   lazygit
   git-lfs

@@ -13,7 +13,7 @@ with lib;
     programs = {
       git = {
         enable = true;
-        package = pkgs.gitFull;
+        package = pkgs.git;
         userEmail = "29749331+aarnphm@users.noreply.github.com";
         userName = "Aaron Pham";
         lfs = {
@@ -87,7 +87,7 @@ with lib;
             side-by-side = true;
             line-numbers = true;
             dark = true;
-            syntax-theme = "Dracula";
+            syntax-theme = "zenburn";
 
             interactive = {
               keep-plus-minus-markers = false;
@@ -144,12 +144,12 @@ with lib;
           si = "status --ignored";
 
           # Show the diff between the latest commit and the current state.
-          d = ''!"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"'';
+          d = "!git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat";
 
           dp = "diff --patience -w";
 
           # `git di $number` shows the diff between the state `$number` revisions ago and the current state.
-          di = ''!"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"'';
+          di = "!d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d";
 
           # Pull in remote changes for the current repository and all its submodules.
           pre = "pull --signoff --recurse-submodules";

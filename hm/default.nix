@@ -1,10 +1,13 @@
 { config, pkgs, user, ... }:
 {
   imports = [ ./modules ];
+
   programs.home-manager.enable = true;
 
   zsh.enable = true;
   git.enable = true;
+  bat.enable = true;
+  alacritty.enable = true;
 
   home.username = user;
 
@@ -21,10 +24,10 @@
     shellAliases = {
       reload = "exec -l $SHELL";
       afk = "pmset displaysleepnow";
-      ".." = "cd ..";
-      "..." = "cd ../..";
-      "...." = "cd ../../..";
-      "....." = "cd ../../../..";
+      ".." = "${pkgs.eza}/bin/eza ..";
+      "..." = "${pkgs.eza}/bin/eza ../..";
+      "...." = "${pkgs.eza}/bin/eza ../../..";
+      "....." = "${pkgs.eza}/bin/eza ../../../..";
 
       # ls-replacement
       ls = "${pkgs.eza}/bin/eza";
@@ -35,38 +38,38 @@
       rm = "${pkgs.rm-improved}/bin/rip --graveyard $HOME/.local/share/Trash";
 
       # git
-      g = "${pkgs.gitFull}/bin/git";
-      ga = "${pkgs.gitFull}/bin/git add";
-      gaa = "${pkgs.gitFull}/bin/git add .";
-      gsw = "${pkgs.gitFull}/bin/git switch";
-      gcm = "${pkgs.gitFull}/bin/git commit -S --signoff -sv";
-      gcmm = "${pkgs.gitFull}/bin/git commit -S --signoff -svm";
-      gcma = "${pkgs.gitFull}/bin/git commit -S --signoff -sv --amend";
-      gcman = "${pkgs.gitFull}/bin/git commit -S --signoff -sv --amend --no-edit";
-      grpo = "${pkgs.gitFull}/bin/git remote prune origin";
-      grst = "${pkgs.gitFull}/bin/git restore";
-      grsts = "${pkgs.gitFull}/bin/git restore --staged";
-      gst = "${pkgs.gitFull}/bin/git status";
-      gsi = "${pkgs.gitFull}/bin/git status --ignored";
-      gsm = "${pkgs.gitFull}/bin/git status -sb";
-      gfom = "${pkgs.gitFull}/bin/git fetch origin main";
-      grfh = "${pkgs.gitFull}/bin/git rebase -i FETCH_HEAD";
-      grb = "${pkgs.gitFull}/bin/git rebase -i -S --signoff";
-      gra = "${pkgs.gitFull}/bin/git rebase --abort";
-      grc = "${pkgs.gitFull}/bin/git rebase --continue";
-      gri = "${pkgs.gitFull}/bin/git rebase -i";
-      gcp = "${pkgs.gitFull}/bin/git cherry-pick --gpg-sign --signoff";
-      gcpa = "${pkgs.gitFull}/bin/git cherry-pick --abort";
-      gcpc = "${pkgs.gitFull}/bin/git cherry-pick --continue";
-      gp = "${pkgs.gitFull}/bin/git pull";
-      gpu = "${pkgs.gitFull}/bin/git push";
-      gpuf = "${pkgs.gitFull}/bin/git push --force-with-lease";
-      gs = "${pkgs.gitFull}/bin/git stash";
-      gsp = "${pkgs.gitFull}/bin/git stash pop";
-      gckb = "${pkgs.gitFull}/bin/git checkout -b";
-      gck = "${pkgs.gitFull}/bin/git checkout";
-      gdf = "${pkgs.gitFull}/bin/git diff";
-      gb = "${pkgs.gitFull}/bin/git branches";
+      g = "${pkgs.git}/bin/git";
+      ga = "${pkgs.git}/bin/git add";
+      gaa = "${pkgs.git}/bin/git add .";
+      gsw = "${pkgs.git}/bin/git switch";
+      gcm = "${pkgs.git}/bin/git commit -S --signoff -sv";
+      gcmm = "${pkgs.git}/bin/git commit -S --signoff -svm";
+      gcma = "${pkgs.git}/bin/git commit -S --signoff -sv --amend";
+      gcman = "${pkgs.git}/bin/git commit -S --signoff -sv --amend --no-edit";
+      grpo = "${pkgs.git}/bin/git remote prune origin";
+      grst = "${pkgs.git}/bin/git restore";
+      grsts = "${pkgs.git}/bin/git restore --staged";
+      gst = "${pkgs.git}/bin/git status";
+      gsi = "${pkgs.git}/bin/git status --ignored";
+      gsm = "${pkgs.git}/bin/git status -sb";
+      gfom = "${pkgs.git}/bin/git fetch origin main";
+      grfh = "${pkgs.git}/bin/git rebase -i FETCH_HEAD";
+      grb = "${pkgs.git}/bin/git rebase -i -S --signoff";
+      gra = "${pkgs.git}/bin/git rebase --abort";
+      grc = "${pkgs.git}/bin/git rebase --continue";
+      gri = "${pkgs.git}/bin/git rebase -i";
+      gcp = "${pkgs.git}/bin/git cherry-pick --gpg-sign --signoff";
+      gcpa = "${pkgs.git}/bin/git cherry-pick --abort";
+      gcpc = "${pkgs.git}/bin/git cherry-pick --continue";
+      gp = "${pkgs.git}/bin/git pull";
+      gpu = "${pkgs.git}/bin/git push";
+      gpuf = "${pkgs.git}/bin/git push --force-with-lease";
+      gs = "${pkgs.git}/bin/git stash";
+      gsp = "${pkgs.git}/bin/git stash pop";
+      gckb = "${pkgs.git}/bin/git checkout -b";
+      gck = "${pkgs.git}/bin/git checkout";
+      gdf = "${pkgs.git}/bin/git diff";
+      gb = "${pkgs.git}/bin/git branches";
       gprc = "${pkgs.gh}/bin/gh pr create";
 
       # editor
@@ -106,18 +109,6 @@
   home.file.".fzfrc".text = ''
     --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
-  home.file.".config/alacritty" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/alacritty";
-    recursive = true;
-  };
-  home.file.".config/wezterm" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/wezterm";
-    recursive = true;
-  };
-  home.file.".config/kitty" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/kitty";
-    recursive = true;
-  };
   home.file.".config/zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/keymap.json";
   home.file.".config/zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/settings.json";
 }
