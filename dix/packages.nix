@@ -98,4 +98,5 @@ with pkgs; [
   hyperfine
 ] ++ lib.optionals (pkgs.stdenv.isDarwin) [
   OrbStack
+  Rectangle
 ]

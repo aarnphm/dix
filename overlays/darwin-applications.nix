@@ -24,6 +24,7 @@ in
         phases = [ "unpackPhase" "installPhase" ];
         unpackCmd = ''
           echo "File to unpack: $curSrc"
+          echo "Current source: $(ls -rthla $curSrc)"
           if ! [[ "$curSrc" =~ \.dmg$ ]]; then return 1; fi
           mnt=$(mktemp -d -t ci-XXXXXXXXXX)
 
@@ -61,7 +62,7 @@ in
   OrbStack = self.installDmg rec {
     name = "OrbStack";
     version = "1.6.1_17010";
-    sourceRoot = "OrbStack.app";
+    sourceRoot = "${name}.app";
     src = super.fetchurl {
       url = "https://cdn-updates.orbstack.dev/${arch}/${name}_v${version}_${arch}.dmg";
       hash = if isArm then "sha256-0ZhP1EA+8BOaCuXG5QYcdqopIcWmzHkT9HtVGzJKGFo=" else "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
@@ -87,6 +88,18 @@ in
         install -Dm755 ${appPath}/scli ${binPath}/orb
         install -Dm755 ${appPath}/scli ${binPath}/orbctl
       '';
+  };
+
+  Rectangle = self.installDmg rec {
+    name = "Rectangle";
+    version = "0.80";
+    sourceRoot = "${name}.app";
+    src = super.fetchurl {
+      url = "https://github.com/rxhanson/Rectangle/releases/download/v${version}/${name}${version}.dmg";
+      hash = "sha256-CmYhMnEhn3UK82RXuT1KQhAoK/0ewcUU6h73el2Lpw8=";
+    };
+    description = "Move and resize windows in macOS using keyboard shortcuts or snap areas";
+    homepage = "https://rectangleapp.com/";
   };
 }
 
