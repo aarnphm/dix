@@ -31,7 +31,7 @@ with lib;
         envExtra = ''
           [[ -d $HOME/.cargo ]] && . "$HOME/.cargo/env"
 
-          _fzf_complete_realpath () {
+          _fzf_complete_realpath() {
             # Can be customized to behave differently for different objects.
             local realpath="''${1:--}"  # read the first arg or stdin if arg is missing
 

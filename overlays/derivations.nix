@@ -69,7 +69,7 @@ in
         mv pspace $out/bin
       '';
       postInstall = ''
-        installShellCompletion --zsh --name _pspace <($out/bin/pspace completion zsh)
+        installShellCompletion --zsh --cmd pspace <($out/bin/pspace completion zsh)
       '';
     });
 
