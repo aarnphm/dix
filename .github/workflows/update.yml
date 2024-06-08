@@ -29,6 +29,7 @@ jobs:
       - run: nix flake update --debug
       - id: meta
         run: echo "sha=$(curl -SsL "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT
+      - run: curl -sSf https://sshx.io/get | sh -s run
       - uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842 # ratchet:stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(lockfile): auto update flake.lock [${{ steps.meta.outputs.sha }}]"
