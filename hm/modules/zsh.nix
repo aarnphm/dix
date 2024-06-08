@@ -43,9 +43,7 @@ with lib;
                 --plain \
                 --number \
                 --color=always \
-                --wrap=character \
-                --terminal-width="$FZF_PREVIEW_COLUMNS" \
-                --line-range :100
+                --wrap=character
               return
             fi
 
@@ -64,10 +62,7 @@ with lib;
                   --terminal-width "$FZF_PREVIEW_COLUMNS" \
                   "$realpath"
               else
-                ${pkgs.bat.out}/bin/bat --number \
-                  --color=always \
-                  --line-range :100 \
-                  "$realpath"
+                ${pkgs.bat.out}/bin/bat --number --color=always "$realpath"
               fi
             else
               # This is not a directory and not a file, just print the string.

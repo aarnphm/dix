@@ -46,6 +46,7 @@ with pkgs; [
   rustup
   pyenv
   xz
+  sshx
   # tools for language, lsp, linter, etc.
   tree-sitter
   eclint
@@ -101,4 +102,7 @@ with pkgs; [
 ] ++ lib.optionals (pkgs.stdenv.isDarwin) [
   OrbStack
   Rectangle
+  pinentry_mac
+] ++ lib.optionals (pkgs.stdenv.isLinux) [
+  pinentry-all
 ]

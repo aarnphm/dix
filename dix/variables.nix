@@ -32,7 +32,8 @@ in
   SIMPLE_BACKGROUND = "dark";
   # fzf
   FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
-  FZF_DEFAULT_COMMAND = ''${pkgs.ripgrep.out}/bin/rg --files --no-ignore-vcs --hidden'';
+  FZF_DEFAULT_COMMAND = ''${pkgs.ripgrep.out}/bin/rg --files --hidden --ignore .git'';
+  FZF_TMUX_HEIGHT = "80%";
   FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
   # language
   GOPATH = "$HOME/go";

@@ -14,7 +14,7 @@ with lib;
       alacritty = {
         enable = true;
         settings = {
-          import = [ "${pkgs.alacritty-theme}/afterglow.toml" ];
+          import = [ "${pkgs.alacritty-theme}/rose-pine.toml" ];
           window = {
             dynamic_padding = false;
             decorations = "buttonless";

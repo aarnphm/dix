@@ -1,8 +1,9 @@
+let
+  # Get a list of all .nix files in the current directory
+  moduleFiles = builtins.filter
+    (f: f != "default.nix")
+    (builtins.attrNames (builtins.readDir ./.));
+in
 {
-  imports = [
-    ./skhd.nix
-    ./yabai.nix
-    ./sketchybar.nix
-  ];
+  imports = map (file: ./. + "/${file}") moduleFiles;
 }
-

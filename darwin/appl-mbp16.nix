@@ -59,6 +59,7 @@
 
   # System preferences
   system = {
+    stateVersion = 4;
     activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
     # default settings within System Preferences
     defaults = {
@@ -89,6 +90,7 @@
   };
 
   programs.zsh.enable = true;
+  programs.direnv.enable = true;
   programs.nix-index.enable = true;
   programs.gnupg.agent = {
     enable = true;

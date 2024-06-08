@@ -8,18 +8,10 @@
   git.enable = true;
   bat.enable = true;
   alacritty.enable = true;
-
-  xdg = {
-    enable = true;
-    configFile = {
-      "nvim" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}";
-        recursive = true;
-      };
-      "zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/keymap.json";
-      "zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.emulators}/zed/settings.json";
-    };
-  };
+  btop.enable = true;
+  system.enable = true;
+  ssh.enable = true;
+  gpg.enable = true;
 
   home.username = user;
 
@@ -116,7 +108,7 @@
   };
 
   home.file.".fzfrc".text = ''
-    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%' --preview='_fzf_complete_realpath {}'
+    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
   home.file.".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}/.vimrc";
 }

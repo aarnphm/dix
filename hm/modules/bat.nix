@@ -13,7 +13,7 @@ with lib;
     programs = {
       bat = {
         enable = true;
-        extraPackages = with pkgs.bat-extras; [ batwatch batpipe batman batgrep batdiff prettybat ];
+        extraPackages = with pkgs.bat-extras; [ batwatch batpipe batman batgrep batdiff ];
         config = {
           theme = "zenburn";
           map-syntax = [

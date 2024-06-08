@@ -78,7 +78,7 @@ in
     src = super.dix.editor-nix;
     buildCommand = ''
       mkdir -p $out
-      cp -r $src/* $out
+      cp -a $src/. $out
     '';
   };
 

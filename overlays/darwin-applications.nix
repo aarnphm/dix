@@ -87,6 +87,8 @@ in
 
         install -Dm755 ${appPath}/scli ${binPath}/orb
         install -Dm755 ${appPath}/scli ${binPath}/orbctl
+
+        installShellCompletion --zsh --cmd orbctl <($out/bin/orbctl completion zsh)
       '';
   };
 
