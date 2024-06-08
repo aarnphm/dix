@@ -10,7 +10,7 @@ with pkgs; [
   bitwarden-cli
   paperspace-cli
 
-  # kubernetes
+  # kubernetes and container
   kubernetes-helm
   k9s
   buildkit
@@ -19,6 +19,7 @@ with pkgs; [
   eksctl
   colima
   lima
+  ratchet
   krew
   k9s
   lazydocker
