@@ -23,7 +23,7 @@
       flake = false;
     };
     emulator-nix = {
-      url = "git+ssh://git@github.com/aarnphm/emulators.git?ref=main";
+      url = "github:aarnphm/emulators";
       flake = false;
     };
   };
