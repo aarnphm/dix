@@ -18,7 +18,7 @@ in
       hash = "sha256-JBEP4dNGL4rYKl2qNyhB2y/wZunikaGFltGVXLxgMWI=";
     };
 
-    nodejs = super.nodejs_20;
+    nodejs = super.nodejs_18;
 
     env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
@@ -87,7 +87,7 @@ in
     src = super.dix.emulator-nix;
     buildCommand = ''
       mkdir -p $out
-      cp -r $src/* $out
+      cp -a $src/. $out
     '';
   };
 

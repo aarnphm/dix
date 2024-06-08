@@ -21,14 +21,6 @@ fpath() {
     fi
 }
 
-bwunlock() {
-    zmodload zsh/mapfile
-    bwpassfile="$HOME/bw.master"
-    bitwarden=("${(f@)mapfile[$bwpassfile]}")
-    BW_MASTER=$bitwarden[1]
-    export BW_SESSION="$(bw unlock $BW_MASTER 2>/dev/null | grep '$env' | sed -e 's/^.*="\(.*\)"$/\1/')"
-}
-
 __exec_command_with_tmux() {
     local cmd="$@"
     if [[ "$(ps -p $(ps -p $$ -o ppid=) -o comm= 2> /dev/null)" =~ tmux ]]; then

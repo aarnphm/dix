@@ -84,29 +84,8 @@
         };
       };
 
-      darwinOverlays = with inputs; [
-        neovim.overlays.default
-        # custom packages
-        (self: super: {
-          dix = super.dix or { } // {
-            inherit editor-nix emulator-nix;
-          };
-
-          python3-tools = super.buildEnv {
-            name = "python3-tools";
-            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
-          };
-        })
-        (import ./overlays/zsh-dix.nix)
-        (import ./overlays/derivations.nix)
-        (import ./overlays/packages-overrides.nix)
-        # specifics to darwin
-        (import ./overlays/darwin-applications.nix)
-      ];
-
       linuxOverlays = with inputs; [
         neovim.overlays.default
-        # custom packages
         (self: super: {
           dix = super.dix or { } // {
             inherit editor-nix emulator-nix;
@@ -120,6 +99,11 @@
         (import ./overlays/zsh-dix.nix)
         (import ./overlays/derivations.nix)
         (import ./overlays/packages-overrides.nix)
+      ];
+
+      darwinOverlays = self.linuxOverlays ++ [
+        # custom packages specifics to darwin
+        (import ./overlays/darwin-applications.nix)
       ];
     };
 }

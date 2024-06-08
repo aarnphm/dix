@@ -97,12 +97,14 @@ with pkgs; [
   dtach
   zstd
   gnused
-  gnupg
   hyperfine
+  gnupg
+  gpg-tui
 ] ++ lib.optionals (pkgs.stdenv.isDarwin) [
   OrbStack
   Rectangle
   pinentry_mac
+  pinentry-touchid
 ] ++ lib.optionals (pkgs.stdenv.isLinux) [
   pinentry-all
 ]

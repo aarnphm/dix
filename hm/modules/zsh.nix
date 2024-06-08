@@ -13,7 +13,10 @@ with lib;
     programs = {
       zsh = {
         enable = true;
-        completionInit = "";
+        completionInit = if pkgs.stdenv.isDarwin then "" else ''
+          autoload -U compinit && compinit
+          autoload -U bashcompinit && bashcompinit
+        '';
         initExtraBeforeCompInit = ''
           source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh
           ${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right | source /dev/stdin
@@ -30,6 +33,15 @@ with lib;
         '';
         envExtra = ''
           [[ -d $HOME/.cargo ]] && . "$HOME/.cargo/env"
+
+          zmodload zsh/mapfile
+          bwpassfile="${config.home.homeDirectory}/bw.pass"
+          if [[ -f "$bwpassfile" ]]; then
+            bitwarden=("''${(f@)mapfile[$bwpassfile]}")
+            export BW_MASTER=$bitwarden[1]
+            export BW_CLIENTID=$bitwarden[2]
+            export BW_CLIENTSECRET=$bitwarden[3]
+          fi
 
           _fzf_complete_realpath() {
             # Can be customized to behave differently for different objects.

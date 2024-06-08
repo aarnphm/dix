@@ -103,5 +103,34 @@ in
     description = "Move and resize windows in macOS using keyboard shortcuts or snap areas";
     homepage = "https://rectangleapp.com/";
   };
+
+  pinentry-touchid = super.stdenv.mkDerivation (finalAttrs: {
+    pname = "pinentry-touchid";
+    version = "0.0.3";
+
+    src = super.fetchurl {
+      url = "https://github.com/jorgelbg/pinentry-touchid/releases/download/v${finalAttrs.version}/pinentry-touchid_${finalAttrs.version}_macos_${if isArm then "arm64" else "amd64"}.tar.gz";
+      sha256 = "sha256-bxwkoC6DbORe6uQCeFMoqYngq6ZKsjrj7SUdgmm9d3I=";
+    };
+    sourceRoot = ".";
+
+    buildInputs = with super; [ unzip ];
+    unpackCmd = ''
+      unzip $curSrc pinentry-touchid
+    '';
+    installPhase = ''
+      ls -rthla
+      mkdir -p $out/bin
+      cp pinentry-touchid $out/bin/
+    '';
+
+    meta = {
+      description = "Pinentry TouchID for Mac";
+      license = super.lib.licenses.asl20;
+      homepage = "https://github.com/jorgelbg/pinentry-touchid";
+      platforms = super.lib.platforms.darwin;
+      mainProgram = "pinentry-touchid";
+    };
+  });
 }
 

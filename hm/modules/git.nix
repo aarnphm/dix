@@ -20,7 +20,7 @@ with lib;
           enable = true;
         };
         signing = {
-          key = "D689D1C7F18B4D1D";
+          key = "3F0AB04C023BA498";
           signByDefault = true;
         };
         extraConfig = {
@@ -45,6 +45,12 @@ with lib;
           diff = {
             colorMoved = "default";
           };
+          color = {
+            ui = "auto";
+          };
+          column = {
+            ui = "auto";
+          };
           rebase = {
             autosquash = true;
             autostash = true;
@@ -54,6 +60,7 @@ with lib;
           };
           branch = {
             sort = "-committerdate";
+            autosetuprebase = "always";
           };
           core = {
             # Treat spaces before tabs and all kinds of trailing whitespace as an error.

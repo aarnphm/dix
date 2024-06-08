@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 with lib;
 {
   options.gpg = {
@@ -17,6 +17,17 @@ with lib;
         no-emit-version = true;
         no-comments = false;
       };
+      scdaemonSettings = {
+        log-file = "/tmp/${config.home.username}_scdaemon.log";
+        disable-ccid = true;
+      };
     };
+
+    home.file.".gnupg/gpg-agent.conf".text = ''
+      default-cache-ttl 600
+      max-cache-ttl 7200
+    '' + lib.optionals (pkgs.stdenv.isDarwin) ''
+      pinentry-program ${pkgs.pinentry-touchid}/bin/pinentry-touchid
+    '';
   };
 }

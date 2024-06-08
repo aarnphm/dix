@@ -39,7 +39,7 @@
       sudo = "nocorrect sudo";
 
       # safe rm
-      rm = "${pkgs.rm-improved}/bin/rip --graveyard $HOME/.local/share/Trash";
+      rm = "${pkgs.rm-improved}/bin/rip --graveyard ${config.home.homeDirectory}/.local/share/Trash";
 
       # git
       g = "${pkgs.git}/bin/git";
@@ -84,7 +84,8 @@
       cx = "chmod +x";
       freeport = "sudo fuser -k $@";
       copy = "pbcopy";
-      bwpass = "[[ -f $HOME/bw.master ]] && cat $HOME/bw.master | sed -n 1p | pbcopy";
+      bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | pbcopy";
+      bwunlock = ''${pkgs.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
       generate-password = "${pkgs.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
       lock-workflow = ''${pkgs.fd}/bin/fd -Hg "*.yml" .github --exec-batch docker run -it --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.4.0 update'';
 
@@ -104,11 +105,30 @@
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
       k = "${pkgs.kubectl}/bin/kubectl";
-    };
+    } // (if pkgs.stdenv.isDarwin then {
+      pinentry = ''${pkgs.pinentry_mac}/bin/pinentry-mac'';
+    } else {
+      pinentry = ''${pkgs.pinentry-all}/bin/pinentry'';
+    });
   };
 
-  home.file.".fzfrc".text = ''
-    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
-  '';
-  home.file.".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}/.vimrc";
+  home.file =
+    let
+      gpg_tui_config = ''
+        [general]
+          detail_level = "full"
+        [gpg]
+          armor = true
+      '';
+    in
+    {
+      ".fzfrc".text = ''
+        --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+      '';
+      ".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}/.vimrc";
+    } // (if pkgs.stdenv.isDarwin then {
+      "/Library/Application Support/gpg-tui/gpg-tui.toml".text = gpg_tui_config;
+    } else {
+      ".config/gpg-tui/gpg.tui.toml".text = gpg_tui_config;
+    });
 }
