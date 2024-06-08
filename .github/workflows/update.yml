@@ -39,4 +39,3 @@ jobs:
           commit_user_email: ${{ steps.import-gpg.outputs.email }}
           commit_author: ${{ steps.import-gpg.outputs.name }} <${{ steps.import-gpg.outputs.email }}>
           file_pattern: "flake.lock"
-          commit_options: "--signoff"
