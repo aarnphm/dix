@@ -17,21 +17,13 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
           nix_path: nixpkgs=channel:nixos-unstable
-      - id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4 # ratchet:crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-          git_config_global: true
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_tag_gpgsign: true
-          trust_level: 5
       - run: nix flake update --debug
       - id: meta
         run: echo "sha=$(curl -SsL "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT
       - id: commit
         run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add flake.lock
-          git commit -S -m "chore(lockfile): auto update flake.lock [${{ steps.meta.outputs.sha }}]"
+          git commit -m "chore(lockfile): auto update flake.lock [${{ steps.meta.outputs.sha }}]"
           git push origin main
