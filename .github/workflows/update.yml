@@ -3,9 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 */2 * *" # runs every two days
-defaults:
-  run:
-    shell: bash --noprofile --norc -exo pipefail {0}
 jobs:
   lockfile:
     if: github.repository_owner == 'aarnphm'
@@ -34,9 +31,7 @@ jobs:
           git_tag_gpgsign: true
       - run: nix flake update --debug
       - id: meta
-        run: |
-          echo "sha=$(curl -SsL "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT
-          echo "GPG_TTY=$(tty)" >> $GITHUB_ENV
+        run: echo "sha=$(curl -SsL "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT
       - uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842 # ratchet:stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(lockfile): auto update flake.lock [${{ steps.meta.outputs.sha }}]"
