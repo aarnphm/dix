@@ -31,6 +31,7 @@ self: super:
         version = "${version}";
         src = src;
         buildInputs = [ unzip ];
+        nativeBuildInputs = [ installShellFiles ];
         sourceRoot = sourceRoot;
         phases = [ "unpackPhase" "installPhase" ];
         unpackCmd = ''

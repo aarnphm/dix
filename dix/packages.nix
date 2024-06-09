@@ -45,6 +45,7 @@ with pkgs; [
   pyenv
   xz
   sshx
+  awscli2
   # tools for language, lsp, linter, etc.
   tree-sitter
   eclint

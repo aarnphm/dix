@@ -33,7 +33,7 @@ installDmg rec {
       (installBin "kubectl")
       "install -Dm755 ${appPath}/scli ${binPath}/orbctl"
       "install -Dm755 ${appPath}/scli ${binPath}/orb"
-      "installShellCompletion --zsh --cmd orbctl <($out/bin/orbctl completion zsh)"
+      "${appPath}/scli completion zsh > ${contentPath}/Resources/completions/zsh/_orb"
     ];
 }
 

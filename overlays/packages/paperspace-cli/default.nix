@@ -16,10 +16,9 @@ stdenv.mkDerivation rec {
   '';
   installPhase = ''
     mkdir -p $out/bin
+    mkdir -p $out/share/zsh/site-functions
     mv pspace $out/bin
-  '';
-  postInstall = ''
-    installShellCompletion --zsh --cmd pspace <($out/bin/pspace completion zsh)
+    $out/bin/pspace completion zsh > $out/share/zsh/site-functions/_pspace
   '';
 }
 

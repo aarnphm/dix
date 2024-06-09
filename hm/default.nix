@@ -103,10 +103,10 @@ in
       cx = "chmod +x";
       freeport = "sudo fuser -k $@";
       copy = "pbcopy";
-      bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | pbcopy";
-      bwunlock = ''${pkgs.dix.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
 
       # useful
+      bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | pbcopy";
+      unlock-vault = ''${pkgs.dix.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
       generate-password = "${pkgs.dix.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
       lock-workflow = ''${pkgs.fd}/bin/fd -Hg "*.yml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${pkgs.curl}/bin/curl -Ls -o /dev/null -w %{url_effective} $@'';

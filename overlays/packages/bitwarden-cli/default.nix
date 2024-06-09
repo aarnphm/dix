@@ -1,4 +1,4 @@
-{ stdenv, lib, runCommand, buildNpmPackage, fetchFromGitHub, nodejs_18, python3, darwin }:
+{ stdenv, lib, runCommand, buildNpmPackage, fetchFromGitHub, nodejs_18, python3, darwin, installShellFiles }:
 buildNpmPackage rec {
   pname = "bitwarden-cli";
   version = "2024.4.1";
@@ -16,6 +16,7 @@ buildNpmPackage rec {
 
   nativeBuildInputs = [
     python3
+    installShellFiles
   ] ++ lib.optionals stdenv.isDarwin [
     darwin.cctools
     (runCommand "xcrunHost" { } ''
