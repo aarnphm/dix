@@ -1,5 +1,9 @@
 { config, lib, pkgs, ... }:
 with lib;
+let
+  gitPackage = pkgs.git;
+  gitBin = lib.getExe gitPackage;
+in
 {
   options.git = {
     enable = mkOption {
@@ -13,7 +17,7 @@ with lib;
     programs = {
       git = {
         enable = true;
-        package = pkgs.git;
+        package = gitPackage;
         userEmail = "29749331+aarnphm@users.noreply.github.com";
         userName = "Aaron Pham";
         lfs = {
@@ -80,8 +84,8 @@ with lib;
             # Speed up commands involving untracked files such as `git status`.
             # https://git-scm.com/docs/git-update-index#_untracked_cache
             untrackedCache = true;
-            editor = "${pkgs.neovim-developer}/bin/nvim";
-            pager = "${pkgs.delta}/bin/delta";
+            editor = "${lib.getExe pkgs.neovim-developer}";
+            pager = "${lib.getExe pkgs.delta}";
 
             autocrlf = "input";
           };
@@ -119,7 +123,7 @@ with lib;
           skip = "update-index --skip-worktree";
           noskip = "update-index --no-skip-worktree";
 
-          tree = "forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse";
+          tree = ''forest --pretty=format:"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s" --style=15 --reverse'';
 
           # get branch
           br = "branch -vv";
@@ -139,7 +143,7 @@ with lib;
           fut = "fetch upstream --tags";
 
           # rebase continue
-          rebc = "!f() { git add .; git rebase --continue; }; f";
+          rebc = "!f() { ${gitBin} add .; ${gitBin} rebase --continue; }; f";
 
           # view last commit message
           lone = "log -1 --pretty=%B";
@@ -151,27 +155,26 @@ with lib;
           si = "status --ignored";
 
           # Show the diff between the latest commit and the current state.
-          d = "!git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat";
+          d = "!${gitBin} diff-index --quiet HEAD -- || clear; ${gitBin} --no-pager diff --patch-with-stat";
 
           dp = "diff --patience -w";
 
           # `git di $number` shows the diff between the state `$number` revisions ago and the current state.
-          di = "!d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d";
+          di = "!d() { ${gitBin} diff --patch-with-stat HEAD~$1; }; ${gitBin} diff-index --quiet HEAD -- || clear; d";
 
           # Pull in remote changes for the current repository and all its submodules.
           pre = "pull --signoff --recurse-submodules";
           p = "pull --signoff --gpg-sign --rebase";
-          pp = "!f() { git fetch \"$1\" \"$2\" && git pull \"$1\" \"$2\" && git remote prune \"$1\"; }; f";
+          pp = ''!f() { ${gitBin} fetch "$1" "$2" && ${gitBin} pull "$1" "$2" && ${gitBin} remote prune "$1"; }; f'';
           pa = "pull --all --signoff --gpg-sign";
           cnb = "checkout --track -b";
 
           # fetch upstream and push
-          pup = "!f() { git pull upstream main; git push -u origin main; }; f";
+          pup = "!f() { ${gitBin} pull upstream main; ${gitBin} push -u origin main; }; f";
 
           # Clone a repository including all submodules.
           cr = "clone --recursive";
           c = "clone";
-          clone-worktree = "!sh $HOME/.local/bin/git-worktree-setup";
 
           # worktree alias
           wa = "worktree add";
@@ -179,12 +182,12 @@ with lib;
           wl = "worktree list";
 
           # Commit all changes.
-          ca = "!git add -A && git commit -S -sav";
+          ca = "!${gitBin} add -A && ${gitBin} commit -S -sav";
           cm = "commit -S --signoff -sv";
           cmm = "commit -S --signoff -svm";
 
           # Switch to a branch, creating it if necessary.
-          go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f";
+          go = ''!f() { ${gitBin} checkout -b "$1" 2> /dev/null || ${gitBin} checkout "$1"; }; f'';
 
           # Show verbose output about tags, branches or remotes
           tags = "tag -l";
@@ -196,13 +199,13 @@ with lib;
           aliases = "config --get-regexp alias";
 
           # quick push
-          pushall = "!p() { git add . && git commit -S -sm \"$1\" && git push; }; p";
+          pushall = ''!p() { ${gitBin} add . && ${gitBin} commit -S -sm "$1" && ${gitBin} push; }; p'';
 
           # Amend the currently staged files to the latest commit.
           amend = "commit --amend --reuse-message=HEAD";
 
           # Credit an author on the latest commit.
-          credit = "!f() { git commit -S -s --amend --author \"$1 <$2>\" -C HEAD; }; f";
+          credit = "!f() { ${gitBin} commit -S -s --amend --author \"$1 <$2>\" -C HEAD; }; f";
 
           # Interactive rebase with the given number of latest commits.
           reb = "rebase -i -S --signoff";
@@ -212,31 +215,23 @@ with lib;
           rup = "rebase -i --signoff upstream/main";
 
           # Remove the old tag with this name and tag the latest commit with it.
-          retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r";
+          retag = "!r() { ${gitBin} tag -d $1 && ${gitBin} push origin :refs/tags/$1 && ${gitBin} tag $1; }; r";
 
           # Find branches containing commit
-          fb = "!f() { git branch -a --contains $1; }; f";
+          fb = "!f() { ${gitBin} branch -a --contains $1; }; f";
 
           # Find tags containing commit
-          ft = "!f() { git describe --always --contains $1; }; f";
+          ft = "!f() { ${gitBin} describe --always --contains $1; }; f";
 
           # Find commits by source code
-          fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f";
+          fc = "!f() { ${gitBin} log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f";
 
           # Find commits by commit message
-          fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f";
+          fm = "!f() { ${gitBin} log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f";
 
           # Remove branches that have already been merged with main.
           # a.k.a. ‘delete merged’
-          dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d";
-
-          # checkout files from upstream/main
-          revm = "!f() { git checkout upstream/main -- $@; git add $@; git commit -sm \"chore: revert changes from upstream/main\n\nreverted changes: $@\"; git push -f; }; f";
-
-          # clean xdf
-          pxdf = "!f() { git clean -fdx --exclude 'venv' --exclude 'tools' --exclude 'bazel-*'; pip install -e . -vvv; }; f";
-          bpxdf = "!f() { bazel clean && git clean -fdx --exclude 'venv' --exclude 'tools'; pip install -e .[all] -vvv; }; f";
-          xdf = ''clean -xdf --exclude "venv" --exclude "bazel-*"'';
+          dm = "!${gitBin} branch --merged | grep -v '\\*' | xargs -n 1 ${gitBin} branch -d";
 
           # List contributors with number of commits.
           contributors = "shortlog --summary --numbered";

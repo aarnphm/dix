@@ -66,8 +66,6 @@ with pkgs; [
   # terminal
   any-nix-shell
   zsh-completions
-  zsh-f-sy-h
-  zsh-history-substring-search
 
   direnv
   tmux
@@ -110,7 +108,6 @@ with pkgs; [
     # Applications
     OrbStack
     Rectangle
-    # Bitwarden
     Discord
 
     # gpg

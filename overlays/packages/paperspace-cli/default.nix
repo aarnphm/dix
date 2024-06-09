@@ -1,4 +1,4 @@
-{ isArm, stdenv, fetchurl, unzip }:
+{ isArm, stdenv, fetchurl, unzip, installShellFiles }:
 stdenv.mkDerivation rec {
   pname = "paperspace-cli";
   version = "1.10.1";
@@ -10,15 +10,21 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ unzip ];
   phases = [ "unpackPhase" "installPhase" ];
+  nativeBuildInputs = [ installShellFiles ];
   sourceRoot = "."; # NOTE: since the zip doesn't have any subdirectory, set to do to make sure unpacker won't fail.
   unpackCmd = ''
     unzip $curSrc pspace
   '';
   installPhase = ''
+    runHook preInstall
+
     mkdir -p $out/bin
-    mkdir -p $out/share/zsh/site-functions
     mv pspace $out/bin
-    $out/bin/pspace completion zsh > $out/share/zsh/site-functions/_pspace
+
+    runHook postInstall
+  '';
+  postInstall = ''
+    installShellCompletion --zsh --cmd pspace <($out/bin/pspace completion zsh)
   '';
 }
 

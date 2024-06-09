@@ -2,28 +2,26 @@
 let
   env = import ../dix { inherit pkgs lib; };
 
+  tomlFormat = pkgs.formats.toml { };
+
   fzfConfig = pkgs.writeText "fzfrc" ''
     --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
 
-  gpgTuiConfig = pkgs.writeText "gpg-tui.toml" ''
-    [general]
-      detail_level = "full"
-    [gpg]
-      armor = true
-  '';
+  gpgTuiConfig = {
+    general = { detail_level = "full"; };
+    gpg = { armor = true; };
+  };
+
   gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
 in
-(if pkgs.stdenv.isLinux then {
-  home.packages = env.packages;
-  home.sessionVariables = env.variables;
-} else { }) //
 {
   imports = [ ./modules ];
 
   programs.home-manager.enable = true;
 
   zsh.enable = true;
+  zoxide.enable = true;
   git.enable = true;
   bat.enable = true;
   alacritty.enable = true;
@@ -31,6 +29,7 @@ in
   system.enable = true;
   ssh.enable = true;
   gpg.enable = true;
+  direnv.enable = true;
 
   home.username = user;
 
@@ -40,9 +39,13 @@ in
     else "/Users/${user}"
   );
 
-  home = {
-    stateVersion = "24.11";
+  home.stateVersion = "24.11";
+  home.file = {
+    ".fzfrc".source = fzfConfig;
+    "${gpgTuiConfigFile}".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
+  };
 
+  home = {
     # shells related
     shellAliases = {
       reload = "exec -l $SHELL";
@@ -53,51 +56,52 @@ in
       "....." = "__zoxide_z ../../../..";
 
       # ls-replacement
-      ls = "${pkgs.eza}/bin/eza";
-      ll = "${pkgs.eza}/bin/eza -la --group-directories-first -snew --icons always";
+      ls = "${lib.getExe pkgs.eza}";
+      ll = "${lib.getExe pkgs.eza} -la --group-directories-first -snew --icons always";
       sudo = "nocorrect sudo";
 
       # safe rm
-      rm = "${pkgs.rm-improved}/bin/rip --graveyard ${config.home.homeDirectory}/.local/share/Trash";
+      rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";
 
       # git
-      g = "${pkgs.git}/bin/git";
-      ga = "${pkgs.git}/bin/git add";
-      gaa = "${pkgs.git}/bin/git add .";
-      gsw = "${pkgs.git}/bin/git switch";
-      gcm = "${pkgs.git}/bin/git commit -S --signoff -sv";
-      gcmm = "${pkgs.git}/bin/git commit -S --signoff -svm";
-      gcma = "${pkgs.git}/bin/git commit -S --signoff -sv --amend";
-      gcman = "${pkgs.git}/bin/git commit -S --signoff -sv --amend --no-edit";
-      grpo = "${pkgs.git}/bin/git remote prune origin";
-      grst = "${pkgs.git}/bin/git restore";
-      grsts = "${pkgs.git}/bin/git restore --staged";
-      gst = "${pkgs.git}/bin/git status";
-      gsi = "${pkgs.git}/bin/git status --ignored";
-      gsm = "${pkgs.git}/bin/git status -sb";
-      gfom = "${pkgs.git}/bin/git fetch origin main";
-      grfh = "${pkgs.git}/bin/git rebase -i FETCH_HEAD";
-      grb = "${pkgs.git}/bin/git rebase -i -S --signoff";
-      gra = "${pkgs.git}/bin/git rebase --abort";
-      grc = "${pkgs.git}/bin/git rebase --continue";
-      gri = "${pkgs.git}/bin/git rebase -i";
-      gcp = "${pkgs.git}/bin/git cherry-pick --gpg-sign --signoff";
-      gcpa = "${pkgs.git}/bin/git cherry-pick --abort";
-      gcpc = "${pkgs.git}/bin/git cherry-pick --continue";
-      gp = "${pkgs.git}/bin/git pull";
-      gpu = "${pkgs.git}/bin/git push";
-      gpuf = "${pkgs.git}/bin/git push --force-with-lease";
-      gs = "${pkgs.git}/bin/git stash";
-      gsp = "${pkgs.git}/bin/git stash pop";
-      gckb = "${pkgs.git}/bin/git checkout -b";
-      gck = "${pkgs.git}/bin/git checkout";
-      gdf = "${pkgs.git}/bin/git diff";
-      gb = "${pkgs.git}/bin/git branches";
-      gprc = "${pkgs.gh}/bin/gh pr create";
+      g = "${lib.getExe pkgs.git}";
+      ga = "${lib.getExe pkgs.git} add";
+      gaa = "${lib.getExe pkgs.git} add .";
+      gsw = "${lib.getExe pkgs.git} switch";
+      gcm = "${lib.getExe pkgs.git} commit -S --signoff -sv";
+      gcmm = "${lib.getExe pkgs.git} commit -S --signoff -svm";
+      gcma = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend";
+      gcman = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend --no-edit";
+      grpo = "${lib.getExe pkgs.git} remote prune origin";
+      grst = "${lib.getExe pkgs.git} restore";
+      grsts = "${lib.getExe pkgs.git} restore --staged";
+      gst = "${lib.getExe pkgs.git} status";
+      gsi = "${lib.getExe pkgs.git} status --ignored";
+      gsm = "${lib.getExe pkgs.git} status -sb";
+      gfom = "${lib.getExe pkgs.git} fetch origin main";
+      grfh = "${lib.getExe pkgs.git} rebase -i FETCH_HEAD";
+      grb = "${lib.getExe pkgs.git} rebase -i -S --signoff";
+      gra = "${lib.getExe pkgs.git} rebase --abort";
+      grc = "${lib.getExe pkgs.git} rebase --continue";
+      gri = "${lib.getExe pkgs.git} rebase -i";
+      gcp = "${lib.getExe pkgs.git} cherry-pick --gpg-sign --signoff";
+      gcpa = "${lib.getExe pkgs.git} cherry-pick --abort";
+      gcpc = "${lib.getExe pkgs.git} cherry-pick --continue";
+      gp = "${lib.getExe pkgs.git} pull";
+      gpu = "${lib.getExe pkgs.git} push";
+      gpuf = "${lib.getExe pkgs.git} push --force-with-lease";
+      gs = "${lib.getExe pkgs.git} stash";
+      gsp = "${lib.getExe pkgs.git} stash pop";
+      gckb = "${lib.getExe pkgs.git} checkout -b";
+      gck = "${lib.getExe pkgs.git} checkout";
+      gdf = "${lib.getExe pkgs.git} diff";
+      gb = "${lib.getExe pkgs.git} branches";
+      gprc = "${lib.getExe pkgs.gh} pr create";
 
       # editor
-      v = "${pkgs.neovim-developer}/bin/nvim";
-      vi = "${pkgs.vim}/bin/vim";
+      v = "${lib.getExe pkgs.neovim-developer}";
+      vi = "${lib.getExe pkgs.vim}";
+      f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim-developer}'';
 
       # general
       cx = "chmod +x";
@@ -106,37 +110,33 @@ in
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | pbcopy";
-      unlock-vault = ''${pkgs.dix.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
-      generate-password = "${pkgs.dix.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
-      lock-workflow = ''${pkgs.fd}/bin/fd -Hg "*.yml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
-      get-redirect = ''${pkgs.curl}/bin/curl -Ls -o /dev/null -w %{url_effective} $@'';
+      unlock-vault = ''${lib.getExe pkgs.dix.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.dix.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
+      generate-password = "${lib.getExe pkgs.dix.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
+      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.yml" .github --exec-batch ${if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/docker" else "docker"} run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
+      get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
 
       # nix-commands
       nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';
-      ned = "$EDITOR $WORKSPACE/dix/darwin/appl-mbp16.nix";
+      ned = "${lib.getExe pkgs.neovim-developer} $WORKSPACE/dix/darwin/appl-mbp16.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";
       nstr = "nix-store --gc --print-roots";
 
       # program opts
-      cat = "${pkgs.bat}/bin/bat";
+      cat = "${lib.getExe pkgs.bat}";
       # python
       pip = "uv pip";
-      python3 = ''$(${pkgs.pyenv}/bin/pyenv root)/shims/python'';
-      python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" pyenv install "$@"'';
+      python3 = ''$(${lib.getExe pkgs.pyenv} root)/shims/python'';
+      python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" ${lib.getExe pkgs.pyenv} install "$@"'';
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
-      k = "${pkgs.kubectl}/bin/kubectl";
-    } // (if pkgs.stdenv.isDarwin then {
-      pinentry = ''${pkgs.pinentry_mac}/bin/pinentry-mac'';
-    } else {
-      pinentry = ''${pkgs.pinentry-all}/bin/pinentry'';
-    });
+      k = if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/kubectl" else "kubectl";
+      pinentry = lib.getExe (if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-all);
+    };
   };
-
-  home.file = {
-    ".fzfrc".source = fzfConfig;
-    "${gpgTuiConfigFile}".source = gpgTuiConfig;
-  };
-}
+} //
+(if pkgs.stdenv.isLinux then {
+  home.packages = env.packages;
+  home.sessionVariables = env.variables;
+} else { })

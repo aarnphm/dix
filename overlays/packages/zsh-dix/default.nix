@@ -6,6 +6,7 @@ stdenv.mkDerivation {
   installPhase = ''
     mkdir -p $out/share/zsh
     cp *.zsh $out/share/zsh
+    cp -r site-functions/ $out/share/zsh
   '';
 
   meta = {

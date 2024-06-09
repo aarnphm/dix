@@ -22,6 +22,7 @@ self: super:
     , src
     , description
     , homepage
+    , nativeBuildInputs ? [ ]
     , postInstall ? ""
     , sourceRoot ? "."
     , ...
@@ -31,7 +32,7 @@ self: super:
         version = "${version}";
         src = src;
         buildInputs = [ unzip ];
-        nativeBuildInputs = [ installShellFiles ];
+        nativeBuildInputs = [ installShellFiles ] ++ nativeBuildInputs;
         sourceRoot = sourceRoot;
         phases = [ "unpackPhase" "installPhase" ];
         unpackCmd = ''
@@ -59,8 +60,12 @@ self: super:
           (cd "$mnt"; cp -a !(Applications) "$DEST/")
         '';
         installPhase = ''
+          runHook preInstall
+
           mkdir -p "$out/Applications/${appname}.app"
           cp -pR * "$out/Applications/${appname}.app"
+
+          runHook postInstall
         '';
         postInstall = postInstall;
         meta = with self.lib; {

@@ -20,7 +20,7 @@ with lib;
             ".ignore:Git Ignore"
             "config:Git Config"
           ];
-          pager = "${pkgs.less}/bin/less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+          pager = "${lib.getExe pkgs.less} --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
         };
       };
     };

@@ -1,38 +1,44 @@
 { lib
-, buildNpmPackage
+, stdenv
+, darwin
+, buildPackages
+, fetchNpmDeps
 , cargo
-, electron_28
-, fetchFromGitHub
 , glib
-, gtk3
-, jq
 , libsecret
-, makeWrapper
+, fetchFromGitHub
+, jq
 , moreutils
 , napi-rs-cli
 , nodejs_18
 , patchutils_0_4_2
-, pkg-config
 , python3
 , runCommand
 , rustc
 , rustPlatform
 }:
 let
-  description = "A secure and free password manager for all of your devices";
-  electron = electron_28;
-  version = "2024.5.0";
+  nodejs = nodejs_18;
+
   pname = "Bitwarden";
+  version = "2024.5.0";
+  description = "A secure and free password manager for all of your devices";
+  name = "${pname}-${version}";
+
+  npmHooks = buildPackages.npmHooks.override {
+    inherit nodejs;
+  };
 in
-buildNpmPackage rec {
-  inherit pname version;
+stdenv.mkDerivation rec {
+  inherit pname version name;
 
   src = fetchFromGitHub {
     owner = "bitwarden";
     repo = "clients";
     rev = "desktop-v${version}";
-    # hash = "sha256-UzVzo8tq719W2EwUE4NfvUrqhb61fvd60EGkavQmv3Q=";
+    hash = "sha256-ozR46snGD5yl98FslmnTeQmd2on/0bQPEnqJ0t8wx70=";
   };
+
   patches = [
     ./electron-builder-package-lock.patch
   ];
@@ -50,12 +56,19 @@ buildNpmPackage rec {
       | ${moreutils}/bin/sponge apps/desktop/src/package-lock.json
   '';
 
-  nodejs = nodejs_18;
+  npmDeps = fetchNpmDeps {
+    forceGitDeps = false;
+    forceEmptyCache = false;
+    src = src;
+    patches = patches;
+    postPatch = postPatch;
+    name = "${name}-npm-deps";
+    hash = "sha256-gprJGOE/uSSM3NHpcbelB7sueObEl4o522WRHIRFmwo=";
+  };
 
   makeCacheWritable = true;
-  npmFlags = [ "--legacy-peer-deps" ];
   npmWorkspace = "apps/desktop";
-  # npmDepsHash = "sha256-qkg1psct/ekIXB6QmJX1n/UOKUhYSD9Su7t/b4/4miM=";
+  npmBuildScript = "build";
 
   cargoDeps = rustPlatform.fetchCargoTarball {
     name = "${pname}-${version}";
@@ -71,102 +84,77 @@ buildNpmPackage rec {
       patches;
     patchFlags = [ "-p4" ];
     sourceRoot = "${src.name}/${cargoRoot}";
-    hash = lib.fakeSha256;
+    hash = "sha256-G+7FFgn0I4vq04+JF6w96i8IqqzQ5/3bx8uZkOroR+0=";
   };
   cargoRoot = "apps/desktop/desktop_native";
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+    npmHooks.npmBuildHook
+    npmHooks.npmInstallHook
+    nodejs.python
     cargo
     jq
-    makeWrapper
     moreutils
     napi-rs-cli
-    pkg-config
     python3
     rustc
     rustPlatform.cargoCheckHook
     rustPlatform.cargoSetupHook
+    darwin.cctools
+    (runCommand "impureHostArm" { } ''
+      mkdir -p $out/bin
+      ln -s /usr/bin/xcrun $out/bin
+    '')
   ];
 
-  buildInputs = [
-    glib
-    gtk3
-    libsecret
-  ];
+  buildInputs = (with darwin.apple_sdk.frameworks; [ CoreFoundation Security AppKit CoreServices SystemConfiguration ]) ++ [ nodejs glib libsecret ];
 
-  preBuild = ''
-    if [[ $(jq --raw-output '.devDependencies.electron' < package.json | grep -E --only-matching '^[0-9]+') != ${lib.escapeShellArg (lib.versions.major electron.version)} ]]; then
-      echo 'ERROR: electron version mismatch'
-      exit 1
-    fi
-  '';
+  strictDeps = true;
+  dontStrip = true;
+
+  npmBuildFlags = [ "--" "--target" "aarch64-apple-darwin" ];
 
   postBuild = ''
     pushd apps/desktop
 
-    ls -rthla && exit 1
-
-    # desktop_native/index.js loads a file of that name regarldess of the libc being used
-    mv desktop_native/desktop_native.* desktop_native/desktop_native.linux-x64-musl.node
-
-    npm exec electron-builder -- \
-      --dir \
-      -c.electronDist=${electron}/libexec/electron \
-      -c.electronVersion=${electron.version}
+    npm exec electron-builder -- --mac --arm64 -p never --dir 2>/dev/null || true
 
     popd
   '';
 
-  doCheck = false;
+  doCheck = true;
 
-  # nativeCheckInputs = [
-  #   dbus
-  #   (gnome.gnome-keyring.override { useWrappedDaemon = false; })
-  # ];
-  #
-  # checkFlags = [
-  #   "--skip=password::password::tests::test"
-  # ];
-  #
-  # checkPhase = ''
-  #   runHook preCheck
-  #
-  #   pushd ${cargoRoot}
-  #   export HOME=$(mktemp -d)
-  #   export -f cargoCheckHook runHook _eval _callImplicitHook
-  #   export cargoCheckType=release
-  #   dbus-run-session \
-  #     --config-file=${dbus}/share/dbus-1/session.conf \
-  #     -- bash -e -c cargoCheckHook
-  #   popd
-  #
-  #   runHook postCheck
-  # '';
+  checkFlags = [
+    "--skip=password::password::tests::test"
+    "--skip=clipboard::tests::test_write_read"
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    pushd ${cargoRoot}
+    export HOME=$(mktemp -d)
+    export -f cargoCheckHook runHook _eval _callImplicitHook
+    export cargoCheckType=release
+    bash -e -c cargoCheckHook
+    popd
+
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
 
     mkdir $out
 
-    pushd apps/desktop/dist/linux-unpacked
-    mkdir -p $out/opt/Bitwarden
-    cp -r locales resources{,.pak} $out/opt/Bitwarden
-    popd
+    pushd apps/desktop/dist/mac-arm64
+    mkdir -p "$out/Applications"
+    cp -pR * "$out/Applications"
 
-    makeWrapper '${electron}/bin/electron' "$out/bin/bitwarden" \
-      --add-flags $out/opt/Bitwarden/resources/app.asar \
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}" \
-      --set-default ELECTRON_IS_DEV 0 \
-      --inherit-argv0
-
-    pushd apps/desktop/resources/icons
-    for icon in *.png; do
-      dir=$out/share/icons/hicolor/"''${icon%.png}"/apps
-      mkdir -p "$dir"
-      cp "$icon" "$dir"/${icon}.png
-    done
     popd
 
     runHook postInstall

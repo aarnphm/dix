@@ -212,9 +212,13 @@ _venv_auto_activate() {
 chpwd_functions+=(_venv_auto_activate)
 precmd_functions=(_venv_auto_activate $precmd_functions)
 
-
 show_keymaps() {
-  bindkey -L | rg -v '^#' | fzf --preview '_fzf_complete_realpath {}' --preview-window up:50%
+  local selected_command
+  selected_command=$(bindkey -L | rg -v '^#' | fzf --preview '_fzf_complete_realpath {}' --preview-window up:50% --bind 'enter:execute(echo {1})+accept')
+
+  if [[ -n $selected_command ]]; then
+    eval "$selected_command"
+  fi
 }
 zle -N show_keymaps
 bindkey '^P' show_keymaps

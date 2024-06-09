@@ -21,19 +21,19 @@ installDmg rec {
       appPath = "${contentPath}/MacOS";
       binPath = "$out/bin";
       installBin = bin: ''
-        install -Dm755 ${appPath}/xbin/${bin} ${binPath}/${bin}
+        ln -fs ${appPath}/xbin/${bin} ${binPath}/${bin}
       '';
     in
     lib.concatStringsSep "\n" [
+      "mkdir -p ${binPath}"
       (installBin "docker")
       (installBin "docker-credential-osxkeychain")
       (installBin "docker-buildx")
       (installBin "docker-compose")
       (installBin "docker-buildx")
       (installBin "kubectl")
-      "install -Dm755 ${appPath}/scli ${binPath}/orbctl"
-      "install -Dm755 ${appPath}/scli ${binPath}/orb"
-      "${appPath}/scli completion zsh > ${contentPath}/Resources/completions/zsh/_orb"
+      "ln -fs ${appPath}/scli ${binPath}/orbctl"
+      "ln -fs ${appPath}/scli ${binPath}/orb"
     ];
 }
 

@@ -91,7 +91,7 @@ fzf-cd-widget() {
     return 0
   fi
   zle push-line # Clear buffer. Auto-restored on next prompt.
-  BUFFER="__zoxide_z -- ${(q)dir:a}"
+  BUFFER="__zoxide_z ${(q)dir:a}"
   zle accept-line
   local ret=$?
   unset dir # ensure this doesn't end up appearing in prompt expansion
@@ -128,6 +128,23 @@ zle     -N            fzf-history-widget
 bindkey -M emacs '^R' fzf-history-widget
 bindkey -M vicmd '^R' fzf-history-widget
 bindkey -M viins '^R' fzf-history-widget
+
+# CTRL-F - Find a file, if exites then edit it dirrectly
+fzf-find-edit-widget() {
+  local selected
+  setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
+  selected="$(fd --hidden --exclude .git --type f 2> /dev/null |
+    FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ${FZF_CTRL_F_OPTS-}") \
+    FZF_DEFAULT_OPTS_FILE='' $(__fzfcmd))"
+  if [ -n "$selected" ]; then
+    ${EDITOR:-vim} "$selected"
+  fi
+  zle reset-prompt
+}
+zle     -N            fzf-find-edit-widget
+bindkey -M emacs '^F' fzf-find-edit-widget
+bindkey -M vicmd '^F' fzf-find-edit-widget
+bindkey -M viins '^F' fzf-find-edit-widget
 fi
 
 } always {
