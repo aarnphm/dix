@@ -96,14 +96,14 @@
             paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
           };
         })
-        (import ./overlays/zsh-dix.nix)
-        (import ./overlays/derivations.nix)
-        (import ./overlays/packages-overrides.nix)
+        (import ./overlays/10-dev-overrides.nix)
+        (import ./overlays/20-packages-overrides.nix)
+        (import ./overlays/30-derivations.nix)
       ];
 
       darwinOverlays = self.linuxOverlays ++ [
         # custom packages specifics to darwin
-        (import ./overlays/darwin-applications.nix)
+        (import ./overlays/50-darwin-applications.nix)
       ];
     };
 }

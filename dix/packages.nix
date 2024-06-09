@@ -7,8 +7,6 @@ with pkgs; [
   vim
   neovim-developer
   alacritty
-  bitwarden-cli
-  paperspace-cli
 
   # kubernetes and container
   kubernetes-helm
@@ -30,7 +28,6 @@ with pkgs; [
 
   # git
   git
-  git-forest
   gitui
   lazygit
   git-lfs
@@ -73,6 +70,7 @@ with pkgs; [
 
   direnv
   tmux
+  curl
   jq
   yq
   gh
@@ -101,11 +99,20 @@ with pkgs; [
   hyperfine
   gnupg
   gpg-tui
-] ++ lib.optionals (pkgs.stdenv.isDarwin) [
-  OrbStack
-  Rectangle
-  pinentry_mac
-  pinentry-touchid
-] ++ lib.optionals (pkgs.stdenv.isLinux) [
-  pinentry-all
-]
+  (if stdenv.isDarwin then pinentry_mac else pinentry-all)
+] ++ (
+  with pkgs.dix; [
+    bitwarden-cli
+    paperspace-cli
+    git-forest
+  ] ++ lib.optionals (pkgs.stdenv.isDarwin) [
+    # Applications
+    OrbStack
+    Rectangle
+    # Bitwarden
+    Discord
+
+    # gpg
+    pinentry-touchid
+  ]
+)

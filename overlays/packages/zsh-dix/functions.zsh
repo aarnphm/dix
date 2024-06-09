@@ -1,16 +1,17 @@
-rsign-discord() {
-  find /Applications/Discord.app/Contents/Frameworks -d -type d -iname "*.app" | while read -r dir; do
-    sudo codesign --remove-signature "$dir"
-    sudo codesign --sign - "$dir"
-  done
-}
-
 path() {
     if (($+PATH)); then
         printf '%q\n' "$path[@]"
     else
         echo "PATH unset"
     fi
+}
+
+where-is-program() {
+  readlink -f $(which "$@")
+}
+
+get-derivation() {
+  nix-store --query --deriver $(readlink -f $(which "$@"))
 }
 
 fpath() {

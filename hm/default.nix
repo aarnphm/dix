@@ -1,4 +1,23 @@
-{ config, pkgs, user, ... }:
+{ config, pkgs, lib, user, ... }:
+let
+  env = import ../dix { inherit pkgs lib; };
+
+  fzfConfig = pkgs.writeText "fzfrc" ''
+    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+  '';
+
+  gpgTuiConfig = pkgs.writeText "gpg-tui.toml" ''
+    [general]
+      detail_level = "full"
+    [gpg]
+      armor = true
+  '';
+  gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
+in
+(if pkgs.stdenv.isLinux then {
+  home.packages = env.packages;
+  home.sessionVariables = env.variables;
+} else { }) //
 {
   imports = [ ./modules ];
 
@@ -85,9 +104,12 @@
       freeport = "sudo fuser -k $@";
       copy = "pbcopy";
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | pbcopy";
-      bwunlock = ''${pkgs.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
-      generate-password = "${pkgs.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
+      bwunlock = ''${pkgs.dix.bitwarden-cli}/bin/bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
+
+      # useful
+      generate-password = "${pkgs.dix.bitwarden-cli}/bin/bw generate --special --uppercase --minSpecial 12 --length 80 | pbcopy";
       lock-workflow = ''${pkgs.fd}/bin/fd -Hg "*.yml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
+      get-redirect = ''${pkgs.curl}/bin/curl -Ls -o /dev/null -w %{url_effective} $@'';
 
       # nix-commands
       nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';
@@ -95,6 +117,7 @@
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";
+      nstr = "nix-store --gc --print-roots";
 
       # program opts
       cat = "${pkgs.bat}/bin/bat";
@@ -112,23 +135,8 @@
     });
   };
 
-  home.file =
-    let
-      gpg_tui_config = ''
-        [general]
-          detail_level = "full"
-        [gpg]
-          armor = true
-      '';
-    in
-    {
-      ".fzfrc".text = ''
-        --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
-      '';
-      ".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.editor}/.vimrc";
-    } // (if pkgs.stdenv.isDarwin then {
-      "/Library/Application Support/gpg-tui/gpg-tui.toml".text = gpg_tui_config;
-    } else {
-      ".config/gpg-tui/gpg.tui.toml".text = gpg_tui_config;
-    });
+  home.file = {
+    ".fzfrc".source = fzfConfig;
+    "${gpgTuiConfigFile}".source = gpgTuiConfig;
+  };
 }

@@ -21,10 +21,10 @@ with lib;
           source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh
           ${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right | source /dev/stdin
         '';
-        initExtra = (pkgs.lib.optionals pkgs.stdenv.isLinux ''
+        initExtra = (if pkgs.stdenv.isLinux then ''
           eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
-        '') + ''
-          source ${pkgs.zsh-dix}/share/zsh/dix.plugin.zsh
+        '' else "") + ''
+          source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh
           eval "$(${pkgs.zoxide}/bin/zoxide init --cmd j zsh)"
 
           source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
@@ -90,7 +90,7 @@ with lib;
           )
         '' + (if pkgs.stdenv.isDarwin then ''
           fpath+=(
-            ${pkgs.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh
+            ${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh
           )
         '' else "");
       };

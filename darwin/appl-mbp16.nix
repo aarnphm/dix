@@ -1,6 +1,12 @@
-{ pkgs, user, inputs, ... }:
+{ pkgs, user, lib, inputs, ... }:
+let
+  env = import ../dix { inherit pkgs lib; };
+in
 {
-  imports = [ ./modules ../dix ];
+  imports = [ ./modules ];
+
+  environment.systemPackages = env.packages;
+  environment.variables = env.variables;
 
   # Users
   users.users.${user} = {

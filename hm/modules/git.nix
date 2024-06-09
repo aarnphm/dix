@@ -72,7 +72,7 @@ with lib;
             # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
             trustctime = false;
 
-            excludesFile = "${pkgs.emulators}/git/.gitignore";
+            excludesFile = "${pkgs.dix.emulators}/git/.gitignore";
 
             # Prevent showing files whose names contain non-ASCII symbols as unversioned.
             # http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
