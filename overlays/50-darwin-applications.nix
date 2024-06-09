@@ -1,103 +1,12 @@
 self: super:
-let
-  isArm = with import ./helpers.nix; checkArm super;
-in
 {
-  installDmg = { name, appname ? name, version, src, description, homepage, postInstall ? "", sourceRoot ? ".", ... }:
-    with super; stdenv.mkDerivation {
-      name = "${name}-${version}";
-      version = "${version}";
-      src = src;
-      buildInputs = with super; [ unzip ];
-      sourceRoot = sourceRoot;
-      phases = [ "unpackPhase" "installPhase" ];
-      unpackCmd = ''
-        echo "File to unpack: $curSrc"
-        echo "Current source: $(ls -rthla $curSrc)"
-        if ! [[ "$curSrc" =~ \.dmg$ ]]; then return 1; fi
-        mnt=$(mktemp -d -t ci-XXXXXXXXXX)
-
-        function finish {
-          echo "Detaching $mnt"
-          /usr/bin/hdiutil detach $mnt -force
-          rm -rf $mnt
-        }
-        trap finish EXIT
-
-        echo "Attaching $mnt"
-        /usr/bin/hdiutil attach -nobrowse -readonly $src -mountpoint $mnt
-
-        echo "What's in the mount dir"?
-        ls -la $mnt/
-
-        echo "Copying contents"
-        shopt -s extglob
-        DEST="$PWD"
-        (cd "$mnt"; cp -a !(Applications) "$DEST/")
-      '';
-      installPhase = ''
-        mkdir -p "$out/Applications/${appname}.app"
-        cp -pR * "$out/Applications/${appname}.app"
-      '';
-      postInstall = postInstall;
-      meta = with self.lib; {
-        description = description;
-        homepage = homepage;
-        maintainers = with maintainers; [ aarnphm ];
-        platforms = platforms.darwin;
-      };
-    };
-
   dix = super.dix or { } //
     {
-      OrbStack =
-        let
-          arch = if isArm then "arm64" else "amd64";
-        in
-        self.installDmg rec {
-          name = "OrbStack";
-          version = "1.6.1_17010";
-          sourceRoot = "${name}.app";
-          src = super.fetchurl {
-            url = "https://cdn-updates.orbstack.dev/${arch}/${name}_v${version}_${arch}.dmg";
-            hash = if isArm then "sha256-0ZhP1EA+8BOaCuXG5QYcdqopIcWmzHkT9HtVGzJKGFo=" else "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-          };
-          description = "Fast, light, powerful way to run containers";
-          homepage = "https://orbstack.dev/";
-          postInstall =
-            let
-              contentPath = "$out/Applications/${name}.app/Contents";
-              appPath = "${contentPath}/MacOS";
-              binPath = "$out/bin";
-              installBin = bin: ''
-                install -Dm755 ${appPath}/xbin/${bin} ${binPath}/${bin}
-              '';
-            in
-            ''
-              ${installBin "docker"}
-              ${installBin "docker-credential-osxkeychain"}
-              ${installBin "docker-buildx"}
-              ${installBin "docker-compose"}
-              ${installBin "kubectl"}
+      OrbStack = super.callPackage (import ./packages/darwin/OrbStack.app) { };
 
-              install -Dm755 ${appPath}/scli ${binPath}/orb
-              install -Dm755 ${appPath}/scli ${binPath}/orbctl
+      Rectangle = super.callPackage (import ./packages/darwin/Rectangle.app) { };
 
-              installShellCompletion --zsh --cmd orbctl <($out/bin/orbctl completion zsh)
-            '';
-        };
-
-      Rectangle = self.installDmg rec {
-        name = "Rectangle";
-        version = "0.80";
-        sourceRoot = "${name}.app";
-        src = super.fetchurl {
-          url = "https://github.com/rxhanson/Rectangle/releases/download/v${version}/${name}${version}.dmg";
-          hash = "sha256-CmYhMnEhn3UK82RXuT1KQhAoK/0ewcUU6h73el2Lpw8=";
-        };
-        description = "Move and resize windows in macOS using keyboard shortcuts or snap areas";
-        homepage = "https://rectangleapp.com/";
-      };
+      Discord = super.callPackage (import ./packages/darwin/Discord.app) { };
 
       Bitwarden = with super;
         let
@@ -265,52 +174,6 @@ in
           };
         };
 
-      Discord = self.installDmg rec {
-        name = "Discord";
-        version = "0.0.306";
-        sourceRoot = "${name}.app";
-        src = super.fetchurl {
-          url = "https://dl.discordapp.net/apps/osx/${version}/${name}.dmg";
-          hash = "sha256-bcB//LqJ4pKUSJQj3LFWqbeeCzRHMbYbQvsPNaOiTOE=";
-        };
-        description = "GROUP CHAT. THAT’S ALL FUN GAMES";
-        homepage = "https://discord.com/";
-        postInstall = ''
-          find $out/Applications/${name}.app/Contents/Frameworks -d -type d -iname "*.app" | while read -r dir; do
-            /usr/bin/codesign --remove-signature "$dir"
-            codesign --sign - "$dir"
-          done
-        '';
-      };
-
-      pinentry-touchid = super.stdenv.mkDerivation (finalAttrs: {
-        pname = "pinentry-touchid";
-        version = "0.0.3";
-
-        src = super.fetchurl {
-          url = "https://github.com/jorgelbg/pinentry-touchid/releases/download/v${finalAttrs.version}/pinentry-touchid_${finalAttrs.version}_macos_${if isArm then "arm64" else "amd64"}.tar.gz";
-          sha256 = "sha256-bxwkoC6DbORe6uQCeFMoqYngq6ZKsjrj7SUdgmm9d3I=";
-        };
-        sourceRoot = ".";
-
-        buildInputs = with super; [ unzip ];
-        unpackCmd = ''
-          unzip $curSrc pinentry-touchid
-        '';
-        installPhase = ''
-          ls -rthla
-          mkdir -p $out/bin
-          cp pinentry-touchid $out/bin/
-        '';
-
-        meta = {
-          description = "Pinentry TouchID for Mac";
-          license = super.lib.licenses.asl20;
-          homepage = "https://github.com/jorgelbg/pinentry-touchid";
-          platforms = super.lib.platforms.darwin;
-          mainProgram = "pinentry-touchid";
-        };
-      });
     };
 }
 

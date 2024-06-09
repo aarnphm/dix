@@ -87,12 +87,9 @@ with lib;
 
           fpath+=(
             ${pkgs.zsh-completions}/share/zsh/site-functions
+            ${if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh" else ""}
           )
-        '' + (if pkgs.stdenv.isDarwin then ''
-          fpath+=(
-            ${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh
-          )
-        '' else "");
+        '';
       };
     };
   };
