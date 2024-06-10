@@ -24,7 +24,7 @@ in
           enable = true;
         };
         signing = {
-          key = "3F0AB04C023BA498";
+          key = "266DEB12B7680F9D";
           signByDefault = true;
         };
         extraConfig = {
