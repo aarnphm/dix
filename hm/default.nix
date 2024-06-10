@@ -28,8 +28,8 @@ in
   btop.enable = true;
   system.enable = true;
   ssh.enable = true;
-  gpg.enable = true;
   direnv.enable = true;
+  gpg.enable = true;
 
   home.username = user;
 

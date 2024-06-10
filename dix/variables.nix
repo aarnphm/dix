@@ -1,16 +1,5 @@
 { pkgs, lib, ... }:
 with lib;
-let
-  ld_path = makeLibraryPath [
-    pkgs.openssl.dev
-    pkgs.zlib.dev
-    pkgs.xz.dev
-    pkgs.stdenv.cc.cc.lib
-    pkgs.readline.dev
-    pkgs.protobuf
-    pkgs.cairo
-  ];
-in
 {
   # xdg
   XDG_BIN_HOME = "$HOME/.local/bin";
@@ -24,25 +13,33 @@ in
 
   # editors
   WORKSPACE = "$HOME/workspace";
-  SHELL = "${pkgs.zsh}/bin/zsh";
-  EDITOR = "${pkgs.neovim-developer}/bin/nvim";
-  VISUAL = "${pkgs.neovim-developer}/bin/nvim";
-  MANPAGER = "${pkgs.neovim-developer}/bin/nvim +Man!";
+  SHELL = "${getExe pkgs.zsh}";
+  EDITOR = "${getExe pkgs.neovim-developer}";
+  VISUAL = "${getExe pkgs.neovim-developer}";
+  MANPAGER = "${getExe pkgs.neovim-developer} +Man!";
   LSCOLORS = "ExFxBxDxCxegedabagacad";
   SIMPLE_BACKGROUND = "dark";
   # fzf
-  FZF_CTRL_T_COMMAND = ''${pkgs.fd.out}/bin/fd --hidden --follow --exclude .git'';
-  FZF_DEFAULT_COMMAND = ''${pkgs.ripgrep.out}/bin/rg --files --hidden --ignore .git'';
+  FZF_CTRL_T_COMMAND = ''${getExe pkgs.fd} --hidden --follow --exclude .git'';
+  FZF_DEFAULT_COMMAND = ''${getExe pkgs.ripgrep} --files --hidden --ignore .git'';
   FZF_TMUX_HEIGHT = "80%";
   FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
   # language
   GOPATH = "$HOME/go";
-  PYTHON3_HOST_PROG = ''${pkgs.python3-tools}/bin/python'';
+  PYTHON3_HOST_PROG = ''${getExe pkgs.python3-tools}'';
   NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
   # misc
   OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
   SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
   PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
-  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf pkgs.skhd "$PAPERSPACE_INSTALL" ]}" "$PATH" ];
-  LD_LIBRARY_PATH = ld_path;
+  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf pkgs.skhd ]}" "$PATH" ];
+  LD_LIBRARY_PATH = with pkgs; makeLibraryPath [
+    (getDev openssl)
+    (getDev zlib)
+    (getDev xz)
+    (getDev readline)
+    stdenv.cc.cc.lib
+    protobuf
+    cairo
+  ];
 }

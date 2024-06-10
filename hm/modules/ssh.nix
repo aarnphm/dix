@@ -23,6 +23,9 @@ with lib;
           user = "paperspace";
           identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
         };
+        "github.com" = {
+          identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
+        };
       };
     } //
     (pkgs.lib.optionals pkgs.stdenv.isDarwin
