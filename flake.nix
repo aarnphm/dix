@@ -28,8 +28,16 @@
     };
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, flake-utils, ... }@inputs:
     let
+      inherit (flake-utils.lib) eachSystemMap;
+
+      isDarwin = system: (builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
+      homePrefix = system:
+        if isDarwin system
+        then "/Users"
+        else "/home";
+
       user = "aarnphm";
 
       darwin-pkgs = import nixpkgs {
@@ -39,6 +47,7 @@
           allowUnfree = true;
         };
       };
+
       linux-pkgs = import nixpkgs {
         system = "x86_64-linux";
         overlays = self.linuxOverlays;
@@ -48,20 +57,14 @@
       };
     in
     {
-      packages.aarch64-darwin = {
-        dix = darwin-pkgs.dix;
-      };
-      packages.x86_64-linux = {
-        dix = linux-pkgs.dix;
-      };
+      packages.aarch64-darwin.dix = darwin-pkgs.dix;
+      packages.x86_64-linux.dix = linux-pkgs.dix;
 
       darwinConfigurations = {
-        appl-mbp16 = nix-darwin.lib.darwinSystem {
+        appl-mbp16 = nix-darwin.lib.darwinSystem rec {
           system = "aarch64-darwin";
-          specialArgs = {
-            inherit self inputs user;
-            pkgs = darwin-pkgs;
-          };
+          pkgs = darwin-pkgs;
+          specialArgs = { inherit self inputs user pkgs; };
           modules = [
             ./darwin/appl-mbp16.nix
             home-manager.darwinModules.home-manager
@@ -69,18 +72,25 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                users."${user}" = {
-                  imports = [ ./hm ];
-                };
+                users.aarnphm.imports = [ ./hm ];
                 backupFileExtension = "backup-from-hm";
-                extraSpecialArgs = {
-                  inherit user;
-                  pkgs = darwin-pkgs;
-                };
+                extraSpecialArgs = { inherit user pkgs; };
                 verbose = true;
               };
             }
           ];
+        };
+      };
+
+      homeConfigurations = {
+        paperspace = home-manager.lib.homeManagerConfiguration rec {
+          system = "x86_64-linux";
+          pkgs = linux-pkgs;
+          extraSpecialArgs = {
+            inherit self inputs pkgs;
+            user = "paperspace";
+          };
+          modules = [ ./hm ];
         };
       };
 
