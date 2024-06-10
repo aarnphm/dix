@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 with lib; (
   let
-    gpgAgentConfig = pkgs.writeText "gpg-agent.conf" (lib.concatStringsSep "\n" [
+    gpgAgentConfig = enableTouchId: pkgs.writeText "gpg-agent.conf" (lib.concatStringsSep "\n" [
       "default-cache-ttl 600"
       "max-cache-ttl 7200"
-      (lib.optionalString pkgs.stdenv.isDarwin ''
+      (lib.optionalString enableTouchId ''
         pinentry-program ${pkgs.dix.pinentry-touchid}/bin/pinentry-touchid
       '')
     ]);
@@ -33,7 +33,7 @@ with lib; (
         };
       };
 
-      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig;
+      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig false;
     };
   }
 )
