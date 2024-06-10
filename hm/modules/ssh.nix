@@ -14,7 +14,6 @@ with lib;
       enable = true;
       compression = true;
       addKeysToAgent = "yes";
-      forwardAgent = true;
       extraOptionOverrides = {
         Ciphers = "aes128-ctr,aes192-ctr,aes256-ctr";
       };
