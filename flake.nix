@@ -84,7 +84,6 @@
 
       homeConfigurations = {
         paperspace = home-manager.lib.homeManagerConfiguration rec {
-          system = "x86_64-linux";
           pkgs = linux-pkgs;
           extraSpecialArgs = {
             inherit self inputs pkgs;
