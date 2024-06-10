@@ -33,7 +33,7 @@ with lib; (
         };
       };
 
-      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig false;
+      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
     };
   }
 )
