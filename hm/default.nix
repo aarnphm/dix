@@ -15,6 +15,7 @@ let
 
   gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
 in
+lib.recursiveUpdate
 {
   imports = [ ./modules ];
 
@@ -135,8 +136,12 @@ in
       pinentry = lib.getExe (if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-all);
     };
   };
-} //
-(if pkgs.stdenv.isLinux then {
-  home.packages = env.packages;
-  home.sessionVariables = env.variables;
-} else { })
+}
+  (
+    if pkgs.stdenv.isLinux then
+      {
+        home.packages = env.packages;
+        home.sessionVariables = env.variables;
+      }
+    else { }
+  )

@@ -10,34 +10,35 @@ with lib;
   };
 
   config = mkIf config.ssh.enable {
-    programs.ssh = {
-      enable = true;
-      compression = true;
-      addKeysToAgent = "yes";
-      extraOptionOverrides = {
-        Ciphers = "aes128-ctr,aes192-ctr,aes256-ctr";
-      };
-      matchBlocks = {
-        "a4000" = {
-          hostname = "184.105.106.53";
-          user = "paperspace";
-          identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
-        };
-        "github.com" = {
-          identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
-        };
-      };
-    } //
-    (pkgs.lib.optionals pkgs.stdenv.isDarwin
+    programs.ssh = lib.recursiveUpdate
       {
-        extraConfig = ''
-          IgnoreUnknown UseKeychain
-          UseKeychain yes
-        '';
-        includes = [
-          "${config.home.homeDirectory}/.orbstack/ssh/config"
-        ];
+        enable = true;
+        compression = true;
+        addKeysToAgent = "yes";
+        extraOptionOverrides = {
+          Ciphers = "aes128-ctr,aes192-ctr,aes256-ctr";
+        };
+        matchBlocks = {
+          "a4000" = {
+            hostname = "184.105.106.53";
+            user = "paperspace";
+            identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+          };
+          "github.com" = {
+            identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
+          };
+        };
       }
-    );
+      (if pkgs.stdenv.isDarwin then
+        {
+          extraConfig = ''
+            IgnoreUnknown UseKeychain
+            UseKeychain yes
+          '';
+          includes = [
+            "${config.home.homeDirectory}/.orbstack/ssh/config"
+          ];
+        } else { }
+      );
   };
 }
