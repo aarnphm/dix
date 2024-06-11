@@ -132,4 +132,4 @@ let
   ];
 
 in
-common ++ lib.optionals pkgs.stdenv.isDarwin darwin ++ lib.optionals pkgs.stdenv.isLinux linux
+(builtins.filter (x: x != null) common) ++ lib.optionals pkgs.stdenv.isDarwin darwin ++ lib.optionals pkgs.stdenv.isLinux linux
