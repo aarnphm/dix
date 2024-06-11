@@ -105,6 +105,7 @@ let
     dix.bitwarden-cli
     dix.paperspace-cli
     dix.git-forest
+    dix.unicopy
   ];
 
   darwin = with pkgs; [

@@ -15,6 +15,7 @@ let
 in
 {
   dix = super.dix or { } // {
+    unicopy = super.callPackage ./packages/unicopy { };
     git-forest = super.callPackage ./packages/git-forest { };
     zsh-dix = super.callPackage ./packages/zsh-dix { };
     bitwarden-cli = super.callPackage ./packages/bitwarden-cli { };
