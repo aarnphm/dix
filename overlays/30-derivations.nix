@@ -14,8 +14,8 @@ let
   };
 in
 {
-  openllm-ci = super.callPackage ./packages/bentoml/openllm-ci { };
   dix = super.dix or { } // {
+    openllm-ci = super.callPackage ./packages/bentoml/openllm-ci { };
     unicopy = super.callPackage ./packages/unicopy { };
     git-forest = super.callPackage ./packages/git-forest { };
     zsh-dix = super.callPackage ./packages/zsh-dix { };

@@ -58,8 +58,14 @@
       };
     in
     {
-      packages.aarch64-darwin.dix = darwin-pkgs.dix;
-      packages.x86_64-linux.dix = linux-pkgs.dix;
+      packages.aarch64-darwin = rec {
+        dix = darwin-pkgs.dix;
+        inherit (dix) openllm-ci;
+      };
+      packages.x86_64-linux = rec {
+        dix = linux-pkgs.dix;
+        inherit (dix) openllm-ci;
+      };
 
       nixConfig = {
         trusted-substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" ];
