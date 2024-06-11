@@ -81,6 +81,6 @@ elif [[ "${HEAD:-}" = true ]]; then
   @git@ switch main
 fi
 
-@shell@ "$OPENLLM_DIR/local.sh" --daemon --tests
+@shell@ "$OPENLLM_DIR/local.sh" --tests
 
 popd 2>/dev/null
