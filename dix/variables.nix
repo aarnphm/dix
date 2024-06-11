@@ -44,9 +44,9 @@ lib.recursiveUpdate
     cairo
   ];
 }
-(if pkgs.stdenv.isLinux then
-{
-  GPG_TTY="$(tty)";
-} else {}
-)
+  (if pkgs.stdenv.isLinux then
+    {
+      GPG_TTY = "$(tty)";
+    } else { }
+  )
 

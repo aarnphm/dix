@@ -3,11 +3,11 @@
     "editor-nix": {
       "flake": false,
       "locked": {
-        "lastModified": 1717981405,
-        "narHash": "sha256-DuZazb6KRtzdT0bvPS7CjGDjcP1jRmtZ4SMQNx48a6Q=",
+        "lastModified": 1718070738,
+        "narHash": "sha256-EqVJuytDBILvuNZc40cI15AryzjanV/lG2N1S7oK/1Q=",
         "owner": "aarnphm",
         "repo": "editor",
-        "rev": "2d45b605033c3cc9d9bdbb2e508d2fbd7afa6f27",
+        "rev": "c17cf782911a8f848a2693d2a369d9d1d6291e61",
         "type": "github"
       },
       "original": {
@@ -293,11 +293,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1718063653,
-        "narHash": "sha256-9tdVnaz6ynw2waTATSuz3d6+lb9xBZXAWeTHIZJQg8A=",
+        "lastModified": 1718070710,
+        "narHash": "sha256-xmpRpP9O0O/IJiiVAYNJSBR/1epBIOxyMEi/+5QB52A=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "a53f8b3cd09470a10e919a589402ec0331c6de63",
+        "rev": "8aeb30ae73b20a53422fa3190d64e7e7b692ee79",
         "type": "github"
       },
       "original": {
