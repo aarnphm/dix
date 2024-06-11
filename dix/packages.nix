@@ -126,6 +126,7 @@ let
   ];
 
   linux = with pkgs; [
+    nvtop
     pinentry-all
     coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun
     llvmPackages.libcxxClang

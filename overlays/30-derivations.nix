@@ -14,6 +14,8 @@ let
   };
 in
 {
+  nvtop-appl = super.callPackage ./packages/nvtop-appl { };
+
   dix = super.dix or { } // {
     openllm-ci = super.callPackage ./packages/bentoml/openllm-ci { };
     unicopy = super.callPackage ./packages/unicopy { };
