@@ -114,6 +114,8 @@ let
   ];
 
   darwin = with pkgs; [
+    # for some reason they don't have flock on darwin :(
+    flock
     pinentry_mac
     dix.pinentry-touchid
 
