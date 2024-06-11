@@ -39,7 +39,6 @@ while [[ $# -gt 0 ]]; do
     --debug)
       DEBUG=true
       shift
-      shift
       ;;
     *)
       usage

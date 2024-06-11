@@ -32,6 +32,7 @@
     let
       inherit (flake-utils.lib) eachSystemMap;
 
+      forAllSystems = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ];
       isDarwin = system: (builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
       homePrefix = system:
         if isDarwin system

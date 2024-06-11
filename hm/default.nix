@@ -131,7 +131,7 @@ lib.recursiveUpdate
       # python
       pip = "uv pip";
       python3 = ''$(${lib.getExe pkgs.pyenv} root)/shims/python'';
-      python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${pkgs.zlib.outPath}/lib -L${pkgs.xz.dev.outPath}/lib" ${lib.getExe pkgs.pyenv} install "$@"'';
+      python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${lib.makeLibraryPath [pkgs.zlib pkgs.xz.dev]}" ${lib.getExe pkgs.pyenv} install "$@"'';
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
       k = if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/kubectl" else "kubectl";
