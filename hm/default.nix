@@ -20,6 +20,7 @@ lib.recursiveUpdate
   imports = [ ./modules ];
 
   programs.home-manager.enable = true;
+  programs.nix-index.enable = true;
 
   zsh.enable = true;
   zoxide.enable = true;
@@ -100,9 +101,9 @@ lib.recursiveUpdate
       gprc = "${lib.getExe pkgs.gh} pr create";
 
       # editor
-      v = "${lib.getExe pkgs.neovim-developer}";
+      v = "${lib.getExe pkgs.neovim}";
       vi = "${lib.getExe pkgs.vim}";
-      f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim-developer}'';
+      f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
 
       # general
       cx = "chmod +x";
@@ -118,7 +119,7 @@ lib.recursiveUpdate
 
       # nix-commands
       nrb = ''pushd $WORKSPACE/dix &>/dev/null && darwin-rebuild switch --flake ".#appl-mbp16" --verbose && popd &>/dev/null'';
-      ned = "${lib.getExe pkgs.neovim-developer} $WORKSPACE/dix/darwin/appl-mbp16.nix";
+      ned = "${lib.getExe pkgs.neovim} $WORKSPACE/dix/darwin/appl-mbp16.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";

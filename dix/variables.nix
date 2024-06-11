@@ -14,9 +14,9 @@ with lib;
   # editors
   WORKSPACE = "$HOME/workspace";
   SHELL = "${getExe pkgs.zsh}";
-  EDITOR = "${getExe pkgs.neovim-developer}";
-  VISUAL = "${getExe pkgs.neovim-developer}";
-  MANPAGER = "${getExe pkgs.neovim-developer} +Man!";
+  EDITOR = "${getExe pkgs.neovim}";
+  VISUAL = "${getExe pkgs.neovim}";
+  MANPAGER = "${getExe pkgs.neovim} +Man!";
   LSCOLORS = "ExFxBxDxCxegedabagacad";
   SIMPLE_BACKGROUND = "dark";
   # fzf

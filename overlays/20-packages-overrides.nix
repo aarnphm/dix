@@ -28,7 +28,7 @@ self: super:
     '';
   });
   tree-sitter = super.tree-sitter.override { webUISupport = true; };
-  neovim-developer = super.neovim-developer.overrideAttrs (oldAttrs: {
+  neovim = super.neovim.overrideAttrs (oldAttrs: {
     preConfigure = oldAttrs.preConfigure + super.lib.concatStrings (super.lib.mapAttrsToList
       (language: grammar: ''
         ln -sf ${grammar}/parser $out/lib/nvim/parser/${super.lib.strings.removePrefix "tree-sitter-" language}.so

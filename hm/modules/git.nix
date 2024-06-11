@@ -84,7 +84,7 @@ in
             # Speed up commands involving untracked files such as `git status`.
             # https://git-scm.com/docs/git-update-index#_untracked_cache
             untrackedCache = true;
-            editor = "${lib.getExe pkgs.neovim-developer}";
+            editor = "${lib.getExe pkgs.neovim}";
             pager = "${lib.getExe pkgs.delta}";
 
             autocrlf = "input";

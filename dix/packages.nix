@@ -5,7 +5,7 @@ with pkgs; [
 
   # editor
   vim
-  neovim-developer
+  neovim
   alacritty
 
   # kubernetes and container
