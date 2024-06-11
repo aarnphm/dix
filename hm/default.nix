@@ -119,7 +119,8 @@ lib.recursiveUpdate
       get-gpg-password = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-github-keys | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
-      nrb = ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace'';
+      nrbd = ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace'';
+      nrbl = ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
       ned = "${lib.getExe pkgs.neovim} $WORKSPACE/dix/flake.nix";
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";

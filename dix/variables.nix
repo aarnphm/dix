@@ -34,6 +34,18 @@ let
       "${lib.makeBinPath [ "$HOME/.cargo" pkgs.protobuf ]}"
       "$PATH"
     ];
+  };
+
+  linuxEnv = {
+    GPG_TTY = "$(tty)";
+    CUDA_PATH = pkgs.cudatoolkit;
+  };
+
+  darwinEnv = {
+    # misc
+    OPENBLAS = "${lib.makeLibraryPath [pkgs.openblas]}/libopenblas.dylib";
+    SQLITE_PATH = "${lib.makeLibraryPath [pkgs.sqlite]}/libsqlite3.dylib";
+    PYENCHANT_LIBRARY_PATH = "${lib.makeLibraryPath [pkgs.enchant]}/libenchant-2.2.dylib";
     LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [
       (lib.getDev openssl)
       (lib.getDev zlib)
@@ -43,17 +55,6 @@ let
       protobuf
       cairo
     ];
-  };
-
-  linuxEnv = {
-    GPG_TTY = "$(tty)";
-  };
-
-  darwinEnv = {
-    # misc
-    OPENBLAS = "${lib.makeLibraryPath [pkgs.openblas]}/libopenblas.dylib";
-    SQLITE_PATH = "${lib.makeLibraryPath [pkgs.sqlite]}/libsqlite3.dylib";
-    PYENCHANT_LIBRARY_PATH = "${lib.makeLibraryPath [pkgs.enchant]}/libenchant-2.2.dylib";
   };
 
 in

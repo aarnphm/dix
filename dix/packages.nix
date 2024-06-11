@@ -106,6 +106,11 @@ let
     dix.paperspace-cli
     dix.git-forest
     dix.unicopy
+
+    # cuda
+    cudatoolkit
+    cudaPackages.tensorrt
+    cudaPackages.cudnn
   ];
 
   darwin = with pkgs; [
