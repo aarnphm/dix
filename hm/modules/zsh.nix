@@ -90,11 +90,7 @@ in
         in
         concatStringsSepNewLine [
           ''eval "$(${lib.getExe pkgs.pyenv} init -)"''
-          (concatStrings (map
-            (sitePath: ''
-              fpath+=${sitePath}
-            '')
-            sites))
+          (concatStrings (map (sitePath: "fpath+=${sitePath}") sites))
         ];
     };
   };

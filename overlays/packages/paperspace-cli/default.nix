@@ -1,4 +1,4 @@
-{ isArm, stdenv, fetchurl, unzip, installShellFiles }:
+{ isArm, stdenv, lib, fetchurl, unzip, installShellFiles }:
 stdenv.mkDerivation rec {
   pname = "paperspace-cli";
   version = "1.10.1";
@@ -26,5 +26,15 @@ stdenv.mkDerivation rec {
   postInstall = ''
     installShellCompletion --zsh --cmd pspace <($out/bin/pspace completion zsh)
   '';
+
+  meta = with lib; {
+    mainProgram = "pspace";
+    changelog = "https://github.com/Paperspace/cli/releases/tag/${src.rev}";
+    description = "The CLI for paperspace";
+    homepage = "https://www.paperspace.com/";
+    license = licenses.gpl3Only;
+    maintainers = with maintainers; [ aarnphm ];
+    platforms = platforms.unix;
+  };
 }
 
