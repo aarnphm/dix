@@ -81,9 +81,6 @@ elif [[ "${HEAD:-}" = true ]]; then
   @git@ switch main
 fi
 
-@shell@ "$OPENLLM_DIR/local.sh"
-source "$OPENLLM_DIR/.venv/bin/activate"
-
-@hatch@ run tests:python
+@shell@ "$OPENLLM_DIR/local.sh" --daemon --tests
 
 popd 2>/dev/null

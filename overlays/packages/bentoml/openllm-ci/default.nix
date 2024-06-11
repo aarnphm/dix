@@ -1,9 +1,4 @@
-{ stdenv, lib, writeProgram, bash, coreutils, gh, git, hatch, makeWrapper }:
-let
-  hatch' = hatch.overrideAttrs (oa: {
-    dontUsePytestCheck = true;
-  });
-in
+{ stdenv, lib, writeProgram, bash, coreutils, gh, git, makeWrapper }:
 stdenv.mkDerivation rec  {
   pname = "openllm-ci";
   version = "0.0.1";
@@ -12,7 +7,6 @@ stdenv.mkDerivation rec  {
     {
       inherit (stdenv) shell;
       inherit coreutils pname;
-      hatch = lib.getExe hatch';
       gh = lib.getExe gh;
       git = lib.getExe git;
     }
@@ -28,7 +22,7 @@ stdenv.mkDerivation rec  {
 
   postFixup = ''
     wrapProgram $out/bin/run-tests \
-      --prefix PATH : "${lib.makeBinPath [ gh git coreutils hatch' bash ]}"
+      --prefix PATH : "${lib.makeBinPath [ gh git coreutils bash ]}"
   '';
 
   meta = {
