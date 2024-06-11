@@ -24,7 +24,7 @@ in
           enable = true;
         };
         signing = {
-          key = "266DEB12B7680F9D";
+          key = if pkgs.stdenv.isDarwin then "266DEB12B7680F9D" else "B7559BD33B10A161";
           signByDefault = true;
         };
         extraConfig = {

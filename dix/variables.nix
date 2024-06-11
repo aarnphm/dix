@@ -1,5 +1,6 @@
 { pkgs, lib, ... }:
 with lib;
+lib.recursiveUpdate
 {
   # xdg
   XDG_BIN_HOME = "$HOME/.local/bin";
@@ -43,3 +44,9 @@ with lib;
     cairo
   ];
 }
+(if pkgs.stdenv.isLinux then
+{
+  GPG_TTY="$(tty)";
+} else {}
+)
+

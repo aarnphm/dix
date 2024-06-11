@@ -113,4 +113,9 @@ with pkgs; [
     # gpg
     pinentry-touchid
   ]
-)
+) ++ lib.optionals (pkgs.stdenv.isLinux) (with pkgs; [
+  coreutils-full
+  gnumake
+  cmake
+  llvmPackages.libcxxClang
+])
