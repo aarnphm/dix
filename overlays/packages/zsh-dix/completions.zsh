@@ -41,12 +41,10 @@ zstyle ':fzf-tab:complete:(\\|*/|)make:*' fzf-preview \
 
 # complete `killall`
 zstyle ':completion:*:*:killall:*:*' command 'ps -u "$USERNAME" -o comm'
-zstyle ':fzf-tab:complete:(\\|*/|)killall:*' fzf-preview \
-  'ps aux | rg "$word" | _fzf_complete_realpath'
+zstyle ':fzf-tab:complete:(\\|*/|)killall:*' fzf-preview 'ps aux | rg "$word" | _fzf_complete_realpath'
 
 # zoxide
-zstyle ':fzf-tab:complete:(\\|*/|)(j|__zoxide_z):*' fzf-preview \
-  '_fzf_complete_realpath "$word"'
+zstyle ':fzf-tab:complete:(\\|*/|)(j|__zoxide_z):*' fzf-preview '_fzf_complete_realpath "$word"'
 
 # ignores unavailable commands
 zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec)|prompt_*)'

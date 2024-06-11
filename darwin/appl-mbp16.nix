@@ -1,6 +1,7 @@
 { pkgs, user, lib, inputs, ... }:
 let
   env = import ../dix { inherit pkgs lib; };
+  homePath = "/Users/${user}";
 in
 {
   imports = [ ./modules ];
@@ -11,7 +12,7 @@ in
   # Users
   users.users.${user} = {
     shell = pkgs.zsh;
-    home = "/Users/${user}";
+    home = homePath;
     createHome = true;
   };
 
@@ -96,6 +97,17 @@ in
   programs.zsh = {
     enable = true;
     promptInit = ''source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh'';
+    shellInit = ''
+      zmodload zsh/mapfile
+      bwpassfile="${homePath}/bw.pass"
+      if [[ -f "$bwpassfile" ]]; then
+        bitwarden=("''${(f@)mapfile[$bwpassfile]}")
+        export BW_MASTER=$bitwarden[1]
+        export BW_CLIENTID=$bitwarden[2]
+        export BW_CLIENTSECRET=$bitwarden[3]
+      fi
+
+    '';
   };
   programs.direnv = {
     enable = true;
