@@ -7,6 +7,7 @@ self: super:
       Discord = super.callPackage (import ./packages/darwin/Discord.app) { };
       Bitwarden = super.callPackage (import ./packages/darwin/Bitwarden.app) { };
       Zed = super.callPackage (import ./packages/darwin/Zed.app) { };
+      Obsidian = super.callPackage (import ./packages/darwin/Obsidian.app) { };
     };
 }
 

@@ -48,7 +48,6 @@ in
     programs.zsh = {
       enable = true;
       enableVteIntegration = true;
-      historySubstringSearch.enable = true;
       completionInit = concatStringsSepNewLine [
         (optionalString pkgs.stdenv.isLinux "autoload -U compinit && compinit")
         (optionalString pkgs.stdenv.isLinux "autoload -U bashcompinit && bashcompinit")

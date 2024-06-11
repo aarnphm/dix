@@ -125,6 +125,7 @@ let
     dix.Rectangle
     dix.Discord
     dix.Zed
+    dix.Obsidian
   ];
 
   linux = with pkgs; [
