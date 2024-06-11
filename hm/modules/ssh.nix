@@ -17,6 +17,7 @@ with lib;
         addKeysToAgent = "yes";
         extraOptionOverrides = {
           Ciphers = "aes128-ctr,aes192-ctr,aes256-ctr";
+          ForwardX11 = "yes";
         };
         matchBlocks = {
           "a4000" = {
