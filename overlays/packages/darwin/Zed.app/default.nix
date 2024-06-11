@@ -9,4 +9,8 @@ installDmg rec {
   };
   description = "Zed - Code at the speed of thoughts";
   homepage = "https://zed.dev/";
+  postInstall = ''
+    mkdir -p $out/bin
+    ln -sf "$out/Applications/${name}.app/Contents/MacOS/zed" $out/bin/zed
+  '';
 }
