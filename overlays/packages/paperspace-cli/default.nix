@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://github.com/Paperspace/cli/releases/download/${version}/pspace-${if isArm then "macos-arm" else "linux"}.zip";
-    hash = if isArm then "sha256-NX0tKvbWCEG2i43M3/r9tzmSI0t8lfRQ5/CXSZZvMeE=" else "";
+    hash = if isArm then "sha256-NX0tKvbWCEG2i43M3/r9tzmSI0t8lfRQ5/CXSZZvMeE=" else "sha256-xC2TEHM9sCyo2eZoFlFaNewqS4iqiUYfZDdR+rf7DUY=";
   };
 
   buildInputs = [ unzip ];
