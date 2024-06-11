@@ -22,8 +22,6 @@ with lib;
             source = config.lib.file.mkOutOfStoreSymlink "${dix.editor}";
             recursive = true;
           };
-          "zed/keymap.json".source = config.lib.file.mkOutOfStoreSymlink "${dix.emulators}/zed/keymap.json";
-          "zed/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${dix.emulators}/zed/settings.json";
         };
       };
       editorconfig = {

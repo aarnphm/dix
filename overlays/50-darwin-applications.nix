@@ -6,6 +6,7 @@ self: super:
       Rectangle = super.callPackage (import ./packages/darwin/Rectangle.app) { };
       Discord = super.callPackage (import ./packages/darwin/Discord.app) { };
       Bitwarden = super.callPackage (import ./packages/darwin/Bitwarden.app) { };
+      Zed = super.callPackage (import ./packages/darwin/Zed.app) { };
     };
 }
 

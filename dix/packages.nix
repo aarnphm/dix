@@ -7,6 +7,7 @@ let
     # editor
     vim
     neovim
+    zed-editor
     alacritty
 
     # kubernetes and container
@@ -123,6 +124,7 @@ let
     dix.OrbStack
     dix.Rectangle
     dix.Discord
+    dix.Zed
   ];
 
   linux = with pkgs; [

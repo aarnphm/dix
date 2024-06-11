@@ -2,6 +2,8 @@ self: super:
 {
   dix = super.recurseIntoAttrs (super.dix or { });
 
+  zed-editor = if super.stdenv.isDarwin then null else super.recurseIntoAttrs super.zed-editor;
+
   cudaPackages = super.recurseIntoAttrs (super.cudaPackages // {
     cudnn = if super.stdenv.isDarwin then null else
     (

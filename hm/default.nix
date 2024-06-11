@@ -32,6 +32,7 @@ lib.recursiveUpdate
   ssh.enable = true;
   direnv.enable = true;
   gpg.enable = true;
+  zed.enable = true;
 
   home.username = user;
 
