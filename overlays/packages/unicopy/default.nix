@@ -1,4 +1,4 @@
-{ stdenv, lib, writeProgram, bash, coreutils, xclip, xsel, gawk, substituteAll, runCommand }:
+{ stdenv, lib, writeProgram, bash, coreutils, xclip, runCommand }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "unicopy";
   version = "0.0.1";
@@ -6,7 +6,7 @@ stdenv.mkDerivation (finalAttrs: {
   src = writeProgram "copy"
     {
       inherit (stdenv) shell;
-      inherit xclip;
+      xclip = lib.getExe xclip;
       pbcopy =
         if stdenv.isDarwin then
           (lib.getExe (
@@ -23,7 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     ./copy.sh;
 
   strictDeps = true;
-  buildInputs = [ bash coreutils xclip xsel gawk ];
+  buildInputs = [ bash coreutils xclip ];
 
   unpackPhase = "true";
 

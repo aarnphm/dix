@@ -21,5 +21,6 @@ in
     bitwarden-cli = super.callPackage ./packages/bitwarden-cli { };
     paperspace-cli = super.callPackage ./packages/paperspace-cli { };
     pinentry-touchid = super.callPackage ./packages/pinentry-touchid { };
+    openllm-ci = super.callPackage ./packages/bentoml/openllm-ci { };
   } // super.lib.mapAttrs (name: { src, version, ... }: self.mkDerivationKeepSrc { inherit name src version; }) dixPackages;
 }
