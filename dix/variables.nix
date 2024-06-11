@@ -32,7 +32,7 @@ with lib;
   OPENBLAS = ''${pkgs.openblas}/lib/libopenblas.dylib'';
   SQLITE_PATH = ''${pkgs.sqlite}/lib/libsqlite3.dylib'';
   PYENCHANT_LIBRARY_PATH = ''${pkgs.enchant}/lib/libenchant-2.2.dylib'';
-  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath ([ pkgs.protobuf ] ++ (lib.optionals pkgs.stdenv.isDarwin pkgs.skhd)) }" "$PATH" ];
+  PATH = lib.concatStringsSep ":" [ "${lib.makeBinPath [ pkgs.protobuf ] }" "$PATH" ];
   LD_LIBRARY_PATH = with pkgs; makeLibraryPath [
     (getDev openssl)
     (getDev zlib)

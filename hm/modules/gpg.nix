@@ -4,7 +4,7 @@ let
   gpgAgentConfig = enableTouchId: pkgs.writeText "gpg-agent.conf" (lib.concatStringsSep "\n" [
     "default-cache-ttl 600"
     "max-cache-ttl 7200"
-    (lib.optionalString enableTouchId ''
+    (lib.optionalString (enableTouchId && pkgs.stdenv.isDarwin) ''
       pinentry-program ${lib.getExe pkgs.dix.pinentry-touchid}
     '')
   ]);
