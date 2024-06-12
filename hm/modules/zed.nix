@@ -284,7 +284,7 @@ with lib; {
     };
   };
 
-  config = mkIf config.zed.enable {
+  config = mkIf (config.zed.enable && pkgs.stdenv.isDarwin) {
     xdg = {
       enable = true;
       configFile = {

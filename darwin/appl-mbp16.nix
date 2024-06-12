@@ -1,13 +1,13 @@
-{ pkgs, user, lib, inputs, ... }:
+{ pkgs, lib, user, inputs, ... }:
 let
-  env = import ../dix { inherit pkgs lib; };
   homePath = "/Users/${user}";
 in
 {
-  imports = [ ./modules ];
-
-  environment.systemPackages = env.packages;
-  environment.variables = env.variables;
+  imports = [
+    ./modules
+    (import ../dix { inherit pkgs lib; }).darwinModules
+    inputs.nix.darwinModules.default
+  ];
 
   # Users
   users.users.${user} = {
@@ -16,26 +16,39 @@ in
     createHome = true;
   };
 
-  environment.shells = with pkgs; [ zsh ];
+  environment.shells = [ pkgs.zsh ];
+  environment.darwinConfig = "${homePath}/workspace/dix";
 
-  nix.package = pkgs.nix;
+  # TODO: turn this back on once upgrade-nix-store-path-url is stable
+  nix.checkConfig = true;
   nix.settings = {
+    log-lines = 20;
+    keep-going = true;
     auto-optimise-store = true;
-    experimental-features = "nix-command flakes";
-    trusted-users = [ "root" "aarnphm" ];
+    trusted-users = [ "root" user ];
+    sandbox = false; # TODO: investigate how to do actual pure building in darwin
+    max-jobs = "auto";
   };
+  nix.nixPath = [
+    { darwin = "${homePath}/workspace/dix"; }
+    "/nix/var/nix/profiles/per-user/root/channels"
+  ];
 
   nix.gc = {
     automatic = true;
-    interval.Hour = 3;
-    options = "--delete-older-than 7d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
+    interval.Hour = 6;
+    options = "--delete-older-than 3d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
+  };
+
+  nix.optimise = {
+    automatic = true;
+    interval.Hour = 6;
   };
 
   skhd.enable = false;
   yabai.enable = false;
   sketchybar.enable = false;
 
-  services.nix-daemon.enable = true;
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 
@@ -53,7 +66,10 @@ in
 
   # Networking
   networking = {
-    knownNetworkServices = [ "Wi-Fi" ];
+    knownNetworkServices = [
+      "Wi-Fi"
+      "Thunderbolt Ethernet Slot 2"
+    ];
     dns = [ "1.1.1.1" "8.8.8.8" ];
     computerName = "appl-mbp16";
     hostName = "appl-mbp16";
@@ -66,6 +82,7 @@ in
   system = {
     stateVersion = 4;
     activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
+
     # default settings within System Preferences
     defaults = {
       NSGlobalDomain = {

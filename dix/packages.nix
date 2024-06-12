@@ -17,8 +17,6 @@ let
     qemu
     pplatex
     eksctl
-    colima
-    lima
     ratchet
     krew
     k9s
@@ -117,19 +115,28 @@ let
   darwin = with pkgs; [
     # for some reason they don't have flock on darwin :(
     flock
+    undmg
+    xar
+    cpio
+
+    # apps
     pinentry_mac
-    karabiner-elements
     dix.pinentry-touchid
 
     # Specific Application built
+    dix.Arc
+    dix.Discord
+    dix.Firefox
+    dix.Obsidian
     dix.OrbStack
     dix.Rectangle
-    dix.Discord
     dix.Zed
-    dix.Obsidian
+    dix.Zotero
   ];
 
   linux = with pkgs; [
+    colima
+    lima
     nvtopPackages.full
     pinentry-all
     coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun

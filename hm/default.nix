@@ -1,16 +1,19 @@
 { config, pkgs, lib, user, ... }:
 let
-  env = import ../dix { inherit pkgs lib; };
-
   tomlFormat = pkgs.formats.toml { };
 
   fzfConfig = pkgs.writeText "fzfrc" ''
-      --color=fg:#797593,bg:#faf4ed,hl:#d7827e
-    	--color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
-    	--color=border:#dfdad9,header:#286983,gutter:#faf4ed
-    	--color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
-    	--color=pointer:#907aa9,marker:#b4637a,prompt:#797593
-      --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+    --color=fg:#797593,bg:#faf4ed,hl:#d7827e
+    --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
+    --color=border:#dfdad9,header:#286983,gutter:#faf4ed
+    --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
+    --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+    --bind='ctrl-/:toggle-preview'
+    --bind='ctrl-u:preview-page-up'
+    --bind='ctrl-d:preview-page-down'
+    --preview-window 'right:40%:wrap'
+    --preview '_fzf_complete_realpath {}'
+    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
 
   gpgTuiConfig = {
@@ -20,9 +23,11 @@ let
 
   gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
 in
-lib.recursiveUpdate
 {
-  imports = [ ./modules ];
+  imports = [
+    ./modules
+    (import ../dix { inherit pkgs lib; }).homeManagerModules
+  ];
 
   programs.home-manager.enable = true;
   programs.nix-index.enable = true;
@@ -37,7 +42,10 @@ lib.recursiveUpdate
   ssh.enable = true;
   direnv.enable = true;
   gpg.enable = true;
+
+  # MacOS specifics
   zed.enable = true;
+  karabiner.enable = true;
 
   home.username = user;
 
@@ -142,15 +150,7 @@ lib.recursiveUpdate
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
       k = if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/kubectl" else "kubectl";
-      pinentry = lib.getExe (if pkgs.stdenv.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-all);
+      pinentry = lib.getExe (with pkgs; (if stdenv.isDarwin then pinentry_mac else pinentry-all));
     };
   };
 }
-  (
-    if pkgs.stdenv.isLinux then
-      {
-        home.packages = env.packages;
-        home.sessionVariables = env.variables;
-      }
-    else { }
-  )

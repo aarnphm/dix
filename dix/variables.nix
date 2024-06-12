@@ -1,39 +1,52 @@
 { pkgs, lib, ... }:
 let
-  defaultEnv = {
-    # xdg
-    XDG_BIN_HOME = "$HOME/.local/bin";
+  defaultEnv =
+    let
+      inherit (pkgs) fd git neovim ripgrep zsh;
+      inherit (lib) concatStringsSep getExe makeBinPath;
+    in
+    {
+      # XDG
+      XDG_BIN_HOME = "$HOME/.local/bin";
 
-    # bentoml
-    BENTOML_HOME = "$HOME/.local/share/bentoml";
-    BENTOML_DO_NOT_TRACK = "True";
-    BENTOML_BUNDLE_LOCAL_BUILD = "True";
-    OPENLLM_DEV_BUILD = "True";
-    OPENLLM_DISABLE_WARNING = "False";
+      # Bentoml
+      BENTOML_HOME = "$HOME/.local/share/bentoml";
+      BENTOML_DO_NOT_TRACK = "True";
+      BENTOML_BUNDLE_LOCAL_BUILD = "True";
+      OPENLLM_DEV_BUILD = "True";
+      OPENLLM_DISABLE_WARNING = "False";
 
-    # editors
-    WORKSPACE = "$HOME/workspace";
-    SHELL = lib.getExe pkgs.zsh;
-    EDITOR = lib.getExe pkgs.neovim;
-    VISUAL = lib.getExe pkgs.neovim;
-    MANPAGER = "${lib.getExe pkgs.neovim} +Man!";
-    LSCOLORS = "ExFxBxDxCxegedabagacad";
+      # Editors
+      WORKSPACE = "$HOME/workspace";
+      SHELL = getExe zsh;
+      EDITOR = getExe neovim;
+      VISUAL = getExe neovim;
+      MANPAGER = "${getExe neovim} +Man!";
+      LSCOLORS = "ExFxBxDxCxegedabagacad";
 
-    # fzf
-    FZF_CTRL_T_COMMAND = "${lib.getExe pkgs.fd} --hidden --follow";
-    FZF_DEFAULT_COMMAND = "${lib.getExe pkgs.ripgrep} --files --hidden --ignore .git";
-    FZF_TMUX_HEIGHT = "80%";
-    FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
+      # Fzf
+      FZF_CTRL_T_COMMAND = "${getExe fd} --hidden --follow --exclude .git";
+      FZF_DEFAULT_COMMAND =
+        let
+          gitCheck = "${getExe git} rev-parse --is-inside-work-tree > /dev/null 2>&1";
+          rgFiles = "${getExe ripgrep} --files --hidden";
+        in
+        "${gitCheck} && ${rgFiles} --ignore .git || ${rgFiles}";
+      FZF_TMUX_HEIGHT = "70%";
+      FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
 
-    # language
-    GOPATH = "$HOME/go";
-    PYTHON3_HOST_PROG = lib.getExe pkgs.python3-tools;
-    NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
-    PATH = lib.concatStringsSep ":" [
-      "${lib.makeBinPath [ "$HOME/.cargo" pkgs.protobuf ]}"
-      "$PATH"
-    ];
-  };
+      # Language
+      GOPATH = "$HOME/go";
+      PYTHON3_HOST_PROG = getExe pkgs.python3-tools;
+      NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
+      PATH = concatStringsSep ":" [
+        (makeBinPath [ "$HOME/.cargo" pkgs.protobuf ])
+        "$PATH"
+      ];
+
+      # Specifics to build
+      NIX_INSTALLER_NIX_BUILD_USER_ID_BASE = "400";
+    };
 
   linuxEnv = {
     GPG_TTY = "$(tty)";

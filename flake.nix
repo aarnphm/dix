@@ -3,6 +3,7 @@
 
   inputs = {
     # system stuff
+    nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
     nixpkgs.url = "github:NixOS/nixpkgs/master";
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
@@ -28,25 +29,22 @@
     };
   };
 
+  nixConfig = {
+    trusted-substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" "https://cuda-maintainers.cachix.org" ];
+    trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
+  };
+
   outputs = { self, nixpkgs, nix-darwin, home-manager, flake-utils, ... }@inputs:
     let
       inherit (flake-utils.lib) eachSystemMap;
 
       forAllSystems = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ];
-      isDarwin = system: (builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
-      homePrefix = system:
-        if isDarwin system
-        then "/Users"
-        else "/home";
-
-      user = "aarnphm";
 
       darwin-pkgs = import nixpkgs {
         system = "aarch64-darwin";
         overlays = self.darwinOverlays;
         config = {
           allowUnfree = true;
-          allowBroken = true;
         };
       };
 
@@ -69,32 +67,36 @@
         inherit (dix) openllm-ci;
       };
 
-      nixConfig = {
-        trusted-substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" "https://cuda-maintainers.cachix.org" ];
-        trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
+      overlays = {
+        default = self.linuxOverlays;
+        dix = self.darwinOverlays;
       };
 
-      darwinConfigurations = {
-        appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-          system = "aarch64-darwin";
-          pkgs = darwin-pkgs;
-          specialArgs = { inherit self inputs user pkgs; };
-          modules = [
-            ./darwin/appl-mbp16.nix
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users.aarnphm.imports = [ ./hm ];
-                backupFileExtension = "backup-from-hm";
-                extraSpecialArgs = { inherit user pkgs; };
-                verbose = true;
-              };
-            }
-          ];
+      darwinConfigurations =
+        let
+          user = "aarnphm";
+        in
+        {
+          appl-mbp16 = nix-darwin.lib.darwinSystem rec {
+            system = "aarch64-darwin";
+            pkgs = darwin-pkgs;
+            specialArgs = { inherit self inputs user pkgs; };
+            modules = [
+              ./darwin/appl-mbp16.nix
+              home-manager.darwinModules.home-manager
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  users."${user}".imports = [ ./hm ];
+                  backupFileExtension = "backup-from-hm";
+                  extraSpecialArgs = specialArgs;
+                  verbose = true;
+                };
+              }
+            ];
+          };
         };
-      };
 
       homeConfigurations = {
         paperspace = home-manager.lib.homeManagerConfiguration rec {
@@ -103,16 +105,21 @@
             inherit self inputs pkgs;
             user = "paperspace";
           };
-          modules = [ ./hm ];
+          modules = [
+            inputs.nix.homeManagerModules.default
+            ./hm
+          ];
         };
       };
 
-      linuxOverlays = with inputs; [
-        neovim.overlays.default
+      linuxOverlays = [
+        inputs.neovim.overlays.default
         (self: super: {
-          dix = super.dix or { } // {
-            inherit editor-nix emulator-nix;
-          };
+          dix = super.dix or { } //
+            {
+              editor-nix = inputs.editor-nix;
+              emulator-nix = inputs.emulator-nix;
+            };
 
           python3-tools = super.buildEnv {
             name = "python3-tools";
