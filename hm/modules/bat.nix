@@ -15,7 +15,7 @@ with lib;
         enable = true;
         extraPackages = with pkgs.bat-extras; [ batwatch batpipe batman batgrep batdiff ];
         config = {
-          theme = "zenburn";
+          theme = "GitHub";
           map-syntax = [
             ".ignore:Git Ignore"
             "config:Git Config"

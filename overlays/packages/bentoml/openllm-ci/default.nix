@@ -6,7 +6,8 @@ stdenv.mkDerivation rec  {
   src = writeProgram pname
     {
       inherit (stdenv) shell;
-      inherit coreutils pname;
+      inherit pname;
+      mkdir = lib.getExe' coreutils "mkdir";
       gh = lib.getExe gh;
       git = lib.getExe git;
     }

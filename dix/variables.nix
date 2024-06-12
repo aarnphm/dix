@@ -20,7 +20,7 @@ let
     LSCOLORS = "ExFxBxDxCxegedabagacad";
 
     # fzf
-    FZF_CTRL_T_COMMAND = "${lib.getExe pkgs.fd} --hidden --follow --exclude .git";
+    FZF_CTRL_T_COMMAND = "${lib.getExe pkgs.fd} --hidden --follow";
     FZF_DEFAULT_COMMAND = "${lib.getExe pkgs.ripgrep} --files --hidden --ignore .git";
     FZF_TMUX_HEIGHT = "80%";
     FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";

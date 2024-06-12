@@ -7,18 +7,16 @@ stdenv.mkDerivation (finalAttrs: {
     {
       inherit (stdenv) shell;
       xclip = lib.getExe xclip;
-      pbcopy =
-        if stdenv.isDarwin then
-          (lib.getExe (
-            runCommand "impureHostDarwinCopy"
-              {
-                meta = { mainProgram = "pbcopy"; };
-              }
-              ''
-                mkdir -p $out/bin
-                ln -s /usr/bin/pbcopy $out/bin
-              ''
-          )) else "pbcopy";
+      pbcopy = (lib.getExe (
+        runCommand "impureHostDarwinCopy"
+          {
+            meta = { mainProgram = "pbcopy"; };
+          }
+          ''
+            mkdir -p $out/bin
+            ln -s /usr/bin/pbcopy $out/bin
+          ''
+      ));
     }
     ./copy.sh;
 

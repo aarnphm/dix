@@ -64,7 +64,7 @@ fi
 )
 
 # Check if the openllm directory exists, clone if it doesn't
-@coreutils@/bin/mkdir -p "$HOME/workspace"
+@mkdir@ -p "$HOME/workspace"
 OPENLLM_DIR=$HOME/workspace/openllm
 
 if [ ! -d "$OPENLLM_DIR" ]; then

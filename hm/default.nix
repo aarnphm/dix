@@ -5,7 +5,12 @@ let
   tomlFormat = pkgs.formats.toml { };
 
   fzfConfig = pkgs.writeText "fzfrc" ''
-    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+      --color=fg:#797593,bg:#faf4ed,hl:#d7827e
+    	--color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
+    	--color=border:#dfdad9,header:#286983,gutter:#faf4ed
+    	--color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
+    	--color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+      --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
 
   gpgTuiConfig = {
