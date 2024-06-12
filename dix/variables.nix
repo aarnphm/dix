@@ -18,7 +18,6 @@ let
     VISUAL = lib.getExe pkgs.neovim;
     MANPAGER = "${lib.getExe pkgs.neovim} +Man!";
     LSCOLORS = "ExFxBxDxCxegedabagacad";
-    SIMPLE_BACKGROUND = "dark";
 
     # fzf
     FZF_CTRL_T_COMMAND = "${lib.getExe pkgs.fd} --hidden --follow --exclude .git";

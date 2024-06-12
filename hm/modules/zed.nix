@@ -123,7 +123,7 @@ let
   ];
 
   zedConfig = {
-    theme = "macOS Classic Light";
+    theme = "Rosé Pine Dawn";
     buffer_font_family = "BerkeleyMono Nerd Font Mono";
     telemetry = {
       diagnostics = true;

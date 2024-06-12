@@ -118,6 +118,7 @@ let
     # for some reason they don't have flock on darwin :(
     flock
     pinentry_mac
+    karabiner-elements
     dix.pinentry-touchid
 
     # Specific Application built
