@@ -5,45 +5,31 @@
     # system stuff
     nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
     nixpkgs.url = "github:NixOS/nixpkgs/master";
-    nix-darwin = {
-      url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    home-manager = {
-      url = "github:nix-community/home-manager/master";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.url = "github:nix-community/home-manager/master";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # homebrew
-    nix-homebrew = {
-      url = "github:zhaofengli-wip/nix-homebrew";
-    };
-    homebrew-bundle = {
-      url = "github:homebrew/homebrew-bundle";
-      flake = false;
-    };
-    homebrew-core = {
-      url = "github:homebrew/homebrew-core";
-      flake = false;
-    };
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
-      flake = false;
-    };
+    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    homebrew-bundle.url = "github:homebrew/homebrew-bundle";
+    homebrew-bundle.flake = false;
+    homebrew-core.url = "github:homebrew/homebrew-core";
+    homebrew-core.flake = false;
+    homebrew-cask.url = "github:homebrew/homebrew-cask";
+    homebrew-cask.flake = false;
 
     # utilities
+    neovim.url = "github:nix-community/neovim-nightly-overlay";
     flake-utils.url = "github:numtide/flake-utils";
+    agenix.url = "github:ryantm/agenix/main";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
 
     # config stuff
-    neovim.url = "github:nix-community/neovim-nightly-overlay";
-    editor-nix = {
-      url = "github:aarnphm/editor";
-      flake = false;
-    };
-    emulator-nix = {
-      url = "github:aarnphm/emulators";
-      flake = false;
-    };
+    editor-nix.url = "github:aarnphm/editor";
+    editor-nix.flake = false;
+    emulator-nix.url = "github:aarnphm/emulators";
+    emulator-nix.flake = false;
   };
 
   nixConfig = {

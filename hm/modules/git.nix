@@ -31,36 +31,23 @@ in
           format = {
             pretty = "%C(auto)%h - %s%d%n%+b%+N(%G?) %an <%ae> (%C(blue)%ad%C(auto))%n";
           };
-          submodule = {
-            recurse = true;
-          };
-          pull = {
-            rebase = true;
-          };
-          commit = {
-            sign = true;
-          };
+          submodule = { recurse = true; };
+          pull = { rebase = true; };
+          commit = { sign = true; verbose = true; };
+          push = { default = "current"; };
+          diff = { colorMoved = "default"; };
+          color = { ui = "auto"; };
+          column = { ui = "auto"; };
+          init = { defaultBranch = "main"; };
+          credential."https://github.com".helper = "!/usr/bin/gh auth git-credential";
+          credential."https://gist.github.com".helper = "!/usr/bin/gh auth git-credential";
           merge = {
+            tool = "meld";
             conflictstyle = "diff3";
-          };
-          push = {
-            default = "current";
-          };
-          diff = {
-            colorMoved = "default";
-          };
-          color = {
-            ui = "auto";
-          };
-          column = {
-            ui = "auto";
           };
           rebase = {
             autosquash = true;
             autostash = true;
-          };
-          init = {
-            defaultBranch = "main";
           };
           branch = {
             sort = "-committerdate";

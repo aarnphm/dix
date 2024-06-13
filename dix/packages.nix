@@ -46,6 +46,7 @@ let
     xz
     sshx
     awscli2
+    age
 
     # tools for language, lsp, linter, etc.
     tree-sitter
@@ -125,6 +126,7 @@ let
     dix.pinentry-touchid
     dix.OrbStack
     dix.Splice
+    dix.ZedPreview
   ];
 
   linux = with pkgs; [

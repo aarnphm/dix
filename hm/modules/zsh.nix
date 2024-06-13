@@ -48,6 +48,14 @@ in
     programs.zsh = {
       enable = true;
       enableVteIntegration = true;
+      autocd = true;
+      history = {
+        expireDuplicatesFirst = true;
+        ignoreDups = true;
+        path = "${config.home.homeDirectory}/.local/share/zsh/history";
+        save = 100000;
+        size = 100000;
+      };
       completionInit = concatStringsSepNewLine [
         (optionalString pkgs.stdenv.isLinux "autoload -U compinit && compinit")
         (optionalString pkgs.stdenv.isLinux "autoload -U bashcompinit && bashcompinit")

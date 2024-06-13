@@ -2,7 +2,7 @@
 let
   defaultEnv =
     let
-      inherit (pkgs) fd git neovim ripgrep zsh;
+      inherit (pkgs) fd git neovim ripgrep zsh bat;
       inherit (lib) concatStringsSep getExe makeBinPath;
     in
     {
@@ -23,6 +23,7 @@ let
       VISUAL = getExe neovim;
       MANPAGER = "${getExe neovim} +Man!";
       LSCOLORS = "ExFxBxDxCxegedabagacad";
+      PAGER = "${getExe bat} --paging=always --color=always --decoration=never --";
 
       # Fzf
       FZF_CTRL_T_COMMAND = "${getExe fd} --hidden --follow --exclude .git";

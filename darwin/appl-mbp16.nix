@@ -18,6 +18,10 @@ in
 
   environment.shells = [ pkgs.zsh ];
   environment.darwinConfig = "${homePath}/workspace/dix";
+  environment.etc."zshrc.local".text = ''
+    source ${pkgs.lib.getExe' pkgs.awscli2 "aws_zsh_completer.sh"}
+  '';
+  environment.systemPath = [ "/opt/homebrew/bin" "/opt/homebrew/sbin" ];
 
   homebrew = {
     enable = true;
@@ -158,7 +162,6 @@ in
         export BW_CLIENTID=$bitwarden[2]
         export BW_CLIENTSECRET=$bitwarden[3]
       fi
-
     '';
   };
   programs.direnv = {

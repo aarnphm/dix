@@ -31,6 +31,10 @@ in
 
   programs.home-manager.enable = true;
   programs.nix-index.enable = true;
+  programs.dircolors = {
+    enable = true;
+    enableZshIntegration = true;
+  };
 
   zsh.enable = true;
   zoxide.enable = true;
@@ -68,9 +72,10 @@ in
       reload = "exec -l $SHELL";
       afk = "pmset displaysleepnow";
       ".." = "__zoxide_z ..";
-      "..." = "__zoxide_z ../..";
-      "...." = "__zoxide_z ../../..";
-      "....." = "__zoxide_z ../../../..";
+      "..." = "..;..";
+      "...." = "...;..";
+      "....." = "....;..";
+      "......" = ".....;..";
 
       # ls-replacement
       ls = "${lib.getExe pkgs.eza}";
