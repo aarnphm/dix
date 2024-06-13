@@ -43,6 +43,42 @@ in
           key = if pkgs.stdenv.isDarwin then "18974753009D2BFA" else "B7559BD33B10A161";
           signByDefault = true;
         };
+        ignores = [
+          ".git"
+          ".vim"
+          "*.iml"
+          "*.ipr"
+          "*.iws"
+          ".idea/"
+          "out/"
+          "local.properties"
+          "*.o"
+          "*.so"
+          "*.7z"
+          "*.dmg"
+          "*.gz"
+          "*.iso"
+          "*.rar"
+          "*.tar"
+          "*.zip"
+          "log/"
+          "*.log"
+          "*.sql"
+          "*.sqlite"
+          ".DS_Store"
+          ".DS_Store?"
+          "ehthumbs.db"
+          "Icon?"
+          "Thumbs.db"
+          "**/__pycache__/**"
+          "*.py[cod]"
+          "*$py.class"
+          ".Python"
+          "build/**"
+          "dist/**"
+          "sdist/"
+          "wheels/"
+        ];
         extraConfig = {
           format = {
             pretty = "%C(auto)%h - %s%d%n%+b%+N(%G?) %an <%ae> (%C(blue)%ad%C(auto))%n";
@@ -67,8 +103,6 @@ in
             # Make `git rebase` safer on macOS.
             # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
             trustctime = false;
-
-            excludesFile = "${pkgs.dix.emulators}/git/.gitignore";
 
             # Prevent showing files whose names contain non-ASCII symbols as unversioned.
             # http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html

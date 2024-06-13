@@ -20,8 +20,9 @@
     homebrew-cask.flake = false;
 
     # utilities
-    neovim.url = "github:nix-community/neovim-nightly-overlay";
     systems.url = "github:nix-systems/default";
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
 
     # secrets stuff
     agenix.url = "github:ryantm/agenix/main";
@@ -31,10 +32,10 @@
     agenix.inputs.systems.follows = "systems";
 
     # config stuff
+    neovim.url = "github:nix-community/neovim-nightly-overlay";
+    neovim.inputs.nixpkgs.follows = "nixpkgs";
     editor-nix.url = "github:aarnphm/editor";
     editor-nix.flake = false;
-    emulator-nix.url = "github:aarnphm/emulators";
-    emulator-nix.flake = false;
   };
 
   nixConfig = {
@@ -42,11 +43,11 @@
     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   };
 
-  outputs = { self, nix, nixpkgs, nix-darwin, home-manager, agenix, systems, nix-homebrew, ... }@inputs:
+  outputs = { self, nix, nixpkgs, nix-darwin, home-manager, agenix, flake-utils, nix-homebrew, ... }@inputs:
     let
-      forAllSystems = nixpkgs.lib.genAttrs (import systems);
+      inherit (flake-utils.lib) eachSystem eachDefaultSystem;
 
-      dixPackages = system: import nixpkgs {
+      mkPkgs = system: import nixpkgs {
         inherit system;
         overlays = self.overlays.default;
         config = {
@@ -76,28 +77,25 @@
         (import ./overlays/20-packages-overrides.nix)
         (import ./overlays/20-recurse-overrides.nix)
         (import ./overlays/30-derivations.nix)
+
         # custom packages specifics to darwin
         (import ./overlays/50-darwin-applications.nix)
       ];
 
-      packages = forAllSystems (system:
-        let
-          pkgs = dixPackages system;
-        in
+      packages = eachDefaultSystem (system:
         rec {
-          dix = pkgs.dix;
+          dix = (mkPkgs system).dix;
           inherit (dix) openllm-ci;
         });
 
       darwinConfigurations =
         let
           user = "aarnphm";
-          system = "aarch64-darwin";
-          pkgs = dixPackages system;
         in
         {
           appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-            inherit system pkgs;
+            system = flake-utils.lib.system.aarch64-darwin;
+            pkgs = mkPkgs system;
             specialArgs = { inherit self inputs user pkgs; };
             modules = [
               ./darwin/appl-mbp16.nix
@@ -137,12 +135,10 @@
       homeConfigurations =
         let
           user = "paperspace";
-          system = "x86_64-linux";
-          pkgs = dixPackages system;
         in
         {
           paperspace = home-manager.lib.homeManagerConfiguration rec {
-            inherit system pkgs;
+            pkgs = mkPkgs flake-utils.lib.system.x86_64-linux;
             extraSpecialArgs = { inherit self inputs pkgs user; };
             modules = [
               ./hm
