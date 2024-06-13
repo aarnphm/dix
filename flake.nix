@@ -44,110 +44,105 @@
   };
 
   outputs = { self, nix, nixpkgs, nix-darwin, home-manager, agenix, flake-utils, nix-homebrew, ... }@inputs:
-    let
-      inherit (flake-utils.lib) eachSystem eachDefaultSystem;
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+            allowBroken = !(builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
+          };
+          overlays = [
+            inputs.neovim.overlays.default
+            inputs.agenix.overlays.default
+            (self: super: {
+              dix = super.dix or { } //
+                {
+                  editor-nix = inputs.editor-nix;
+                  emulator-nix = inputs.emulator-nix;
+                };
 
-      mkPkgs = system: import nixpkgs {
-        inherit system;
-        overlays = self.overlays.default;
-        config = {
-          allowUnfree = true;
-          allowBroken = !(builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
+              python3-tools = super.buildEnv {
+                name = "python3-tools";
+                paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
+                meta = { mainProgram = "python"; };
+              };
+            })
+            (import ./overlays/10-dev-overrides.nix)
+            (import ./overlays/20-packages-overrides.nix)
+            (import ./overlays/20-recurse-overrides.nix)
+            (import ./overlays/30-derivations.nix)
+
+            # custom packages specifics to darwin
+            (import ./overlays/50-darwin-applications.nix)
+          ];
         };
-      };
-    in
-    {
-      overlays.default = [
-        inputs.neovim.overlays.default
-        inputs.agenix.overlays.default
-        (self: super: {
-          dix = super.dix or { } //
+      in
+      {
+        packages = rec {
+          dix = pkgs.dix;
+          inherit (dix) openllm-ci;
+
+          darwinConfigurations =
+            let
+              user = "aarnphm";
+            in
             {
-              editor-nix = inputs.editor-nix;
-              emulator-nix = inputs.emulator-nix;
+              appl-mbp16 = nix-darwin.lib.darwinSystem rec {
+                inherit system pkgs;
+                specialArgs = { inherit self inputs user pkgs; };
+                modules = [
+                  ./darwin/appl-mbp16.nix
+                  ./lib
+                  nix.darwinModules.default
+                  agenix.darwinModules.default
+                  nix-homebrew.darwinModules.nix-homebrew
+                  {
+                    nix-homebrew = {
+                      inherit user;
+                      enable = true;
+                      enableRosetta = true;
+                      taps = {
+                        "homebrew/homebrew-core" = inputs.homebrew-core;
+                        "homebrew/homebrew-cask" = inputs.homebrew-cask;
+                        "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+                      };
+                      mutableTaps = false;
+                      autoMigrate = true;
+                    };
+                  }
+                  home-manager.darwinModules.home-manager
+                  {
+                    home-manager = {
+                      useGlobalPkgs = true;
+                      useUserPackages = true;
+                      users."${user}".imports = [ ./hm ];
+                      backupFileExtension = "backup-from-hm";
+                      extraSpecialArgs = specialArgs;
+                      verbose = true;
+                    };
+                  }
+                ];
+              };
             };
 
-          python3-tools = super.buildEnv {
-            name = "python3-tools";
-            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
-            meta = { mainProgram = "python"; };
-          };
-        })
-        (import ./overlays/10-dev-overrides.nix)
-        (import ./overlays/20-packages-overrides.nix)
-        (import ./overlays/20-recurse-overrides.nix)
-        (import ./overlays/30-derivations.nix)
-
-        # custom packages specifics to darwin
-        (import ./overlays/50-darwin-applications.nix)
-      ];
-
-      packages = eachDefaultSystem (system:
-        rec {
-          dix = (mkPkgs system).dix;
-          inherit (dix) openllm-ci;
-          inherit (inputs.home-manager.packages.${system}) home-manager;
-        });
-
-      darwinConfigurations =
-        let
-          user = "aarnphm";
-        in
-        {
-          appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-            system = flake-utils.lib.system.aarch64-darwin;
-            pkgs = mkPkgs system;
-            specialArgs = { inherit self inputs user pkgs; };
-            modules = [
-              ./darwin/appl-mbp16.nix
-              ./lib
-              nix.darwinModules.default
-              agenix.darwinModules.default
-              nix-homebrew.darwinModules.nix-homebrew
-              {
-                nix-homebrew = {
-                  inherit user;
-                  enable = true;
-                  enableRosetta = true;
-                  taps = {
-                    "homebrew/homebrew-core" = inputs.homebrew-core;
-                    "homebrew/homebrew-cask" = inputs.homebrew-cask;
-                    "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
-                  };
-                  mutableTaps = false;
-                  autoMigrate = true;
-                };
-              }
-              home-manager.darwinModules.home-manager
-              {
-                home-manager = {
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  users."${user}".imports = [ ./hm ];
-                  backupFileExtension = "backup-from-hm";
-                  extraSpecialArgs = specialArgs;
-                  verbose = true;
-                };
-              }
-            ];
-          };
+          homeConfigurations =
+            let
+              user = "paperspace";
+            in
+            pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+              paperspace = home-manager.lib.homeManagerConfiguration rec {
+                inherit pkgs;
+                extraSpecialArgs = { inherit self inputs pkgs user; };
+                modules = [
+                  ./hm
+                  ./lib
+                  nix.homeManagerModules.default
+                  agenix.homeManagerModules.default
+                ];
+              };
+            };
         };
-
-      homeConfigurations =
-        let
-          user = "paperspace";
-        in
-        {
-          paperspace = home-manager.lib.homeManagerConfiguration rec {
-            pkgs = mkPkgs flake-utils.lib.system.x86_64-linux;
-            extraSpecialArgs = { inherit self inputs pkgs user; };
-            modules = [
-              ./hm
-              ./lib
-              nix.homeManagerModules.default
-              agenix.homeManagerModules.default
-            ];
-          };
-        };
-    };
+      }
+    );
 }
