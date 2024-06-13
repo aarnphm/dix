@@ -22,8 +22,14 @@
     # utilities
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     flake-utils.url = "github:numtide/flake-utils";
+    systems.url = "github:nix-systems/default";
+
+    # secrets stuff
     agenix.url = "github:ryantm/agenix/main";
+    agenix.inputs.darwin.follows = "nix-darwin";
+    agenix.inputs.home-manager.follows = "home-manager";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
+    agenix.inputs.systems.follows = "systems";
 
     # config stuff
     editor-nix.url = "github:aarnphm/editor";
@@ -37,11 +43,17 @@
     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, nix-homebrew, flake-utils, ... }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, agenix, nix-homebrew, flake-utils, ... }@inputs:
     let
       inherit (flake-utils.lib) eachSystemMap;
 
       forAllSystems = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ];
+
+      isDarwin = system: (builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
+      homePrefix = system:
+        if isDarwin system
+        then "/Users"
+        else "/home";
 
       darwin-pkgs = import nixpkgs {
         system = "aarch64-darwin";
@@ -78,14 +90,16 @@
       darwinConfigurations =
         let
           user = "aarnphm";
+          common = import ./dix { inherit user; homePrefix = homePrefix "aarch64-darwin"; pkgs = darwin-pkgs; lib = darwin-pkgs.lib; };
         in
         {
           appl-mbp16 = nix-darwin.lib.darwinSystem rec {
             system = "aarch64-darwin";
             pkgs = darwin-pkgs;
-            specialArgs = { inherit self inputs user pkgs; };
+            specialArgs = { inherit self inputs user pkgs common; };
             modules = [
               ./darwin/appl-mbp16.nix
+              common.darwinModules
               nix-homebrew.darwinModules.nix-homebrew
               {
                 nix-homebrew = {
@@ -118,22 +132,28 @@
           };
         };
 
-      homeConfigurations = {
-        paperspace = home-manager.lib.homeManagerConfiguration rec {
-          pkgs = linux-pkgs;
-          extraSpecialArgs = {
-            inherit self inputs pkgs;
-            user = "paperspace";
+      homeConfigurations =
+        let
+          user = "paperspace";
+          common = import ./dix { inherit user; homePrefix = homePrefix "x86_64-linux"; pkgs = linux-pkgs; lib = darwin-pkgs.lib; };
+        in
+        {
+          paperspace = home-manager.lib.homeManagerConfiguration rec {
+            pkgs = linux-pkgs;
+            extraSpecialArgs = {
+              inherit self inputs pkgs user common;
+            };
+            modules = [
+              inputs.nix.homeManagerModules.default
+              common.homeManagerModules
+              ./hm
+            ];
           };
-          modules = [
-            inputs.nix.homeManagerModules.default
-            ./hm
-          ];
         };
-      };
 
       linuxOverlays = [
         inputs.neovim.overlays.default
+        inputs.agenix.overlays.default
         (self: super: {
           dix = super.dix or { } //
             {

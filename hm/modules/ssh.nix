@@ -20,13 +20,13 @@ with lib;
       };
       matchBlocks = {
         "github.com" = {
-          identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
+          identityFile = "/run/agenix/id_ed25519-github";
         };
       } // lib.optionalAttrs pkgs.stdenv.isDarwin {
         "a4000" = {
           hostname = "184.105.106.53";
           user = "paperspace";
-          identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+          identityFile = "/run/agenix/id_ed25519-paperspace";
         };
       };
     } // lib.optionalAttrs pkgs.stdenv.isDarwin {

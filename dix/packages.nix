@@ -100,6 +100,7 @@ let
     gnupg
     gpg-tui
     gnumake
+    agenix
 
     # dix packages overlays
     dix.bitwarden-cli

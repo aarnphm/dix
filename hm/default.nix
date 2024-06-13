@@ -1,4 +1,4 @@
-{ config, pkgs, lib, user, ... }:
+{ config, inputs, pkgs, lib, user, ... }:
 let
   tomlFormat = pkgs.formats.toml { };
 
@@ -12,7 +12,6 @@ let
     --bind='ctrl-u:preview-page-up'
     --bind='ctrl-d:preview-page-down'
     --preview-window 'right:40%:wrap'
-    --preview '_fzf_complete_realpath {}'
     --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
   '';
 
@@ -26,7 +25,7 @@ in
 {
   imports = [
     ./modules
-    (import ../dix { inherit pkgs lib; }).homeManagerModules
+    inputs.agenix.homeManagerModules.default
   ];
 
   programs.home-manager.enable = true;

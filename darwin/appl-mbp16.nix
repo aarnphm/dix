@@ -1,12 +1,12 @@
-{ pkgs, lib, user, inputs, ... }:
+{ pkgs, user, inputs, ... }:
 let
   homePath = "/Users/${user}";
 in
 {
   imports = [
     ./modules
-    (import ../dix { inherit pkgs lib; }).darwinModules
     inputs.nix.darwinModules.default
+    inputs.agenix.darwinModules.default
   ];
 
   # Users
@@ -15,6 +15,7 @@ in
     home = homePath;
     createHome = true;
   };
+  gpg.enable = true;
 
   environment.shells = [ pkgs.zsh ];
   environment.darwinConfig = "${homePath}/workspace/dix";
@@ -170,8 +171,4 @@ in
     loadInNixShell = true;
   };
   programs.nix-index.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 }
