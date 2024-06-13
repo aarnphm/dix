@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   pkgs,
   lib,
   user,
@@ -134,6 +133,9 @@ in {
       cx = "chmod +x";
       freeport = "sudo fuser -k $@";
       copy = lib.getExe pkgs.dix.unicopy;
+
+      # bentoml
+      b = "bentoml";
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
