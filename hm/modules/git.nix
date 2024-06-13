@@ -41,7 +41,7 @@ in
         };
         signing = {
           key = if pkgs.stdenv.isDarwin then "18974753009D2BFA" else "B7559BD33B10A161";
-          signByDefault = false;
+          signByDefault = true;
         };
         extraConfig = {
           format = {

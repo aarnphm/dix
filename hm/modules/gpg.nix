@@ -25,7 +25,7 @@ in
           auto-key-retrieve = true;
           no-emit-version = true;
           no-comments = false;
-          # keyserver = "hkps://keys.openpgp.org";
+          keyserver = "hkps://keys.openpgp.org";
         };
         scdaemonSettings = {
           log-file = "/tmp/${config.home.username}_scdaemon.log";
