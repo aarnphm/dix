@@ -4,9 +4,8 @@ let
   gpgAgentConfig = enableTouchId: pkgs.writeText "gpg-agent.conf" (lib.concatStringsSep "\n" [
     "default-cache-ttl 600"
     "max-cache-ttl 7200"
-    (lib.optionalString (enableTouchId && pkgs.stdenv.isDarwin) ''
-      pinentry-program ${lib.getExe pkgs.dix.pinentry-touchid}
-    '')
+    "allow-loopback-pinentry"
+    "pinentry-program ${lib.getExe (if enableTouchId then pkgs.dix.pinentry-touchid else pkgs.pinentry_mac)}"
   ]);
 in
 {
@@ -18,22 +17,34 @@ in
     };
   };
 
-  config = mkIf config.gpg.enable {
-    programs.gpg = {
-      enable = true;
-      settings = {
-        auto-key-retrieve = true;
-        no-emit-version = true;
-        no-comments = true;
-        verify-options = "show-uid-validity";
-        keyserver = "hkps://keys.openpgp.org";
+  config = mkIf config.gpg.enable
+    {
+      programs.gpg = {
+        enable = true;
+        settings = {
+          auto-key-retrieve = true;
+          no-emit-version = true;
+          no-comments = false;
+          # keyserver = "hkps://keys.openpgp.org";
+        };
+        scdaemonSettings = {
+          log-file = "/tmp/${config.home.username}_scdaemon.log";
+          disable-ccid = true;
+        };
       };
-      scdaemonSettings = {
-        log-file = "/tmp/${config.home.username}_scdaemon.log";
-        disable-ccid = true;
-      };
-    };
 
-    home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
+      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
+    } // lib.optionalAttrs pkgs.stdenv.isLinux {
+    services.gpg-agent = {
+      enable = true;
+      enableSSHSupport = true;
+      verbose = true;
+      defaultCacheTtl = 600;
+      maxCacheTtl = 7200;
+      pinentryPackage = pkgs.pinentry-all;
+      extraConfig = ''
+        allow-loopback-pinentry
+      '';
+    };
   };
 }

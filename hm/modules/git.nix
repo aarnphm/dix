@@ -2,7 +2,7 @@
 with lib;
 let
   gitPackage = pkgs.git;
-  gitBin = lib.getExe gitPackage;
+  gitBin = getExe gitPackage;
 in
 {
   options.git = {
@@ -15,17 +15,33 @@ in
 
   config = mkIf config.git.enable {
     programs = {
+      gh = {
+        enable = true;
+        gitCredentialHelper = {
+          enable = true;
+          hosts = [ "https://github.com" "https://gist.github.com" ];
+        };
+        settings = {
+          editor = "nvim";
+          git_protocol = "ssh";
+          aliases = {
+            co = "pr checkout";
+            pv = "pr view";
+          };
+          pager = "${lib.getExe pkgs.bat} --paging=always --color=always --decoration=never --";
+        };
+      };
       git = {
         enable = true;
         package = gitPackage;
-        userEmail = "29749331+aarnphm@users.noreply.github.com";
+        userEmail = "contact@aarnphm.xyz";
         userName = "Aaron Pham";
         lfs = {
           enable = true;
         };
         signing = {
-          key = if pkgs.stdenv.isDarwin then "266DEB12B7680F9D" else "B7559BD33B10A161";
-          signByDefault = true;
+          key = if pkgs.stdenv.isDarwin then "18974753009D2BFA" else "B7559BD33B10A161";
+          signByDefault = false;
         };
         extraConfig = {
           format = {
@@ -39,20 +55,9 @@ in
           color = { ui = "auto"; };
           column = { ui = "auto"; };
           init = { defaultBranch = "main"; };
-          credential."https://github.com".helper = "!/usr/bin/gh auth git-credential";
-          credential."https://gist.github.com".helper = "!/usr/bin/gh auth git-credential";
-          merge = {
-            tool = "meld";
-            conflictstyle = "diff3";
-          };
-          rebase = {
-            autosquash = true;
-            autostash = true;
-          };
-          branch = {
-            sort = "-committerdate";
-            autosetuprebase = "always";
-          };
+          merge = { conflictstyle = "diff3"; };
+          rebase = { autosquash = true; autostash = true; };
+          branch = { sort = "-committerdate"; autosetuprebase = "always"; };
           core = {
             # Treat spaces before tabs and all kinds of trailing whitespace as an error.
             # [default] trailing-space: looks for spaces at the end of a line
