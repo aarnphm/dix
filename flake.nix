@@ -86,6 +86,7 @@
         rec {
           dix = (mkPkgs system).dix;
           inherit (dix) openllm-ci;
+          inherit (inputs.home-manager.packages.${system}) home-manager;
         });
 
       darwinConfigurations =
