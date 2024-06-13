@@ -23,10 +23,7 @@ let
   gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
 in
 {
-  imports = [
-    ./modules
-    inputs.agenix.homeManagerModules.default
-  ];
+  imports = [ ./modules ];
 
   programs.home-manager.enable = true;
   programs.nix-index.enable = true;

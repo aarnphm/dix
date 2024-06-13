@@ -3,11 +3,7 @@ let
   homePath = "/Users/${user}";
 in
 {
-  imports = [
-    ./modules
-    inputs.nix.darwinModules.default
-    inputs.agenix.darwinModules.default
-  ];
+  imports = [ ./modules ];
 
   # Users
   users.users.${user} = {

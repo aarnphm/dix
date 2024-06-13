@@ -21,7 +21,6 @@
 
     # utilities
     neovim.url = "github:nix-community/neovim-nightly-overlay";
-    flake-utils.url = "github:numtide/flake-utils";
     systems.url = "github:nix-systems/default";
 
     # secrets stuff
@@ -43,71 +42,74 @@
     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, agenix, nix-homebrew, flake-utils, ... }@inputs:
+  outputs = { self, nix, nixpkgs, nix-darwin, home-manager, agenix, systems, nix-homebrew, ... }@inputs:
     let
-      inherit (flake-utils.lib) eachSystemMap;
+      forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      forAllSystems = nixpkgs.lib.genAttrs [ "aarch64-darwin" "x86_64-linux" ];
-
-      isDarwin = system: (builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
-      homePrefix = system:
-        if isDarwin system
-        then "/Users"
-        else "/home";
-
-      darwin-pkgs = import nixpkgs {
-        system = "aarch64-darwin";
-        overlays = self.darwinOverlays;
+      dixPackages = system: import nixpkgs {
+        inherit system;
+        overlays = self.overlays.default;
         config = {
           allowUnfree = true;
-        };
-      };
-
-      linux-pkgs = import nixpkgs {
-        system = "x86_64-linux";
-        overlays = self.linuxOverlays;
-        config = {
-          allowUnfree = true;
-          allowBroken = true;
+          allowBroken = !(builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
         };
       };
     in
     {
-      packages.aarch64-darwin = rec {
-        dix = darwin-pkgs.dix;
-        inherit (dix) openllm-ci;
-      };
-      packages.x86_64-linux = rec {
-        dix = linux-pkgs.dix;
-        inherit (dix) openllm-ci;
-      };
+      overlays.default = [
+        inputs.neovim.overlays.default
+        inputs.agenix.overlays.default
+        (self: super: {
+          dix = super.dix or { } //
+            {
+              editor-nix = inputs.editor-nix;
+              emulator-nix = inputs.emulator-nix;
+            };
 
-      overlays = {
-        default = self.linuxOverlays;
-        dix = self.darwinOverlays;
-      };
+          python3-tools = super.buildEnv {
+            name = "python3-tools";
+            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
+            meta = { mainProgram = "python"; };
+          };
+        })
+        (import ./overlays/10-dev-overrides.nix)
+        (import ./overlays/20-packages-overrides.nix)
+        (import ./overlays/20-recurse-overrides.nix)
+        (import ./overlays/30-derivations.nix)
+        # custom packages specifics to darwin
+        (import ./overlays/50-darwin-applications.nix)
+      ];
+
+      packages = forAllSystems (system:
+        let
+          pkgs = dixPackages system;
+        in
+        rec {
+          dix = pkgs.dix;
+          inherit (dix) openllm-ci;
+        });
 
       darwinConfigurations =
         let
           user = "aarnphm";
-          common = import ./dix { inherit user; homePrefix = homePrefix "aarch64-darwin"; pkgs = darwin-pkgs; lib = darwin-pkgs.lib; };
+          system = "aarch64-darwin";
+          pkgs = dixPackages system;
         in
         {
           appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-            system = "aarch64-darwin";
-            pkgs = darwin-pkgs;
-            specialArgs = { inherit self inputs user pkgs common; };
+            inherit system pkgs;
+            specialArgs = { inherit self inputs user pkgs; };
             modules = [
               ./darwin/appl-mbp16.nix
-              common.darwinModules
+              ./lib
+              nix.darwinModules.default
+              agenix.darwinModules.default
               nix-homebrew.darwinModules.nix-homebrew
               {
                 nix-homebrew = {
                   inherit user;
                   enable = true;
                   enableRosetta = true;
-
-                  # Optional: Declarative tap management
                   taps = {
                     "homebrew/homebrew-core" = inputs.homebrew-core;
                     "homebrew/homebrew-cask" = inputs.homebrew-cask;
@@ -135,47 +137,20 @@
       homeConfigurations =
         let
           user = "paperspace";
-          common = import ./dix { inherit user; homePrefix = homePrefix "x86_64-linux"; pkgs = linux-pkgs; lib = darwin-pkgs.lib; };
+          system = "x86_64-linux";
+          pkgs = dixPackages system;
         in
         {
           paperspace = home-manager.lib.homeManagerConfiguration rec {
-            pkgs = linux-pkgs;
-            extraSpecialArgs = {
-              inherit self inputs pkgs user common;
-            };
+            inherit system pkgs;
+            extraSpecialArgs = { inherit self inputs pkgs user; };
             modules = [
-              inputs.nix.homeManagerModules.default
-              common.homeManagerModules
               ./hm
+              ./lib
+              nix.homeManagerModules.default
+              agenix.homeManagerModules.default
             ];
           };
         };
-
-      linuxOverlays = [
-        inputs.neovim.overlays.default
-        inputs.agenix.overlays.default
-        (self: super: {
-          dix = super.dix or { } //
-            {
-              editor-nix = inputs.editor-nix;
-              emulator-nix = inputs.emulator-nix;
-            };
-
-          python3-tools = super.buildEnv {
-            name = "python3-tools";
-            paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
-            meta = { mainProgram = "python"; };
-          };
-        })
-        (import ./overlays/10-dev-overrides.nix)
-        (import ./overlays/20-packages-overrides.nix)
-        (import ./overlays/20-recurse-overrides.nix)
-        (import ./overlays/30-derivations.nix)
-      ];
-
-      darwinOverlays = self.linuxOverlays ++ [
-        # custom packages specifics to darwin
-        (import ./overlays/50-darwin-applications.nix)
-      ];
     };
 }
