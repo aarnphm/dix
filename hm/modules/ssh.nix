@@ -20,7 +20,7 @@ with lib;
       };
       matchBlocks = {
         "github.com" = {
-          identityFile = "/run/agenix/id_ed25519-github";
+          identityFile = ''/run${lib.optionalString pkgs.stdenv.isLinux "/user/1000"}/agenix/id_ed25519-github'';
         };
       } // lib.optionalAttrs pkgs.stdenv.isDarwin {
         "a4000" = {

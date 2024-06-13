@@ -4,31 +4,42 @@ let
   variables = import ./variables.nix { inherit pkgs lib; };
   pubkeys = import ./pubkeys.nix { };
 
-  age = {
-    identityPaths = [ "${homePrefix}/${user}/.pubkey.txt" ];
+
+  identityPaths = [ "${homePrefix}/${user}/.pubkey.txt" ];
+  darwinAge = {
+    inherit identityPaths;
     secrets = {
       id_ed25519-github = {
         file = ../secrets/${user}-id_ed25519-github.age;
         path = "${homePrefix}/${user}/.ssh/id_ed25519-github";
         owner = user;
         mode = "700";
-        group = if pkgs.stdenv.isDarwin then "staff" else user;
+        group = "staff";
       };
-      id_ed25519-paperspace = lib.optionalAttrs pkgs.stdenv.isDarwin {
-        file = ../secrets/aarnphm-id_ed25519-paperspace.age;
-        path = "/Users/aarnphm/.ssh/id_ed25519-paperspace";
-        owner = "aarnphm";
+      id_ed25519-paperspace = {
+        file = ../secrets/${user}-id_ed25519-paperspace.age;
+        path = "${homePrefix}/${user}/.ssh/id_ed25519-paperspace";
+        owner = user;
         mode = "700";
         group = "staff";
       };
     };
   };
+  linuxAge = {
+    inherit identityPaths;
+    secrets = {
+      id_ed25519-github = {
+        file = ../secrets/paperspace-id_ed25519-github.age;
+        path = "${homePrefix}/${user}/.ssh/id_ed25519-github";
+      };
+    };
+  };
 in
 {
-  inherit pubkeys age;
+  inherit pubkeys;
 
   darwinModules = {
-    inherit age;
+    age = darwinAge;
     environment = {
       inherit variables;
       systemPackages = packages;
@@ -37,11 +48,10 @@ in
 
   homeManagerModules = lib.optionalAttrs pkgs.stdenv.isLinux
     {
+      age = linuxAge;
       home = {
         inherit packages;
         sessionVariables = variables;
       };
-    } // {
-    inherit age;
-  };
+    };
 }

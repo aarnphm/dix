@@ -33,7 +33,6 @@ in
         };
       };
 
-      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
     } // lib.optionalAttrs pkgs.stdenv.isLinux {
     services.gpg-agent = {
       enable = true;
@@ -45,6 +44,8 @@ in
       extraConfig = ''
         allow-loopback-pinentry
       '';
+    } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
     };
   };
 }
