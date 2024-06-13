@@ -1,9 +1,19 @@
-{ stdenv, lib, writeProgram, bash, coreutils, gh, git, makeWrapper }:
-stdenv.mkDerivation rec  {
+{
+  stdenv,
+  lib,
+  writeProgram,
+  bash,
+  coreutils,
+  gh,
+  git,
+  makeWrapper,
+}:
+stdenv.mkDerivation rec {
   pname = "openllm-ci";
   version = "0.0.1";
 
-  src = writeProgram pname
+  src =
+    writeProgram pname
     {
       inherit (stdenv) shell;
       inherit pname;
@@ -14,8 +24,8 @@ stdenv.mkDerivation rec  {
     ./ci.sh;
 
   strictDeps = true;
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ bash coreutils ];
+  nativeBuildInputs = [makeWrapper];
+  buildInputs = [bash coreutils];
   installPhase = ''
     mkdir -p $out/bin
     ln -s $src/bin/${pname} $out/bin/run-tests
@@ -23,7 +33,7 @@ stdenv.mkDerivation rec  {
 
   postFixup = ''
     wrapProgram $out/bin/run-tests \
-      --prefix PATH : "${lib.makeBinPath [ gh git coreutils bash ]}"
+      --prefix PATH : "${lib.makeBinPath [gh git coreutils bash]}"
   '';
 
   meta = {
@@ -31,7 +41,7 @@ stdenv.mkDerivation rec  {
     description = "OpenLLM CI system.";
     homepage = "https://github.com/bentoml/OpenLLM";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ aarnphm ];
+    maintainers = with lib.maintainers; [aarnphm];
     platforms = lib.platforms.unix;
   };
 }

@@ -1,4 +1,8 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 with lib; {
   options.zoxide = {
     enable = mkOption {
@@ -11,7 +15,7 @@ with lib; {
   config = mkIf config.zoxide.enable {
     programs.zoxide = {
       enable = true;
-      options = [ "--cmd j" ];
+      options = ["--cmd j"];
     };
   };
 }

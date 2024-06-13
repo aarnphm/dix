@@ -1,6 +1,9 @@
-{ config, lib, ... }:
-with lib;
 {
+  config,
+  lib,
+  ...
+}:
+with lib; {
   options.direnv = {
     enable = mkOption {
       type = types.bool;

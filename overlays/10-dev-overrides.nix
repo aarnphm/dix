@@ -1,7 +1,5 @@
-self: super:
-{
-  flakeVersion = input:
-    "${builtins.substring 0 8 (input.lastModifiedDate or input.lastModified or "19700101")}.${input.shortRev or "dirty"}";
+self: super: {
+  flakeVersion = input: "${builtins.substring 0 8 (input.lastModifiedDate or input.lastModified or "19700101")}.${input.shortRev or "dirty"}";
 
   upgraded = selfPkg: superPkg:
     if builtins.compareVersions superPkg.version selfPkg.version < 1
@@ -15,32 +13,35 @@ self: super:
 
   isArm = builtins.match "aarch64-.*" super.stdenv.hostPlatform.system != null;
 
-  writeProgram = name: env: src: super.substituteAll ({
-    inherit name src;
-    dir = "bin";
-    isExecutable = true;
-  } // env);
+  writeProgram = name: env: src:
+    super.substituteAll ({
+        inherit name src;
+        dir = "bin";
+        isExecutable = true;
+      }
+      // env);
 
-  installDmg =
-    { name
-    , appname ? name
-    , version
-    , src
-    , description
-    , homepage
-    , nativeBuildInputs ? [ ]
-    , postInstall ? ""
-    , sourceRoot ? "."
-    , ...
-    }:
-      with super; stdenv.mkDerivation {
+  installDmg = {
+    name,
+    appname ? name,
+    version,
+    src,
+    description,
+    homepage,
+    nativeBuildInputs ? [],
+    postInstall ? "",
+    sourceRoot ? ".",
+    ...
+  }:
+    with super;
+      stdenv.mkDerivation {
         name = "${name}-${version}";
         version = "${version}";
         src = src;
-        buildInputs = [ unzip ];
-        nativeBuildInputs = [ installShellFiles ] ++ nativeBuildInputs;
+        buildInputs = [unzip];
+        nativeBuildInputs = [installShellFiles] ++ nativeBuildInputs;
         sourceRoot = sourceRoot;
-        phases = [ "unpackPhase" "installPhase" ];
+        phases = ["unpackPhase" "installPhase"];
         unpackCmd = ''
           echo "File to unpack: $curSrc"
           echo "Current source: $(ls -rthla $curSrc)"
@@ -77,19 +78,23 @@ self: super:
         meta = with self.lib; {
           homepage = homepage;
           description = description;
-          maintainers = with maintainers; [ aarnphm ];
+          maintainers = with maintainers; [aarnphm];
           platforms = platforms.darwin;
         };
       };
 
-  mkDerivationKeepSrc = { name, src, version }:
-    with super; stdenv.mkDerivation {
-      inherit name src version;
-      buildCommand = ''
-        mkdir -p $out
-        cp -a $src/. $out
-      '';
-      meta = { description = name; };
-    };
-
+  mkDerivationKeepSrc = {
+    name,
+    src,
+    version,
+  }:
+    with super;
+      stdenv.mkDerivation {
+        inherit name src version;
+        buildCommand = ''
+          mkdir -p $out
+          cp -a $src/. $out
+        '';
+        meta = {description = name;};
+      };
 }

@@ -1,4 +1,7 @@
-{ stdenv, lib, }:
+{
+  stdenv,
+  lib,
+}:
 stdenv.mkDerivation {
   name = "zsh-dix";
   src = ./.;
@@ -12,7 +15,7 @@ stdenv.mkDerivation {
   meta = {
     description = "Aaron's zsh configuration";
     homepage = "https://github.com/aarnphm/dix";
-    maintainers = with lib.maintainers; [ aarnphm ];
+    maintainers = with lib.maintainers; [aarnphm];
     platforms = lib.platforms.unix;
   };
 }

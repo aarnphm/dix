@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib; let
   concatStringsSepNewLine = iterables: concatStringsSep "\n" iterables;
 
@@ -15,7 +20,7 @@ with lib; let
       fi
 
       if [ -d "$realpath" ]; then
-        ${lib.getExe  pkgs.tree} -a -I '.DS_Store|.localized' -C "$realpath" | head -100
+        ${lib.getExe pkgs.tree} -a -I '.DS_Store|.localized' -C "$realpath" | head -100
       elif [ -f "$realpath" ]; then
         mime="$(file -Lbs --mime-type "$realpath")"
         category="''${mime%%/*}"
@@ -34,8 +39,7 @@ with lib; let
       fi
     }
   '';
-in
-{
+in {
   options.zsh = {
     enable = mkOption {
       type = types.bool;
@@ -88,13 +92,14 @@ in
         ''source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh''
       ];
       envExtra = ''source ${fzfComplete}'';
-      profileExtra =
-        let
-          sites = [
+      profileExtra = let
+        sites =
+          [
             "${pkgs.dix.zsh-dix}/share/zsh/site-functions"
             "${pkgs.zsh-completions}/share/zsh/site-functions"
-          ] ++ optionals pkgs.stdenv.isDarwin [ "${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh" ];
-        in
+          ]
+          ++ optionals pkgs.stdenv.isDarwin ["${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh"];
+      in
         concatStringsSepNewLine [
           ''eval "$(${lib.getExe pkgs.pyenv} init -)"''
           (concatStrings (map (sitePath: "fpath+=${sitePath}") sites))

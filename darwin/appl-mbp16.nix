@@ -1,9 +1,12 @@
-{ pkgs, user, inputs, ... }:
-let
-  homePath = "/Users/${user}";
-in
 {
-  imports = [ ./modules ];
+  pkgs,
+  user,
+  inputs,
+  ...
+}: let
+  homePath = "/Users/${user}";
+in {
+  imports = [./modules];
 
   # Users
   users.users.${user} = {
@@ -13,12 +16,12 @@ in
   };
   gpg.enable = true;
 
-  environment.shells = [ pkgs.zsh ];
+  environment.shells = [pkgs.zsh];
   environment.darwinConfig = "${homePath}/workspace/dix";
   environment.etc."zshrc.local".text = ''
     source ${pkgs.lib.getExe' pkgs.awscli2 "aws_zsh_completer.sh"}
   '';
-  environment.systemPath = [ "/opt/homebrew/bin" "/opt/homebrew/sbin" ];
+  environment.systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
 
   homebrew = {
     enable = true;
@@ -61,12 +64,12 @@ in
     log-lines = 20;
     keep-going = true;
     auto-optimise-store = true;
-    trusted-users = [ "root" user ];
+    trusted-users = ["root" user];
     sandbox = false; # TODO: investigate how to do actual pure building in darwin
     max-jobs = "auto";
   };
   nix.nixPath = [
-    { darwin = "${homePath}/workspace/dix"; }
+    {darwin = "${homePath}/workspace/dix";}
     "/nix/var/nix/profiles/per-user/root/channels"
   ];
 
@@ -106,7 +109,7 @@ in
       "Wi-Fi"
       "Thunderbolt Ethernet Slot 2"
     ];
-    dns = [ "1.1.1.1" "8.8.8.8" ];
+    dns = ["1.1.1.1" "8.8.8.8"];
     computerName = "appl-mbp16";
     hostName = "appl-mbp16";
   };

@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   zedKeymap = [
     {
       context = "menu";
@@ -48,8 +52,8 @@ let
     {
       context = "Editor && vim_mode == insert";
       bindings = {
-        "j j" = [ "workspace::SendKeystrokes" "escape" ];
-        "j k" = [ "workspace::SendKeystrokes" "escape" ];
+        "j j" = ["workspace::SendKeystrokes" "escape"];
+        "j k" = ["workspace::SendKeystrokes" "escape"];
       };
     }
     {
@@ -96,10 +100,10 @@ let
     {
       context = "Dock && VimControl";
       bindings = {
-        "ctrl-w h" = [ "workspace::ActivatePaneInDirection" "Left" ];
-        "ctrl-w l" = [ "workspace::ActivatePaneInDirection" "Right" ];
-        "ctrl-w k" = [ "workspace::ActivatePaneInDirection" "Up" ];
-        "ctrl-w j" = [ "workspace::ActivatePaneInDirection" "Down" ];
+        "ctrl-w h" = ["workspace::ActivatePaneInDirection" "Left"];
+        "ctrl-w l" = ["workspace::ActivatePaneInDirection" "Right"];
+        "ctrl-w k" = ["workspace::ActivatePaneInDirection" "Up"];
+        "ctrl-w j" = ["workspace::ActivatePaneInDirection" "Down"];
       };
     }
     {
@@ -193,13 +197,13 @@ let
               arrayIndex = "Disable";
             };
             doc = {
-              privateName = [ "^_" ];
+              privateName = ["^_"];
             };
             type = {
               castNumberToInteger = true;
             };
             diagnostics = {
-              disable = [ "incomplete-signature-doc" "trailing-space" ];
+              disable = ["incomplete-signature-doc" "trailing-space"];
               groupSeverity = {
                 strong = "Warning";
                 strict = "Warning";
@@ -218,7 +222,7 @@ let
                 unbalanced = "Opened";
                 unused = "Opened";
               };
-              unusedLocalExclude = [ "_*" ];
+              unusedLocalExclude = ["_*"];
             };
             format = {
               enable = true;
@@ -268,29 +272,29 @@ let
         formatter = {
           external = {
             command = "ruff";
-            arguments = [ "format" "-" ];
+            arguments = ["format" "-"];
           };
         };
       };
     };
   };
 in
-with lib; {
-  options.zed = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = mdDoc ''Zed configuration'';
-    };
-  };
-
-  config = mkIf (config.zed.enable && pkgs.stdenv.isDarwin) {
-    xdg = {
-      enable = true;
-      configFile = {
-        "zed/keymap.json".source = pkgs.writeText "zed-keymap" (builtins.toJSON zedKeymap);
-        "zed/settings.json".source = pkgs.writeText "zed-settings" (builtins.toJSON zedConfig);
+  with lib; {
+    options.zed = {
+      enable = mkOption {
+        type = types.bool;
+        default = false;
+        description = mdDoc ''Zed configuration'';
       };
     };
-  };
-}
+
+    config = mkIf (config.zed.enable && pkgs.stdenv.isDarwin) {
+      xdg = {
+        enable = true;
+        configFile = {
+          "zed/keymap.json".source = pkgs.writeText "zed-keymap" (builtins.toJSON zedKeymap);
+          "zed/settings.json".source = pkgs.writeText "zed-settings" (builtins.toJSON zedConfig);
+        };
+      };
+    };
+  }

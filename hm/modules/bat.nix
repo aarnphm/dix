@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
-with lib;
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; {
   options.bat = {
     enable = mkOption {
       type = types.bool;
@@ -13,7 +17,7 @@ with lib;
     programs = {
       bat = {
         enable = true;
-        extraPackages = with pkgs.bat-extras; [ batwatch batpipe batman batgrep batdiff ];
+        extraPackages = with pkgs.bat-extras; [batwatch batpipe batman batgrep batdiff];
         config = {
           theme = "GitHub";
           map-syntax = [

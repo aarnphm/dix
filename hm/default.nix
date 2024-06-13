@@ -1,6 +1,12 @@
-{ config, inputs, pkgs, lib, user, ... }:
-let
-  tomlFormat = pkgs.formats.toml { };
+{
+  config,
+  inputs,
+  pkgs,
+  lib,
+  user,
+  ...
+}: let
+  tomlFormat = pkgs.formats.toml {};
 
   fzfConfig = pkgs.writeText "fzfrc" ''
     --color=fg:#797593,bg:#faf4ed,hl:#d7827e
@@ -16,14 +22,17 @@ let
   '';
 
   gpgTuiConfig = {
-    general = { detail_level = "full"; };
-    gpg = { armor = true; };
+    general = {detail_level = "full";};
+    gpg = {armor = true;};
   };
 
-  gpgTuiConfigFile = "${if pkgs.stdenv.isDarwin then "/Library/Application Support" else ".config"}/gpg-tui/gpg-tui.toml";
-in
-{
-  imports = [ ./modules ];
+  gpgTuiConfigFile = "${
+    if pkgs.stdenv.isDarwin
+    then "/Library/Application Support"
+    else ".config"
+  }/gpg-tui/gpg-tui.toml";
+in {
+  imports = [./modules];
 
   programs.home-manager.enable = true;
   programs.nix-index.enable = true;
@@ -130,7 +139,11 @@ in
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
       unlock-vault = ''${lib.getExe pkgs.dix.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.dix.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
       generate-password = "${lib.getExe pkgs.dix.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
-      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.yml" .github --exec-batch ${if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/docker" else "docker"} run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
+      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.yml" .github --exec-batch ${
+          if pkgs.stdenv.isDarwin
+          then "${pkgs.dix.OrbStack}/bin/docker"
+          else "docker"
+        } run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
       get-gpg-password = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-github-keys | ${lib.getExe pkgs.dix.unicopy}'';
 
@@ -151,8 +164,15 @@ in
       python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${lib.makeLibraryPath [pkgs.zlib pkgs.xz.dev]}" ${lib.getExe pkgs.pyenv} install "$@"'';
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
-      k = if pkgs.stdenv.isDarwin then "${pkgs.dix.OrbStack}/bin/kubectl" else "kubectl";
-      pinentry = lib.getExe (with pkgs; (if stdenv.isDarwin then pinentry_mac else pinentry-all));
+      k =
+        if pkgs.stdenv.isDarwin
+        then "${pkgs.dix.OrbStack}/bin/kubectl"
+        else "kubectl";
+      pinentry = lib.getExe (with pkgs; (
+        if stdenv.isDarwin
+        then pinentry_mac
+        else pinentry-all
+      ));
     };
   };
 }

@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
-with lib;
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; {
   options.alacritty = {
     enable = mkOption {
       type = types.bool;
@@ -14,7 +18,7 @@ with lib;
       alacritty = {
         enable = true;
         settings = {
-          import = [ "${pkgs.alacritty-theme}/rose-pine-dawn.toml" ];
+          import = ["${pkgs.alacritty-theme}/rose-pine-dawn.toml"];
           window = {
             dynamic_padding = false;
             decorations = "buttonless";
@@ -64,7 +68,10 @@ with lib;
               post_processing = true;
               persist = false;
               mouse.enabled = true;
-              binding = { key = "U"; mods = "Control|Shift"; };
+              binding = {
+                key = "U";
+                mods = "Control|Shift";
+              };
               regex = ''
                 (ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>"\\s{-}\\^⟨⟩`]+'';
             }

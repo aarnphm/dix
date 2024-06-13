@@ -39,13 +39,19 @@
   };
 
   nixConfig = {
-    trusted-substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" "https://cuda-maintainers.cachix.org" ];
-    trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
+    trusted-substituters = ["https://nix-community.cachix.org" "https://cache.nixos.org" "https://cuda-maintainers.cachix.org"];
+    trusted-public-keys = ["nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="];
   };
 
-  outputs = { self, nix-darwin, home-manager, flake-utils, ... }@inputs:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nix-darwin,
+    home-manager,
+    flake-utils,
+    ...
+  } @ inputs:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         isDarwin = builtins.elem system inputs.nixpkgs.lib.platforms.darwin;
 
         pkgs = import inputs.nixpkgs {
@@ -56,12 +62,12 @@
           };
           overlays = [
             (self: super: {
-              dix = super.dix or { } // { editor-nix = inputs.editor-nix; };
+              dix = super.dix or {} // {editor-nix = inputs.editor-nix;};
 
               python3-tools = super.buildEnv {
                 name = "python3-tools";
-                paths = [ (self.python3.withPackages (ps: with ps; [ pynvim ])) ];
-                meta = { mainProgram = "python"; };
+                paths = [(self.python3.withPackages (ps: with ps; [pynvim]))];
+                meta = {mainProgram = "python";};
               };
             })
             inputs.neovim.overlays.default
@@ -78,16 +84,17 @@
           ];
         };
 
-        genSpecialArgs = user: { inherit self inputs user pkgs; };
-      in
-      {
+        genSpecialArgs = user: {inherit self inputs user pkgs;};
+      in {
+        formatter = pkgs.alejandra;
+
         apps = {
           ubuntu-nvidia = flake-utils.lib.mkApp {
-            drv = pkgs.writeShellApplication rec{
+            drv = pkgs.writeShellApplication rec {
               name = "ubuntu-nvidia";
               runtimeInputs = with pkgs; [
                 apt
-                (runCommand "ubuntuDriverHost" { } ''
+                (runCommand "ubuntuDriverHost" {} ''
                   mkdir -p $out/bin
                   ln -s /usr/bin/ubuntu-drivers $out/bin
                 '')
@@ -142,69 +149,64 @@
             };
           };
         };
-        packages = rec {
-          dix = pkgs.dix;
-          inherit (dix) openllm-ci;
+        packages = {
+          inherit (pkgs.dix) openllm-ci;
 
-          darwinConfigurations =
-            let
-              user = "aarnphm";
-            in
-            {
-              appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-                inherit system pkgs;
-                specialArgs = genSpecialArgs user;
-                modules = [
-                  ./darwin/appl-mbp16.nix
-                  ./lib
-                  inputs.nix.darwinModules.default
-                  inputs.agenix.darwinModules.default
-                  inputs.nix-homebrew.darwinModules.nix-homebrew
-                  {
-                    nix-homebrew = {
-                      inherit user;
-                      enable = true;
-                      enableRosetta = true;
-                      taps = {
-                        "homebrew/homebrew-core" = inputs.homebrew-core;
-                        "homebrew/homebrew-cask" = inputs.homebrew-cask;
-                        "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
-                      };
-                      mutableTaps = false;
-                      autoMigrate = true;
+          darwinConfigurations = let
+            user = "aarnphm";
+          in {
+            appl-mbp16 = nix-darwin.lib.darwinSystem rec {
+              inherit system pkgs;
+              specialArgs = genSpecialArgs user;
+              modules = [
+                ./darwin/appl-mbp16.nix
+                ./lib
+                inputs.nix.darwinModules.default
+                inputs.agenix.darwinModules.default
+                inputs.nix-homebrew.darwinModules.nix-homebrew
+                {
+                  nix-homebrew = {
+                    inherit user;
+                    enable = true;
+                    enableRosetta = true;
+                    taps = {
+                      "homebrew/homebrew-core" = inputs.homebrew-core;
+                      "homebrew/homebrew-cask" = inputs.homebrew-cask;
+                      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
                     };
-                  }
-                  home-manager.darwinModules.home-manager
-                  {
-                    home-manager = {
-                      useGlobalPkgs = true;
-                      useUserPackages = true;
-                      users."${user}".imports = [ ./hm ];
-                      backupFileExtension = "backup-from-hm";
-                      extraSpecialArgs = specialArgs;
-                      verbose = true;
-                    };
-                  }
-                ];
-              };
+                    mutableTaps = false;
+                    autoMigrate = true;
+                  };
+                }
+                home-manager.darwinModules.home-manager
+                {
+                  home-manager = {
+                    useGlobalPkgs = true;
+                    useUserPackages = true;
+                    users."${user}".imports = [./hm];
+                    backupFileExtension = "backup-from-hm";
+                    extraSpecialArgs = specialArgs;
+                    verbose = true;
+                  };
+                }
+              ];
             };
+          };
 
-          homeConfigurations =
-            let
-              user = "paperspace";
-            in
-            {
-              paperspace = home-manager.lib.homeManagerConfiguration {
-                inherit pkgs;
-                extraSpecialArgs = genSpecialArgs user;
-                modules = [
-                  ./hm
-                  ./lib
-                  inputs.nix.homeManagerModules.default
-                  inputs.agenix.homeManagerModules.default
-                ];
-              };
+          homeConfigurations = let
+            user = "paperspace";
+          in {
+            paperspace = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              extraSpecialArgs = genSpecialArgs user;
+              modules = [
+                ./hm
+                ./lib
+                inputs.nix.homeManagerModules.default
+                inputs.agenix.homeManagerModules.default
+              ];
             };
+          };
         };
       }
     );

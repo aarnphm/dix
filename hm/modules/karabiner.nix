@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
-with lib;
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   karabinerConfig = {
     "global" = {
       "ask_for_confirmation_before_quitting" = true;
@@ -19,12 +23,12 @@ let
             "basic.to_if_held_down_threshold_milliseconds" = 500;
             "mouse_motion_to_scroll.speed" = 100;
           };
-          "rules" = [ ];
+          "rules" = [];
         };
         "devices" = [
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -41,12 +45,12 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -63,12 +67,12 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -85,12 +89,12 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -107,7 +111,7 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
         ];
@@ -238,7 +242,7 @@ let
           "delay_milliseconds_before_open_device" = 1000;
         };
         "selected" = false;
-        "simple_modifications" = [ ];
+        "simple_modifications" = [];
         "virtual_hid_keyboard" = {
           "country_code" = 0;
           "indicate_sticky_modifier_keys_state" = true;
@@ -254,12 +258,12 @@ let
             "basic.to_if_held_down_threshold_milliseconds" = 500;
             "mouse_motion_to_scroll.speed" = 100;
           };
-          "rules" = [ ];
+          "rules" = [];
         };
         "devices" = [
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -292,7 +296,7 @@ let
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -309,12 +313,12 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -331,12 +335,12 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
           {
             "disable_built_in_keyboard_if_exists" = false;
-            "fn_function_keys" = [ ];
+            "fn_function_keys" = [];
             "game_pad_swap_sticks" = false;
             "identifiers" = {
               "is_game_pad" = false;
@@ -353,7 +357,7 @@ let
             "mouse_flip_y" = false;
             "mouse_swap_wheels" = false;
             "mouse_swap_xy" = false;
-            "simple_modifications" = [ ];
+            "simple_modifications" = [];
             "treat_as_built_in_keyboard" = false;
           }
         ];
@@ -484,7 +488,7 @@ let
           "delay_milliseconds_before_open_device" = 1000;
         };
         "selected" = true;
-        "simple_modifications" = [ ];
+        "simple_modifications" = [];
         "virtual_hid_keyboard" = {
           "country_code" = 0;
           "indicate_sticky_modifier_keys_state" = true;
@@ -493,8 +497,7 @@ let
       }
     ];
   };
-in
-{
+in {
   options.karabiner = {
     enable = mkOption {
       type = types.bool;

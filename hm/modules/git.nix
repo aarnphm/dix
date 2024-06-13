@@ -1,10 +1,13 @@
-{ config, lib, pkgs, ... }:
-with lib;
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   gitPackage = pkgs.git;
   gitBin = getExe gitPackage;
-in
-{
+in {
   options.git = {
     enable = mkOption {
       type = types.bool;
@@ -19,7 +22,7 @@ in
         enable = true;
         gitCredentialHelper = {
           enable = true;
-          hosts = [ "https://github.com" "https://gist.github.com" ];
+          hosts = ["https://github.com" "https://gist.github.com"];
         };
         settings = {
           editor = "nvim";
@@ -40,7 +43,10 @@ in
           enable = true;
         };
         signing = {
-          key = if pkgs.stdenv.isDarwin then "18974753009D2BFA" else "B7559BD33B10A161";
+          key =
+            if pkgs.stdenv.isDarwin
+            then "18974753009D2BFA"
+            else "B7559BD33B10A161";
           signByDefault = true;
         };
         ignores = [
@@ -83,17 +89,26 @@ in
           format = {
             pretty = "%C(auto)%h - %s%d%n%+b%+N(%G?) %an <%ae> (%C(blue)%ad%C(auto))%n";
           };
-          submodule = { recurse = true; };
-          pull = { rebase = true; };
-          commit = { sign = true; verbose = true; };
-          push = { default = "current"; };
-          diff = { colorMoved = "default"; };
-          color = { ui = "auto"; };
-          column = { ui = "auto"; };
-          init = { defaultBranch = "main"; };
-          merge = { conflictstyle = "diff3"; };
-          rebase = { autosquash = true; autostash = true; };
-          branch = { sort = "-committerdate"; autosetuprebase = "always"; };
+          submodule = {recurse = true;};
+          pull = {rebase = true;};
+          commit = {
+            sign = true;
+            verbose = true;
+          };
+          push = {default = "current";};
+          diff = {colorMoved = "default";};
+          color = {ui = "auto";};
+          column = {ui = "auto";};
+          init = {defaultBranch = "main";};
+          merge = {conflictstyle = "diff3";};
+          rebase = {
+            autosquash = true;
+            autostash = true;
+          };
+          branch = {
+            sort = "-committerdate";
+            autosetuprebase = "always";
+          };
           core = {
             # Treat spaces before tabs and all kinds of trailing whitespace as an error.
             # [default] trailing-space: looks for spaces at the end of a line

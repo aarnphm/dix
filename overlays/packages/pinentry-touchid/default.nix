@@ -1,15 +1,25 @@
-{ stdenv, fetchurl, unzip, lib, isArm }:
+{
+  stdenv,
+  fetchurl,
+  unzip,
+  lib,
+  isArm,
+}:
 stdenv.mkDerivation (finalAttrs: {
   pname = "pinentry-touchid";
   version = "0.0.3";
 
   src = fetchurl {
-    url = "https://github.com/jorgelbg/pinentry-touchid/releases/download/v${finalAttrs.version}/pinentry-touchid_${finalAttrs.version}_macos_${if isArm then "arm64" else "amd64"}.tar.gz";
+    url = "https://github.com/jorgelbg/pinentry-touchid/releases/download/v${finalAttrs.version}/pinentry-touchid_${finalAttrs.version}_macos_${
+      if isArm
+      then "arm64"
+      else "amd64"
+    }.tar.gz";
     sha256 = "sha256-bxwkoC6DbORe6uQCeFMoqYngq6ZKsjrj7SUdgmm9d3I=";
   };
   sourceRoot = ".";
 
-  buildInputs = [ unzip ];
+  buildInputs = [unzip];
   unpackCmd = ''
     unzip $curSrc pinentry-touchid
   '';

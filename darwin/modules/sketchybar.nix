@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
-with lib;
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; {
   options.sketchybar = {
     enable = mkOption {
       type = types.bool;
@@ -73,4 +77,3 @@ with lib;
     };
   };
 }
-

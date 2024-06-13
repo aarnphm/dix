@@ -1,4 +1,14 @@
-{ stdenv, lib, runCommand, buildNpmPackage, fetchFromGitHub, nodejs_18, python3, darwin, installShellFiles }:
+{
+  stdenv,
+  lib,
+  runCommand,
+  buildNpmPackage,
+  fetchFromGitHub,
+  nodejs_18,
+  python3,
+  darwin,
+  installShellFiles,
+}:
 buildNpmPackage rec {
   pname = "bitwarden-cli";
   version = "2024.4.1";
@@ -14,23 +24,25 @@ buildNpmPackage rec {
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
-  nativeBuildInputs = [
-    python3
-    installShellFiles
-  ] ++ lib.optionals stdenv.isDarwin [
-    darwin.cctools
-    (runCommand "xcrunHost" { } ''
-      mkdir -p $out/bin
-      ln -s /usr/bin/xcrun $out/bin
-    '')
-  ];
+  nativeBuildInputs =
+    [
+      python3
+      installShellFiles
+    ]
+    ++ lib.optionals stdenv.isDarwin [
+      darwin.cctools
+      (runCommand "xcrunHost" {} ''
+        mkdir -p $out/bin
+        ln -s /usr/bin/xcrun $out/bin
+      '')
+    ];
 
   makeCacheWritable = true;
 
   npmDepsHash = "sha256-fjYez3nSDsG5kYtrun3CkDCz1GNAjNlwPzEL+/9qQRU=";
   npmBuildScript = "build:prod";
   npmWorkspace = "apps/cli";
-  npmFlags = [ "--legacy-peer-deps" ];
+  npmFlags = ["--legacy-peer-deps"];
 
   postInstall = ''
     installShellCompletion --zsh --name _bw <($out/bin/bw completion --shell zsh)
@@ -42,7 +54,7 @@ buildNpmPackage rec {
     description = "A secure and free password manager for all of your devices";
     homepage = "https://bitwarden.com";
     license = licenses.gpl3Only;
-    maintainers = with maintainers; [ aarnphm ];
+    maintainers = with maintainers; [aarnphm];
     platforms = platforms.unix;
   };
 }

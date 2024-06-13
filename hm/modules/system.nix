@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
-with lib;
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; {
   options.system = {
     enable = mkOption {
       type = types.bool;
@@ -12,8 +16,7 @@ with lib;
   config = mkIf config.system.enable (
     let
       dix = pkgs.dix;
-    in
-    {
+    in {
       home.file.".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${dix.editor}/.vimrc";
       xdg = {
         enable = true;

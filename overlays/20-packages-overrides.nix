@@ -1,13 +1,17 @@
-self: super:
-{
-  dix = super.dix or { } // {
-    sketchybar = super.sketchybar.overrideAttrs (oldAttrs: {
-      installPhase = oldAttrs.installPhase + ''
-        mkdir -p $out/plugins
-        cp -r ./plugins $out
-      '';
-    });
-  };
+self: super: {
+  dix =
+    super.dix
+    or {}
+    // {
+      sketchybar = super.sketchybar.overrideAttrs (oldAttrs: {
+        installPhase =
+          oldAttrs.installPhase
+          + ''
+            mkdir -p $out/plugins
+            cp -r ./plugins $out
+          '';
+      });
+    };
   pyenv = super.pyenv.overrideAttrs (oldAttrs: {
     installPhase = ''
       runHook preInstall
@@ -22,18 +26,21 @@ self: super:
     '';
   });
   gitstatus = super.gitstatus.overrideAttrs (oldAttrs: {
-    installPhase = oldAttrs.installPhase + ''
-      install -Dm444 gitstatus.prompt.sh -t $out/share/gitstatus/
-      install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
-    '';
+    installPhase =
+      oldAttrs.installPhase
+      + ''
+        install -Dm444 gitstatus.prompt.sh -t $out/share/gitstatus/
+        install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
+      '';
   });
-  tree-sitter = super.tree-sitter.override { webUISupport = true; };
+  tree-sitter = super.tree-sitter.override {webUISupport = true;};
   neovim = super.neovim.overrideAttrs (oldAttrs: {
-    preConfigure = oldAttrs.preConfigure + super.lib.concatStrings (super.lib.mapAttrsToList
-      (language: grammar: ''
-        ln -sf ${grammar}/parser $out/lib/nvim/parser/${super.lib.strings.removePrefix "tree-sitter-" language}.so
-      '')
-      self.tree-sitter.builtGrammars);
+    preConfigure =
+      oldAttrs.preConfigure
+      + super.lib.concatStrings (super.lib.mapAttrsToList
+        (language: grammar: ''
+          ln -sf ${grammar}/parser $out/lib/nvim/parser/${super.lib.strings.removePrefix "tree-sitter-" language}.so
+        '')
+        self.tree-sitter.builtGrammars);
   });
 }
-
