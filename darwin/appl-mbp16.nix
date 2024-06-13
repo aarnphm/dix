@@ -19,6 +19,41 @@ in
   environment.shells = [ pkgs.zsh ];
   environment.darwinConfig = "${homePath}/workspace/dix";
 
+  homebrew = {
+    enable = true;
+    casks = [
+      "arc"
+      "google-chrome"
+      "firefox"
+
+      "zotero"
+      "discord"
+      "zoom"
+      "obs"
+
+      "gather"
+      "notion"
+      "obsidian"
+      "rectangle"
+
+      "steam"
+      "zed"
+
+      # TODO: for sequoia
+      # "raycast"
+      # "karabiner-elements"
+    ];
+    # nix run nixpkgs#mas -- search <apps>
+    masApps = {
+      Bitwarden = 1352778147;
+      TestFlight = 899247664;
+      Messenger = 1480068668;
+      "Slack for Desktop" = 803453959;
+      "NordVPN - VPN for privacy" = 905953485;
+      "WhatsApp Messenger" = 310633997;
+    };
+  };
+
   # TODO: turn this back on once upgrade-nix-store-path-url is stable
   nix.checkConfig = true;
   nix.settings = {

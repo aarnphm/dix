@@ -14,6 +14,23 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # homebrew
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+    };
+    homebrew-bundle = {
+      url = "github:homebrew/homebrew-bundle";
+      flake = false;
+    };
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
+
     # utilities
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -34,7 +51,7 @@
     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, flake-utils, ... }@inputs:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nix-homebrew, flake-utils, ... }@inputs:
     let
       inherit (flake-utils.lib) eachSystemMap;
 
@@ -83,6 +100,23 @@
             specialArgs = { inherit self inputs user pkgs; };
             modules = [
               ./darwin/appl-mbp16.nix
+              nix-homebrew.darwinModules.nix-homebrew
+              {
+                nix-homebrew = {
+                  inherit user;
+                  enable = true;
+                  enableRosetta = true;
+
+                  # Optional: Declarative tap management
+                  taps = {
+                    "homebrew/homebrew-core" = inputs.homebrew-core;
+                    "homebrew/homebrew-cask" = inputs.homebrew-cask;
+                    "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+                  };
+                  mutableTaps = false;
+                  autoMigrate = true;
+                };
+              }
               home-manager.darwinModules.home-manager
               {
                 home-manager = {

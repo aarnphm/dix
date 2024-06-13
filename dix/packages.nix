@@ -118,20 +118,13 @@ let
     undmg
     xar
     cpio
+    mas
 
     # apps
     pinentry_mac
     dix.pinentry-touchid
-
-    # Specific Application built
-    dix.Arc
-    dix.Discord
-    dix.Firefox
-    dix.Obsidian
     dix.OrbStack
-    dix.Rectangle
-    dix.Zed
-    dix.Zotero
+    dix.Splice
   ];
 
   linux = with pkgs; [

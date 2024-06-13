@@ -24,7 +24,8 @@ in
       settings = {
         auto-key-retrieve = true;
         no-emit-version = true;
-        no-comments = false;
+        no-comments = true;
+        verify-options = "show-uid-validity";
         keyserver = "hkps://keys.openpgp.org";
       };
       scdaemonSettings = {

@@ -42,6 +42,7 @@ in
   ssh.enable = true;
   direnv.enable = true;
   gpg.enable = true;
+  awscli.enable = true;
 
   # MacOS specifics
   zed.enable = true;

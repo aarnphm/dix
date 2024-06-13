@@ -18,6 +18,7 @@ in
 
   dix = super.dix or { } // {
     openllm-ci = super.callPackage ./packages/bentoml/openllm-ci { };
+    aws-credentials = super.callPackage ./packages/aws-credentials { };
     unicopy = super.callPackage ./packages/unicopy { };
     git-forest = super.callPackage ./packages/git-forest { };
     zsh-dix = super.callPackage ./packages/zsh-dix { };
