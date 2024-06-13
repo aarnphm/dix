@@ -43,24 +43,20 @@
     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=" ];
   };
 
-  outputs = { self, nix, nixpkgs, nix-darwin, home-manager, agenix, flake-utils, nix-homebrew, ... }@inputs:
+  outputs = { self, nix-darwin, home-manager, flake-utils, ... }@inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
+        isDarwin = builtins.elem system inputs.nixpkgs.lib.platforms.darwin;
+
+        pkgs = import inputs.nixpkgs {
           inherit system;
           config = {
             allowUnfree = true;
-            allowBroken = !(builtins.elem system inputs.nixpkgs.lib.platforms.darwin);
+            allowBroken = !(isDarwin);
           };
           overlays = [
-            inputs.neovim.overlays.default
-            inputs.agenix.overlays.default
             (self: super: {
-              dix = super.dix or { } //
-                {
-                  editor-nix = inputs.editor-nix;
-                  emulator-nix = inputs.emulator-nix;
-                };
+              dix = super.dix or { } // { editor-nix = inputs.editor-nix; };
 
               python3-tools = super.buildEnv {
                 name = "python3-tools";
@@ -68,6 +64,10 @@
                 meta = { mainProgram = "python"; };
               };
             })
+            inputs.neovim.overlays.default
+            inputs.agenix.overlays.default
+
+            # custom overlays
             (import ./overlays/10-dev-overrides.nix)
             (import ./overlays/20-packages-overrides.nix)
             (import ./overlays/20-recurse-overrides.nix)
@@ -77,6 +77,8 @@
             (import ./overlays/50-darwin-applications.nix)
           ];
         };
+
+        genSpecialArgs = user: { inherit self inputs user pkgs; };
       in
       {
         packages = rec {
@@ -90,13 +92,13 @@
             {
               appl-mbp16 = nix-darwin.lib.darwinSystem rec {
                 inherit system pkgs;
-                specialArgs = { inherit self inputs user pkgs; };
+                specialArgs = genSpecialArgs user;
                 modules = [
                   ./darwin/appl-mbp16.nix
                   ./lib
-                  nix.darwinModules.default
-                  agenix.darwinModules.default
-                  nix-homebrew.darwinModules.nix-homebrew
+                  inputs.nix.darwinModules.default
+                  inputs.agenix.darwinModules.default
+                  inputs.nix-homebrew.darwinModules.nix-homebrew
                   {
                     nix-homebrew = {
                       inherit user;
@@ -130,15 +132,15 @@
             let
               user = "paperspace";
             in
-            pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
-              paperspace = home-manager.lib.homeManagerConfiguration rec {
+            {
+              paperspace = home-manager.lib.homeManagerConfiguration {
                 inherit pkgs;
-                extraSpecialArgs = { inherit self inputs pkgs user; };
+                extraSpecialArgs = genSpecialArgs user;
                 modules = [
                   ./hm
                   ./lib
-                  nix.homeManagerModules.default
-                  agenix.homeManagerModules.default
+                  inputs.nix.homeManagerModules.default
+                  inputs.agenix.homeManagerModules.default
                 ];
               };
             };
