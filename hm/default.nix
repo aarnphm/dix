@@ -152,7 +152,7 @@ in {
       # nix-commands
       nrb = if pkgs.stdenv.isDarwin then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace'' else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
       ned = ''
-        fd --hidden --exclude .git --type f $WORKSPACE/dix 2> /dev/null | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" $(__fzfcmd) | xargs nvim
+        ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
       '';
       nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
