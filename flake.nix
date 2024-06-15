@@ -119,65 +119,64 @@
             buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
           };
         };
-      }
-    )
-    // {
-      darwinConfigurations = flake-utils.lib.eachSystem (with flake-utils.lib.system; [aarch64-darwin]) (system: let
-        user = "aarnphm";
-        pkgs = mkPkgs system;
-      in {
-        appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-          inherit system pkgs;
-          specialArgs = genSpecialArgs {inherit pkgs user;};
-          modules = [
-            ./darwin/appl-mbp16.nix
-            ./lib
-            inputs.nix.darwinModules.default
-            inputs.agenix.darwinModules.default
-            inputs.nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                inherit user;
-                enable = true;
-                enableRosetta = true;
-                taps = {
-                  "homebrew/homebrew-core" = inputs.homebrew-core;
-                  "homebrew/homebrew-cask" = inputs.homebrew-cask;
-                  "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
-                };
-                mutableTaps = false;
-                autoMigrate = true;
-              };
-            }
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users."${user}".imports = [./hm];
-                backupFileExtension = "backup-from-hm";
-                extraSpecialArgs = specialArgs;
-                verbose = true;
-              };
-            }
-          ];
-        };
-      });
 
-      homeConfigurations = flake-utils.lib.eachDefaultSystem (system: let
-        user = "paperspace";
-        pkgs = mkPkgs system;
-      in {
-        paperspace = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = genSpecialArgs {inherit pkgs user;};
-          modules = [
-            ./hm
-            ./lib
-            inputs.nix.homeManagerModules.default
-            inputs.agenix.homeManagerModules.default
-          ];
+        legacyPackages = {
+          darwinConfigurations = let
+            user = "aarnphm";
+          in {
+            appl-mbp16 = nix-darwin.lib.darwinSystem rec {
+              inherit system pkgs;
+              specialArgs = genSpecialArgs {inherit pkgs user;};
+              modules = [
+                ./darwin/appl-mbp16.nix
+                ./lib
+                inputs.nix.darwinModules.default
+                inputs.agenix.darwinModules.default
+                inputs.nix-homebrew.darwinModules.nix-homebrew
+                {
+                  nix-homebrew = {
+                    inherit user;
+                    enable = true;
+                    enableRosetta = true;
+                    taps = {
+                      "homebrew/homebrew-core" = inputs.homebrew-core;
+                      "homebrew/homebrew-cask" = inputs.homebrew-cask;
+                      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+                    };
+                    mutableTaps = false;
+                    autoMigrate = true;
+                  };
+                }
+                home-manager.darwinModules.home-manager
+                {
+                  home-manager = {
+                    useGlobalPkgs = true;
+                    useUserPackages = true;
+                    users."${user}".imports = [./hm];
+                    backupFileExtension = "backup-from-hm";
+                    extraSpecialArgs = specialArgs;
+                    verbose = true;
+                  };
+                }
+              ];
+            };
+          };
+
+          homeConfigurations = let
+            user = "paperspace";
+          in {
+            paperspace = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              extraSpecialArgs = genSpecialArgs {inherit pkgs user;};
+              modules = [
+                ./hm
+                ./lib
+                inputs.nix.homeManagerModules.default
+                inputs.agenix.homeManagerModules.default
+              ];
+            };
+          };
         };
-      });
-    };
+      }
+    );
 }
