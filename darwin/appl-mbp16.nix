@@ -23,11 +23,6 @@
       fi
     '';
   };
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    loadInNixShell = true;
-  };
   gpg.enable = true;
 
   nix-homebrew = {
