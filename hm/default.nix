@@ -3,35 +3,218 @@
   pkgs,
   lib,
   user,
+  inputs,
   ...
 }: let
-  tomlFormat = pkgs.formats.toml {};
+  filterNone = value: builtins.filter (x: x != null) value;
+  packages = with pkgs; [
+    # nix
+    cachix
 
-  fzfConfig = pkgs.writeText "fzfrc" ''
-    --color=fg:#797593,bg:#faf4ed,hl:#d7827e
-    --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
-    --color=border:#dfdad9,header:#286983,gutter:#faf4ed
-    --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
-    --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
-    --bind='ctrl-/:toggle-preview'
-    --bind='ctrl-u:preview-page-up'
-    --bind='ctrl-d:preview-page-down'
-    --preview-window 'right:40%:wrap'
-    --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
-  '';
+    # editor
+    vim
+    neovim
+    zed-editor
+    alacritty
 
-  gpgTuiConfig = {
-    general = {detail_level = "full";};
-    gpg = {armor = true;};
-  };
+    # kubernetes and container
+    kubernetes-helm
+    k9s
+    buildkit
+    qemu
+    pplatex
+    eksctl
+    ratchet
+    krew
+    k9s
+    lazydocker
+    kind
+    skopeo
+    earthly
+    buildifier
 
-  gpgTuiConfigFile = "${
-    if pkgs.stdenv.isDarwin
-    then "/Library/Application Support"
-    else ".config"
-  }/gpg-tui/gpg-tui.toml";
+    # git
+    git
+    gitui
+    lazygit
+    git-lfs
+    delta
+
+    # languages
+    go
+    sass
+    protobuf
+    deno
+    nodejs_20
+    nodePackages_latest.pnpm
+    pnpm-shell-completion
+    rustup
+    pyenv
+    xz
+    sshx
+    awscli2
+    age
+
+    # tools for language, lsp, linter, etc.
+    tree-sitter
+    eclint
+    nixfmt-rfc-style
+    nixpkgs-fmt
+    grpcurl
+    taplo
+    stylua
+    selene
+    buf
+    protolint
+    sqlite
+    postgresql_14
+    llvm_17
+    openblas
+    enchant
+
+    # terminal
+    any-nix-shell
+    zsh-completions
+    direnv
+    tmux
+    curl
+    jq
+    yq
+    gh
+    tree
+    btop
+    zip
+    pstree
+    eza
+    zoxide
+    rm-improved
+    fd
+    fzf
+    bat
+    sd
+    ripgrep
+    hexyl
+    catimg
+    tmux
+    asciinema
+    watch
+    ffmpeg
+    cmake
+    dtach
+    zstd
+    gnused
+    hyperfine
+    gnupg
+    gpg-tui
+    gnumake
+    agenix
+
+    # dix packages overlays
+    dix.bitwarden-cli
+    dix.paperspace-cli
+    dix.git-forest
+    dix.unicopy
+
+    # cuda
+    cudatoolkit
+    cudaPackages.tensorrt
+    cudaPackages.cudnn
+  ];
+  darwinPackages = with pkgs; [
+    # for some reason they don't have flock on darwin :(
+    flock
+    undmg
+    xar
+    cpio
+    mas
+    # apps
+    pinentry_mac
+    dix.pinentry-touchid
+    dix.OrbStack
+    dix.Splice
+    dix.ZedPreview
+  ];
+  linuxPackages = with pkgs; [
+    colima
+    lima
+    nvtopPackages.full
+    pinentry-all
+    coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun
+    llvmPackages.libcxxClang
+  ];
+
+  sessionVariables = let
+    inherit (pkgs) fd git neovim ripgrep zsh;
+    inherit (lib) concatStringsSep getExe makeBinPath;
+  in
+    {
+      # XDG
+      XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
+
+      # Bentoml
+      BENTOML_HOME = "${config.home.sessionVariables.XDG_DATA_HOME}/bentoml";
+      BENTOML_DO_NOT_TRACK = "True";
+      BENTOML_BUNDLE_LOCAL_BUILD = "True";
+      OPENLLM_DEV_BUILD = "True";
+      OPENLLM_DISABLE_WARNING = "False";
+
+      # Editors
+      WORKSPACE = "${config.home.homeDirectory}/workspace";
+      SHELL = getExe zsh;
+      EDITOR = getExe neovim;
+      VISUAL = getExe neovim;
+      MANPAGER = "${getExe neovim} +Man!";
+      LSCOLORS = "ExFxBxDxCxegedabagacad";
+
+      # Fzf
+      FZF_CTRL_T_COMMAND = "${getExe fd} --hidden --follow --exclude .git";
+      FZF_DEFAULT_COMMAND = let
+        gitCheck = "${getExe git} rev-parse --is-inside-work-tree > /dev/null 2>&1";
+        rgFiles = "${getExe ripgrep} --files --hidden";
+      in "${gitCheck} && ${rgFiles} --ignore .git || ${rgFiles}";
+      FZF_TMUX_HEIGHT = "70%";
+      FZF_DEFAULT_OPTS_FILE = "${config.home.homeDirectory}/.fzfrc";
+
+      # Language
+      GOPATH = "${config.home.homeDirectory}/go";
+      PYTHON3_HOST_PROG = getExe pkgs.python3-tools;
+      NIX_INDEX_DATABASE = "${config.home.homeDirectory}/.cache/nix-index/";
+      PATH = concatStringsSep ":" [
+        (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf])
+        "$PATH"
+      ];
+
+      # Specifics to build
+      NIX_INSTALLER_NIX_BUILD_USER_ID_BASE = "400";
+    }
+    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      # misc
+      OPENBLAS = "${lib.makeLibraryPath [pkgs.openblas]}/libopenblas.dylib";
+      SQLITE_PATH = "${lib.makeLibraryPath [pkgs.sqlite]}/libsqlite3.dylib";
+      PYENCHANT_LIBRARY_PATH = "${lib.makeLibraryPath [pkgs.enchant]}/libenchant-2.2.dylib";
+      LD_LIBRARY_PATH = with pkgs;
+        lib.makeLibraryPath [
+          (lib.getDev openssl)
+          (lib.getDev zlib)
+          (lib.getDev xz)
+          (lib.getDev readline)
+          stdenv.cc.cc.lib
+          protobuf
+          cairo
+        ];
+    }
+    // lib.optionalAttrs pkgs.stdenv.isLinux
+    {
+      GPG_TTY = "$(tty)";
+      CUDA_PATH = pkgs.cudatoolkit;
+    };
 in {
-  imports = [./modules];
+  imports = [
+    ./modules
+    # NOTE: since we are unifying everything under home manager
+    # would need to homeManagerModules instead of darwinModules
+    inputs.agenix.homeManagerModules.default
+  ];
 
   programs.home-manager.enable = true;
   programs.nix-index.enable = true;
@@ -56,21 +239,64 @@ in {
   zed.enable = true;
   karabiner.enable = true;
 
-  home.username = user;
-
-  home.homeDirectory = pkgs.lib.mkForce (
-    if pkgs.stdenv.isLinux
-    then "/home/${user}"
-    else "/Users/${user}"
-  );
-
-  home.stateVersion = "24.11";
-  home.file = {
-    ".fzfrc".source = fzfConfig;
-    "${gpgTuiConfigFile}".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
+  age = {
+    identityPaths = ["${config.home.homeDirectory}/.pubkey.txt"];
+    secrets =
+      {
+        id_ed25519-github = {
+          file = ./secrets/${user}-id_ed25519-github.age;
+          path = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
+        };
+      }
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        id_ed25519-paperspace = {
+          file = ./secrets/${user}-id_ed25519-paperspace.age;
+          path = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+        };
+      };
   };
 
   home = {
+    inherit sessionVariables;
+    packages = filterNone (packages ++ (lib.optionals pkgs.stdenv.isDarwin darwinPackages) ++ (lib.optionals pkgs.stdenv.isLinux linuxPackages));
+    username = user;
+    homeDirectory = pkgs.lib.mkForce (
+      if pkgs.stdenv.isLinux
+      then "/home/${user}"
+      else "/Users/${user}"
+    );
+    stateVersion = lib.trivial.release;
+
+    file = let
+      tomlFormat = pkgs.formats.toml {};
+
+      fzfConfig = pkgs.writeText "fzfrc" ''
+        --color=fg:#797593,bg:#faf4ed,hl:#d7827e
+        --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
+        --color=border:#dfdad9,header:#286983,gutter:#faf4ed
+        --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
+        --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+        --bind='ctrl-/:toggle-preview'
+        --bind='ctrl-u:preview-page-up'
+        --bind='ctrl-d:preview-page-down'
+        --preview-window 'right:40%:wrap'
+        --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+      '';
+
+      gpgTuiConfig = {
+        general = {detail_level = "full";};
+        gpg = {armor = true;};
+      };
+      gpgTuiConfigFile = "${
+        if pkgs.stdenv.isDarwin
+        then "/Library/Application Support"
+        else ".config"
+      }/gpg-tui/gpg-tui.toml";
+    in {
+      ".fzfrc".source = fzfConfig;
+      "${gpgTuiConfigFile}".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
+    };
+
     # shells related
     shellAliases = {
       reload = "exec -l $SHELL";

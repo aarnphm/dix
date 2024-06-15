@@ -3,26 +3,44 @@
   user,
   inputs,
   ...
-}: let
-  homePath = "/Users/${user}";
-in {
+}: rec {
   imports = [./modules];
 
-  # Users
-  users.users.${user} = {
-    shell = pkgs.zsh;
-    home = homePath;
-    createHome = true;
+  programs.zsh = {
+    enable = true;
+    promptInit = ''source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh'';
+    shellInit = ''
+      zmodload zsh/mapfile
+      bwpassfile="${users.users.${user}.home}/bw.pass"
+      if [[ -f "$bwpassfile" ]]; then
+        bitwarden=("''${(f@)mapfile[$bwpassfile]}")
+        export BW_MASTER=$bitwarden[1]
+        export BW_CLIENTID=$bitwarden[2]
+        export BW_CLIENTSECRET=$bitwarden[3]
+      fi
+    '';
   };
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+    loadInNixShell = true;
+  };
+  programs.nix-index.enable = true;
+
   gpg.enable = true;
 
-  environment.shells = [pkgs.zsh];
-  environment.darwinConfig = "${homePath}/workspace/dix";
-  environment.etc."zshrc.local".text = ''
-    source ${pkgs.lib.getExe' pkgs.awscli2 "aws_zsh_completer.sh"}
-  '';
-  environment.systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
-
+  nix-homebrew = {
+    inherit user;
+    enable = true;
+    enableRosetta = true;
+    taps = {
+      "homebrew/homebrew-core" = inputs.homebrew-core;
+      "homebrew/homebrew-cask" = inputs.homebrew-cask;
+      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+    };
+    mutableTaps = false;
+    autoMigrate = true;
+  };
   homebrew = {
     enable = true;
     casks = [
@@ -58,8 +76,17 @@ in {
     };
   };
 
-  # TODO: turn this back on once upgrade-nix-store-path-url is stable
-  nix.checkConfig = true;
+  # Users
+  users.users.${user} = {
+    shell = pkgs.zsh;
+    home = "/Users/${user}";
+    createHome = true;
+  };
+
+  environment.shells = [pkgs.zsh];
+  environment.darwinConfig = "${users.users.${user}.home}/workspace/dix";
+  environment.systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
+
   nix.settings = {
     log-lines = 20;
     keep-going = true;
@@ -68,10 +95,7 @@ in {
     sandbox = false; # TODO: investigate how to do actual pure building in darwin
     max-jobs = "auto";
   };
-  nix.nixPath = [
-    {darwin = "${homePath}/workspace/dix";}
-    "/nix/var/nix/profiles/per-user/root/channels"
-  ];
+  nix.nixPath = [{darwin = "${users.users.${user}.home}/workspace/dix";}];
 
   nix.gc = {
     automatic = true;
@@ -83,10 +107,6 @@ in {
     automatic = true;
     interval.Hour = 6;
   };
-
-  skhd.enable = false;
-  yabai.enable = false;
-  sketchybar.enable = false;
 
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
@@ -149,25 +169,4 @@ in {
       };
     };
   };
-
-  programs.zsh = {
-    enable = true;
-    promptInit = ''source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh'';
-    shellInit = ''
-      zmodload zsh/mapfile
-      bwpassfile="${homePath}/bw.pass"
-      if [[ -f "$bwpassfile" ]]; then
-        bitwarden=("''${(f@)mapfile[$bwpassfile]}")
-        export BW_MASTER=$bitwarden[1]
-        export BW_CLIENTID=$bitwarden[2]
-        export BW_CLIENTSECRET=$bitwarden[3]
-      fi
-    '';
-  };
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    loadInNixShell = true;
-  };
-  programs.nix-index.enable = true;
 }
