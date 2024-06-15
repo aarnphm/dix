@@ -3,15 +3,21 @@
 
   inputs = {
     # system stuff
-    nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
     nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
+    nix.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     # homebrew
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
+    nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
+    nix-homebrew.inputs.flake-utils.follows = "flake-utils";
     homebrew-bundle.url = "github:homebrew/homebrew-bundle";
     homebrew-bundle.flake = false;
     homebrew-core.url = "github:homebrew/homebrew-core";
@@ -105,7 +111,6 @@
               specialArgs = genSpecialArgs user;
               modules = [
                 inputs.nix.darwinModules.default
-                inputs.nix-homebrew.darwinModules.nix-homebrew
                 home-manager.darwinModules.home-manager
                 {
                   home-manager = {

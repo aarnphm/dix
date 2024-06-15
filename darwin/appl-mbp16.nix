@@ -4,7 +4,10 @@
   inputs,
   ...
 }: rec {
-  imports = [./modules];
+  imports = [
+    ./modules
+    inputs.nix-homebrew.darwinModules.nix-homebrew
+  ];
 
   programs.zsh = {
     enable = true;
@@ -25,8 +28,6 @@
     nix-direnv.enable = true;
     loadInNixShell = true;
   };
-  programs.nix-index.enable = true;
-
   gpg.enable = true;
 
   nix-homebrew = {
