@@ -178,7 +178,6 @@
       # Language
       GOPATH = "${config.home.homeDirectory}/go";
       PYTHON3_HOST_PROG = getExe pkgs.python3-tools;
-      NIX_INDEX_DATABASE = "${config.home.homeDirectory}/.cache/nix-index/";
       PATH = concatStringsSep ":" [
         (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf])
         "$PATH"
@@ -214,10 +213,10 @@ in {
     # NOTE: since we are unifying everything under home manager
     # would need to homeManagerModules instead of darwinModules
     inputs.agenix.homeManagerModules.default
+    inputs.nix-index-database.hmModules.nix-index
   ];
 
   programs.home-manager.enable = true;
-  programs.nix-index.enable = true;
   programs.dircolors = {
     enable = true;
     enableZshIntegration = true;
