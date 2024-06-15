@@ -34,8 +34,11 @@
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
     };
-    mutableTaps = false;
+    mutableTaps = true;
     autoMigrate = true;
+    extraEnv = {
+      HOMEBREW_NO_ANALYTICS = "1";
+    };
   };
   homebrew = {
     enable = true;
@@ -107,17 +110,14 @@
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 
-  fonts = {
-    fontDir.enable = true;
-    fonts = with pkgs; [
-      sketchybar-app-font
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-        ];
-      })
-    ];
-  };
+  fonts.packages = with pkgs; [
+    sketchybar-app-font
+    (nerdfonts.override {
+      fonts = [
+        "FiraCode"
+      ];
+    })
+  ];
 
   # Networking
   networking = {
