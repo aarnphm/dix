@@ -23,6 +23,9 @@
     systems.url = "github:nix-systems/default";
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.systems.follows = "systems";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.inputs.nixpkgs-stable.follows = "nixpkgs";
 
     # secrets stuff
     agenix.url = "github:ryantm/agenix/main";
@@ -46,168 +49,135 @@
   outputs = {
     self,
     nix-darwin,
+    nixpkgs,
     home-manager,
     flake-utils,
     ...
-  } @ inputs:
+  } @ inputs: let
+    genSpecialArgs = {
+      pkgs,
+      user,
+    }: {inherit self inputs pkgs user;};
+
+    mkPkgs = system:
+      import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
+          allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
+        };
+        overlays = [
+          (self: super: {
+            dix = super.dix or {} // {editor-nix = inputs.editor-nix;};
+
+            python3-tools = super.buildEnv {
+              name = "python3-tools";
+              paths = [(self.python3.withPackages (ps: with ps; [pynvim]))];
+              meta = {mainProgram = "python";};
+            };
+          })
+          inputs.neovim.overlays.default
+          inputs.agenix.overlays.default
+
+          # custom overlays
+          (import ./overlays/10-dev-overrides.nix)
+          (import ./overlays/20-packages-overrides.nix)
+          (import ./overlays/20-recurse-overrides.nix)
+          (import ./overlays/30-derivations.nix)
+
+          # custom packages specifics to darwin
+          (import ./overlays/50-darwin-applications.nix)
+        ];
+      };
+  in
     flake-utils.lib.eachDefaultSystem (
       system: let
-        isDarwin = builtins.elem system inputs.nixpkgs.lib.platforms.darwin;
-
-        pkgs = import inputs.nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-            allowBroken = !(isDarwin);
-          };
-          overlays = [
-            (self: super: {
-              dix = super.dix or {} // {editor-nix = inputs.editor-nix;};
-
-              python3-tools = super.buildEnv {
-                name = "python3-tools";
-                paths = [(self.python3.withPackages (ps: with ps; [pynvim]))];
-                meta = {mainProgram = "python";};
-              };
-            })
-            inputs.neovim.overlays.default
-            inputs.agenix.overlays.default
-
-            # custom overlays
-            (import ./overlays/10-dev-overrides.nix)
-            (import ./overlays/20-packages-overrides.nix)
-            (import ./overlays/20-recurse-overrides.nix)
-            (import ./overlays/30-derivations.nix)
-
-            # custom packages specifics to darwin
-            (import ./overlays/50-darwin-applications.nix)
-          ];
-        };
-
-        genSpecialArgs = user: {inherit self inputs user pkgs;};
+        pkgs = mkPkgs system;
       in {
         formatter = pkgs.alejandra;
 
         apps = {
-          ubuntu-nvidia = flake-utils.lib.mkApp {
-            drv = pkgs.writeShellApplication rec {
-              name = "ubuntu-nvidia";
-              runtimeInputs = with pkgs; [
-                apt
-                (runCommand "ubuntuDriverHost" {} ''
-                  mkdir -p $out/bin
-                  ln -s /usr/bin/ubuntu-drivers $out/bin
-                '')
-              ];
-              text = ''
-                if [ $# -ne 1 ]; then
-                  AVAILABLE_DRIVERS=$(ubuntu-drivers list)
+          ubuntu-nvidia = flake-utils.lib.mkApp {drv = pkgs.dix.ubuntu-nvidia;};
+        };
 
-                  echo ""
-                  echo "Usage: ${name} <driver_name>"
-                  echo ""
-                  echo "Available drivers:"
-                  echo ""
-                  echo "$AVAILABLE_DRIVERS"
-                  exit 1
-                fi
+        packages = {
+          inherit (pkgs.dix) openllm-ci;
+        };
 
-                DEBUG="''${DEBUG:-false}"
-
-                # check if DEBUG is set, then use set -x, otherwise ignore
-                if [ "$DEBUG" = true ]; then
-                  set -x
-                  echo "running path: $0"
-                fi
-
-                DRIVER_NAME="nvidia-driver-$1"
-                DRIVER_PACKAGE="nvidia:$1"
-                UTILS_PACKAGE="nvidia-utils-$1"
-
-                # Use ubuntu-drivers to find the appropriate driver package
-                NVIDIA_PACKAGE="$(ubuntu-drivers devices | grep "$DRIVER_NAME" | awk '{print $3}')"
-
-                if [ -z "$NVIDIA_PACKAGE" ]; then
-                  echo "Error: Driver '$DRIVER_NAME' not found."
-                  exit 1
-                fi
-
-                # Check if the driver name contains "-server"
-                if [[ "$DRIVER_NAME" == *"-server"* ]]; then
-                  GPGPU_FLAG="--gpgpu"
-                else
-                  GPGPU_FLAG=""
-                fi
-
-                # Install the NVIDIA driver package using apt
-                sudo ubuntu-drivers install "$GPGPU_FLAG" "$DRIVER_PACKAGE"
-                sudo apt update && sudo apt install -y "$UTILS_PACKAGE"
-
-                echo "NVIDIA driver '$DRIVER_NAME' has been installed."
-                echo "Please reboot your system for the changes to take effect."
-              '';
+        checks = {
+          pre-commit-check = inputs.git-hooks.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              alejandra.enable = true;
             };
           };
         };
-        packages = {
-          inherit (pkgs.dix) openllm-ci;
 
-          darwinConfigurations = let
-            user = "aarnphm";
-          in {
-            appl-mbp16 = nix-darwin.lib.darwinSystem rec {
-              inherit system pkgs;
-              specialArgs = genSpecialArgs user;
-              modules = [
-                ./darwin/appl-mbp16.nix
-                ./lib
-                inputs.nix.darwinModules.default
-                inputs.agenix.darwinModules.default
-                inputs.nix-homebrew.darwinModules.nix-homebrew
-                {
-                  nix-homebrew = {
-                    inherit user;
-                    enable = true;
-                    enableRosetta = true;
-                    taps = {
-                      "homebrew/homebrew-core" = inputs.homebrew-core;
-                      "homebrew/homebrew-cask" = inputs.homebrew-cask;
-                      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
-                    };
-                    mutableTaps = false;
-                    autoMigrate = true;
-                  };
-                }
-                home-manager.darwinModules.home-manager
-                {
-                  home-manager = {
-                    useGlobalPkgs = true;
-                    useUserPackages = true;
-                    users."${user}".imports = [./hm];
-                    backupFileExtension = "backup-from-hm";
-                    extraSpecialArgs = specialArgs;
-                    verbose = true;
-                  };
-                }
-              ];
-            };
-          };
-
-          homeConfigurations = let
-            user = "paperspace";
-          in {
-            paperspace = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              extraSpecialArgs = genSpecialArgs user;
-              modules = [
-                ./hm
-                ./lib
-                inputs.nix.homeManagerModules.default
-                inputs.agenix.homeManagerModules.default
-              ];
-            };
+        devShells = {
+          default = pkgs.mkShell {
+            inherit (self.checks.${system}.pre-commit-check) shellHook;
+            buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
           };
         };
       }
-    );
+    )
+    // {
+      darwinConfigurations = flake-utils.lib.eachSystem (with flake-utils.lib.system; [aarch64-darwin]) (system: let
+        user = "aarnphm";
+        pkgs = mkPkgs system;
+      in {
+        appl-mbp16 = nix-darwin.lib.darwinSystem rec {
+          inherit system pkgs;
+          specialArgs = genSpecialArgs {inherit pkgs user;};
+          modules = [
+            ./darwin/appl-mbp16.nix
+            ./lib
+            inputs.nix.darwinModules.default
+            inputs.agenix.darwinModules.default
+            inputs.nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                inherit user;
+                enable = true;
+                enableRosetta = true;
+                taps = {
+                  "homebrew/homebrew-core" = inputs.homebrew-core;
+                  "homebrew/homebrew-cask" = inputs.homebrew-cask;
+                  "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
+                };
+                mutableTaps = false;
+                autoMigrate = true;
+              };
+            }
+            home-manager.darwinModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users."${user}".imports = [./hm];
+                backupFileExtension = "backup-from-hm";
+                extraSpecialArgs = specialArgs;
+                verbose = true;
+              };
+            }
+          ];
+        };
+      });
+
+      homeConfigurations = flake-utils.lib.eachDefaultSystem (system: let
+        user = "paperspace";
+        pkgs = mkPkgs system;
+      in {
+        paperspace = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = genSpecialArgs {inherit pkgs user;};
+          modules = [
+            ./hm
+            ./lib
+            inputs.nix.homeManagerModules.default
+            inputs.agenix.homeManagerModules.default
+          ];
+        };
+      });
+    };
 }

@@ -150,7 +150,10 @@ in {
       get-gpg-password = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-github-keys | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
-      nrb = if pkgs.stdenv.isDarwin then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace'' else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
+      nrb =
+        if pkgs.stdenv.isDarwin
+        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace''
+        else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
       ned = ''
         ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
       '';

@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   user,
   lib,
@@ -148,7 +149,7 @@
   ];
 
   commonVariables = let
-    inherit (pkgs) fd git neovim ripgrep zsh bat;
+    inherit (pkgs) fd git neovim ripgrep zsh;
     inherit (lib) concatStringsSep getExe makeBinPath;
   in {
     # XDG
@@ -168,7 +169,6 @@
     VISUAL = getExe neovim;
     MANPAGER = "${getExe neovim} +Man!";
     LSCOLORS = "ExFxBxDxCxegedabagacad";
-    PAGER = "${getExe bat} --paging=always --color=always --decorations=never --";
 
     # Fzf
     FZF_CTRL_T_COMMAND = "${getExe fd} --hidden --follow --exclude .git";
@@ -180,7 +180,7 @@
     FZF_DEFAULT_OPTS_FILE = "$HOME/.fzfrc";
 
     # Language
-    GOPATH = "$HOME/go";
+    GOPATH = "${config.home.homeDirectory}/go";
     PYTHON3_HOST_PROG = getExe pkgs.python3-tools;
     NIX_INDEX_DATABASE = "$HOME/.cache/nix-index/";
     PATH = concatStringsSep ":" [
