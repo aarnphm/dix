@@ -1,0 +1,77 @@
+#:schema https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
+version = 2
+
+[[blocks]]
+alignment = "left"
+type = "prompt"
+
+[[blocks.segments]]
+foreground = "lightBlue"
+foreground_templates = ["{{ if .Root }}lightRed{{ end }}"]
+style = "plain"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>┌──(</>{{ .UserName }}{{ if .Root }}💀{{ else }}@{{ end }}{{ .HostName }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>)</>"
+type = "session"
+
+[blocks.segments.properties]
+display_host = true
+
+[[blocks.segments]]
+foreground = "yellow"
+style = "plain"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }}{{ end }}{{ .Full }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+type = "python"
+
+[blocks.segments.properties]
+fetch_version = true
+fetch_virtual_env = true
+
+[[blocks.segments]]
+foreground = "lightWhite"
+style = "plain"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .Path }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+type = "path"
+
+[blocks.segments.properties]
+folder_separator_icon = "<#c0c0c0>/</>"
+style = "full"
+
+[[blocks.segments]]
+foreground = "white"
+style = "plain"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .HEAD }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+type = "git"
+
+[[blocks]]
+alignment = "right"
+type = "prompt"
+
+[[blocks.segments]]
+foreground = "white"
+style = "plain"
+template = " {{ .FormattedMs }} "
+type = "executiontime"
+
+[blocks.segments.properties]
+always_enabled = true
+style = "round"
+
+[[blocks.segments]]
+foreground = "green"
+foreground_templates = ["{{ if gt .Code 0 }}red{{ end }}"]
+style = "plain"
+template = " {{ if gt .Code 0 }}{{else}}{{ end }} "
+type = "status"
+
+[blocks.segments.properties]
+always_enabled = true
+
+[[blocks]]
+alignment = "left"
+newline = true
+type = "prompt"
+
+[[blocks.segments]]
+foreground = "lightBlue"
+style = "plain"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>└─</> {{ if .Root }}<lightRed>#</>{{ else }}${{ end }} "
+type = "text"

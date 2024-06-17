@@ -7,38 +7,15 @@
 with lib; let
   concatStringsSepNewLine = iterables: concatStringsSep "\n" iterables;
 
-  fzfComplete = pkgs.writeText "fzf_complete_realpath.zsh" ''
-    _fzf_complete_realpath() {
-      # Can be customized to behave differently for different objects.
-      local realpath="''${1:--}"  # read the first arg or stdin if arg is missing
-
-      if [ "$realpath" = '-' ]; then
-        # It is a stdin, always a text content:
-        local stdin="$(< /dev/stdin)"
-        echo "$stdin" | ${lib.getExe pkgs.bat} --language=sh --plain --number --color=always --wrap=character
-        return
-      fi
-
-      if [ -d "$realpath" ]; then
-        ${lib.getExe pkgs.tree} -a -I '.DS_Store|.localized' -C "$realpath" | head -100
-      elif [ -f "$realpath" ]; then
-        mime="$(file -Lbs --mime-type "$realpath")"
-        category="''${mime%%/*}"
-        if [ "$category" = 'image' ]; then
-          # I guessed `60` to be fine for my exact terminal size
-          local default_width=$(( "$FZF_PREVIEW_COLUMNS" < 60 ? 60 : "$FZF_PREVIEW_COLUMNS" ))
-          ${lib.getExe pkgs.catimg} -r2 -w "$default_width" "$realpath"
-        elif [[ "$mime" =~ 'binary' ]]; then
-          ${lib.getExe pkgs.hexyl} --length 5KiB --border none --terminal-width "$FZF_PREVIEW_COLUMNS" "$realpath"
-        else
-          ${lib.getExe pkgs.bat} --number --color=always "$realpath"
-        fi
-      else
-        # This is not a directory and not a file, just print the string.
-        echo "$realpath" | fold -w "$FZF_PREVIEW_COLUMNS"
-      fi
+  fzfComplete =
+    pkgs.writeProgram "fzf_complete_realpath.zsh" {
+      bat = lib.getExe pkgs.bat;
+      hexyl = lib.getExe pkgs.hexyl;
+      tree = lib.getExe pkgs.tree;
+      catimg = lib.getExe pkgs.catimg;
+      dir = ".";
     }
-  '';
+    ./config/fzf_complete_realpath.zsh.in;
 in {
   options.zsh = {
     enable = mkOption {
@@ -60,14 +37,15 @@ in {
         save = 100000;
         size = 100000;
       };
-      completionInit = concatStringsSepNewLine [
-        (optionalString pkgs.stdenv.isLinux "autoload -U compinit && compinit")
-        (optionalString pkgs.stdenv.isLinux "autoload -U bashcompinit && bashcompinit")
-      ];
-      initExtraBeforeCompInit = concatStringsSepNewLine [
-        (optionalString pkgs.stdenv.isLinux ''source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh'')
-        ''${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin''
-      ];
+      completionInit = ''
+        autoload -U compinit && compinit
+        autoload -U bashcompinit && bashcompinit
+      '';
+      initExtraBeforeCompInit = ''
+        ${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin
+        eval "$(${lib.getExe pkgs.oh-my-posh} init zsh --config ${config.xdg.configHome}/oh-my-posh/config.toml)"
+        source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh
+      '';
       plugins = [
         {
           name = "fzf-tab";
@@ -88,10 +66,9 @@ in {
           };
         }
       ];
-      initExtraFirst = concatStringsSepNewLine [
-        ''source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh''
-      ];
-      envExtra = ''source ${fzfComplete}'';
+      envExtra = ''
+        source ${fzfComplete}/fzf_complete_realpath.zsh
+      '';
       profileExtra = let
         sites =
           [

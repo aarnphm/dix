@@ -1,0 +1,138 @@
+{
+  "theme": "Rosé Pine Dawn",
+  "buffer_font_family": "BerkeleyMono Nerd Font Mono",
+  "telemetry": {
+    "diagnostics": true,
+    "metrics": false
+  },
+  "vim_mode": true,
+  "ui_font_size": 15,
+  "use_autoclose": false,
+  "buffer_font_size": 15,
+  "preferred_line_length": 119,
+  "relative_line_numbers": true,
+  "ensure_final_newline_on_save": false,
+  "inlay_hints": {
+    "enabled": true
+  },
+  "assistant": {
+    "button": false
+  },
+  "chat_panel": {
+    "enabled": false
+  },
+  "lsp": {
+    "Lua": {
+      "initialization_options": {
+        "Lua": {
+          "runtime": {
+            "version": "LuaJIT",
+            "special": {
+              "reload": "require"
+            }
+          },
+          "workspace": {
+            "checkThirdParty": "Disable"
+          },
+          "telemetry": {
+            "enable": false
+          },
+          "semantic": {
+            "enable": true
+          },
+          "completion": {
+            "workspaceWord": true,
+            "callSnippet": "Both"
+          },
+          "hover": {
+            "expandAlias": false
+          },
+          "hint": {
+            "enable": true,
+            "setType": false,
+            "paramType": true,
+            "paramName": "Disable",
+            "semicolon": "Disable",
+            "arrayIndex": "Disable"
+          },
+          "doc": {
+            "privateName": ["^_"]
+          },
+          "type": {
+            "castNumberToInteger": true
+          },
+          "diagnostics": {
+            "disable": ["incomplete-signature-doc", "trailing-space"],
+            "groupSeverity": {
+              "strong": "Warning",
+              "strict": "Warning"
+            },
+            "groupFileStatus": {
+              "ambiguity": "Opened",
+              "await": "Opened",
+              "codestyle": "None",
+              "duplicate": "Opened",
+              "global": "Opened",
+              "luadoc": "Opened",
+              "redefined": "Opened",
+              "strict": "Opened",
+              "strong": "Opened",
+              "type-check": "Opened",
+              "unbalanced": "Opened",
+              "unused": "Opened"
+            },
+            "unusedLocalExclude": ["_*"]
+          },
+          "format": {
+            "enable": true,
+            "defaultConfig": {
+              "indent_style": "space",
+              "indent_size": "2",
+              "continuation_indent_size": "2"
+            }
+          }
+        }
+      }
+    }
+  },
+  "autosave": "on_focus_change",
+  "file_scan_exclusions": [
+    "tsconfig.tsbuildinfo",
+    "**/node_modules",
+    "**/target",
+    "**/dist",
+    "**/__pycache__",
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
+    "**/.quartz-cache",
+    "**/.venv",
+    "**/.vercel",
+    "**/venv"
+  ],
+  "journal": {
+    "path": "/Users/aarnphm/workspace/garden/content"
+  },
+  "tab_size": 2,
+  "language_overrides": {
+    "Markdown": {
+      "format_on_save": "off"
+    },
+    "Python": {
+      "format_on_save": "off",
+      "formatter": {
+        "external": {
+          "command": "ruff",
+          "arguments": ["format", "-"]
+        }
+      }
+    }
+  }
+}

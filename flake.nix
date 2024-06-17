@@ -18,12 +18,6 @@
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
     nix-homebrew.inputs.flake-utils.follows = "flake-utils";
-    homebrew-bundle.url = "github:homebrew/homebrew-bundle";
-    homebrew-bundle.flake = false;
-    homebrew-core.url = "github:homebrew/homebrew-core";
-    homebrew-core.flake = false;
-    homebrew-cask.url = "github:homebrew/homebrew-cask";
-    homebrew-cask.flake = false;
 
     # utilities
     systems.url = "github:nix-systems/default";
@@ -146,6 +140,7 @@
             src = ./.;
             hooks = {
               alejandra.enable = true;
+              taplo.enable = true;
             };
           };
         };

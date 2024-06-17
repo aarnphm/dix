@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   user,
   inputs,
   ...
@@ -11,7 +12,6 @@
 
   programs.zsh = {
     enable = true;
-    promptInit = ''source ${pkgs.gitstatus}/share/gitstatus/gitstatus.prompt.zsh'';
     shellInit = ''
       zmodload zsh/mapfile
       bwpassfile="${users.users.${user}.home}/bw.pass"
@@ -29,12 +29,6 @@
     inherit user;
     enable = true;
     enableRosetta = true;
-    taps = {
-      "homebrew/homebrew-core" = inputs.homebrew-core;
-      "homebrew/homebrew-cask" = inputs.homebrew-cask;
-      "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
-    };
-    mutableTaps = true;
     autoMigrate = true;
     extraEnv = {
       HOMEBREW_NO_ANALYTICS = "1";
@@ -42,24 +36,28 @@
   };
   homebrew = {
     enable = true;
+    onActivation.cleanup = "zap";
+    onActivation.extraFlags = ["--verbose"];
+    taps = [
+      "homebrew/homebrew-core"
+      "homebrew/homebrew-cask"
+      "homebrew/homebrew-bundle"
+      "apple/apple"
+    ];
     casks = [
       "arc"
       "google-chrome"
       "firefox"
-
       "zotero"
       "discord"
       "zoom"
       "obs"
-
       "gather"
       "notion"
       "obsidian"
       "rectangle"
-
       "steam"
       "zed"
-
       # TODO: for sequoia
       # "raycast"
       # "karabiner-elements"
@@ -82,27 +80,35 @@
     createHome = true;
   };
 
-  environment.shells = [pkgs.zsh];
-  environment.darwinConfig = "${users.users.${user}.home}/workspace/dix";
-  environment.systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
+  environment = {
+    shells = [pkgs.zsh];
+    systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
+    systemPackages = [pkgs.ncurses];
+    etc = {
+      terminfo.source = "${pkgs.ncurses}/share/terminfo";
+    };
+  };
 
   nix.settings = {
     log-lines = 20;
     keep-going = true;
     auto-optimise-store = true;
-    trusted-users = ["root" user];
-    sandbox = false; # TODO: investigate how to do actual pure building in darwin
+    trusted-users = [user];
+    sandbox = false;
     max-jobs = "auto";
   };
-  nix.nixPath = [{darwin = "${users.users.${user}.home}/workspace/dix";}];
 
   nix.gc = {
+    inherit user;
     automatic = true;
     interval.Hour = 6;
-    options = "--delete-older-than 3d --max-freed $((25 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | awk '{ print $4 }')))";
+    options = ''
+      --delete-older-than 3d --max-freed $((128 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | ${lib.getExe' pkgs.gawk "awk"} '{ print $4 }')))
+    '';
   };
 
   nix.optimise = {
+    inherit user;
     automatic = true;
     interval.Hour = 6;
   };

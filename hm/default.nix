@@ -75,6 +75,7 @@
     # terminal
     any-nix-shell
     zsh-completions
+    oh-my-posh
     direnv
     tmux
     curl
@@ -207,6 +208,17 @@
       GPG_TTY = "$(tty)";
       CUDA_PATH = pkgs.cudatoolkit;
     };
+
+  tomlFormat = pkgs.formats.toml {};
+
+  gpgTuiConfig = {
+    general = {
+      detail_level = "full";
+    };
+    gpg = {
+      armor = true;
+    };
+  };
 in {
   imports = [
     ./modules
@@ -227,21 +239,16 @@ in {
     enableBashIntegration = true;
   };
 
+  alacritty.enable = true;
+  awscli.enable = true;
+  bat.enable = true;
+  btop.enable = true;
+  direnv.enable = true;
+  git.enable = true;
+  gpg.enable = true;
+  ssh.enable = true;
   zsh.enable = true;
   zoxide.enable = true;
-  git.enable = true;
-  bat.enable = true;
-  alacritty.enable = true;
-  btop.enable = true;
-  system.enable = true;
-  ssh.enable = true;
-  direnv.enable = true;
-  gpg.enable = true;
-  awscli.enable = true;
-
-  # MacOS specifics
-  zed.enable = true;
-  karabiner.enable = true;
 
   age = {
     identityPaths = ["${config.home.homeDirectory}/.pubkey.txt"];
@@ -260,6 +267,42 @@ in {
       };
   };
 
+  # include neovim, vimrc, and oh-my-posh symlink
+  xdg = {
+    enable = true;
+    configFile = {
+      nvim = {
+        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.dix.editor}";
+        recursive = true;
+      };
+      "gpg-tui/gpg-tui.toml".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
+      "oh-my-posh/config.toml".source = ./modules/config/oh-my-posh/config.toml;
+      "karabiner/karabiner.json".source = ./modules/config/karabiner/karabiner.json;
+      "zed/keymap.json".source = ./modules/config/zed/keymap.json;
+      "zed/settings.json".source = ./modules/config/zed/settings.json;
+    };
+  };
+  editorconfig = {
+    enable = true;
+    settings = {
+      "*" = {
+        end_of_line = "lf";
+        charset = "utf-8";
+        trim_trailing_whitespace = true;
+        indent_style = "space";
+        indent_size = 2;
+        max_line_width = 119;
+      };
+      "/node_modules/*" = {
+        indent_size = "unset";
+        indent_style = "unset";
+      };
+      "{package.json,.travis.yml,.eslintrc.json}" = {
+        indent_style = "space";
+      };
+    };
+  };
+
   home = {
     inherit sessionVariables;
     packages = filterNone (packages ++ (lib.optionals pkgs.stdenv.isDarwin darwinPackages) ++ (lib.optionals pkgs.stdenv.isLinux linuxPackages));
@@ -272,8 +315,6 @@ in {
     stateVersion = lib.trivial.release;
 
     file = let
-      tomlFormat = pkgs.formats.toml {};
-
       fzfConfig = pkgs.writeText "fzfrc" ''
         --color=fg:#797593,bg:#faf4ed,hl:#d7827e
         --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
@@ -286,20 +327,14 @@ in {
         --preview-window 'right:40%:wrap'
         --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
       '';
-
-      gpgTuiConfig = {
-        general = {detail_level = "full";};
-        gpg = {armor = true;};
+    in
+      {
+        ".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.dix.editor}/.vimrc";
+        ".fzfrc".source = fzfConfig;
+      }
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        "/Library/Application Support/gpg-tui/gpg-tui.toml".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
       };
-      gpgTuiConfigFile = "${
-        if pkgs.stdenv.isDarwin
-        then "/Library/Application Support"
-        else ".config"
-      }/gpg-tui/gpg-tui.toml";
-    in {
-      ".fzfrc".source = fzfConfig;
-      "${gpgTuiConfigFile}".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
-    };
 
     # shells related
     shellAliases = {
