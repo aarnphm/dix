@@ -109,6 +109,7 @@
     gpg-tui
     gnumake
     agenix
+    alejandra
 
     # dix packages overlays
     dix.bitwarden-cli

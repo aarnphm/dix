@@ -139,7 +139,7 @@ in {
             side-by-side = true;
             line-numbers = true;
             dark = true;
-            syntax-theme = "GitHub";
+            syntax-theme = "Dracula";
 
             interactive = {
               keep-plus-minus-markers = false;

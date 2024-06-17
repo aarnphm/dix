@@ -38,8 +38,14 @@ style = "full"
 [[blocks.segments]]
 foreground = "white"
 style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .HEAD }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+powerline_symbol = ""
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
 type = "git"
+
+[blocks.segments.properties]
+fetch_status = true
+fetch_stash_count = true
+fetch_upstream_icon = true
 
 [[blocks]]
 alignment = "right"
