@@ -29,7 +29,6 @@ in {
     programs.zsh = {
       enable = true;
       enableVteIntegration = true;
-      autocd = true;
       history = {
         expireDuplicatesFirst = true;
         ignoreDups = true;
