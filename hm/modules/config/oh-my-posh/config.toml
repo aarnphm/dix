@@ -18,7 +18,7 @@ display_host = true
 [[blocks.segments]]
 foreground = "yellow"
 style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }}{{ end }}{{ .Full }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
 type = "python"
 
 [blocks.segments.properties]
@@ -33,7 +33,7 @@ type = "path"
 
 [blocks.segments.properties]
 folder_separator_icon = "<#c0c0c0>/</>"
-style = "full"
+style = "unique"
 
 [[blocks.segments]]
 foreground = "white"
@@ -43,6 +43,7 @@ template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .HEAD }}{{i
 type = "git"
 
 [blocks.segments.properties]
+branch_icon = "\uE0A0 "
 fetch_status = true
 fetch_stash_count = true
 fetch_upstream_icon = true

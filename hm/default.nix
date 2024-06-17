@@ -316,12 +316,18 @@ in {
     stateVersion = lib.trivial.release;
 
     file = let
+      # rose-pine dawn
+      # --color=fg:#797593,bg:#faf4ed,hl:#d7827e
+      # --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
+      # --color=border:#dfdad9,header:#286983,gutter:#faf4ed
+      # --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
+      # --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
       fzfConfig = pkgs.writeText "fzfrc" ''
-        --color=fg:#797593,bg:#faf4ed,hl:#d7827e
-        --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
-        --color=border:#dfdad9,header:#286983,gutter:#faf4ed
-        --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
-        --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+        --color=fg:#908caa,bg:#191724,hl:#ebbcba
+        --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba
+        --color=border:#403d52,header:#31748f,gutter:#191724
+        --color=spinner:#f6c177,info:#9ccfd8,separator:#403d52
+        --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
         --bind='ctrl-/:toggle-preview'
         --bind='ctrl-u:preview-page-up'
         --bind='ctrl-d:preview-page-down'
