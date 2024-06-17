@@ -79,7 +79,7 @@ if [[ -n "${PR_NUMBER:-}" ]]; then
   @gh@ pr checkout "$PR_NUMBER"
 elif [[ "${HEAD:-}" = true ]]; then
   @git@ switch main
-  @git@ pull --ff
+  @git@ fetch origin main && @git@ pull --ff
 fi
 
 @shell@ "$OPENLLM_DIR/local.sh" --tests
