@@ -30,8 +30,8 @@ with lib; {
             };
           }
           // lib.optionalAttrs pkgs.stdenv.isDarwin {
-            "a4000" = {
-              hostname = "184.105.106.53";
+            "a100" = {
+              hostname = "184.105.208.165";
               user = "paperspace";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
             };

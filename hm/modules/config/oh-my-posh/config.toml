@@ -2,6 +2,14 @@
 version = 2
 final_space = true
 
+[transient_prompt]
+background = "transparent"
+template = "\u279c "
+foreground_templates = [
+  "{{if gt .Code 0}}red{{end}}",
+  "{{if eq .Code 0}}green{{end}}",
+]
+
 [[blocks]]
 alignment = "left"
 type = "prompt"
@@ -50,36 +58,15 @@ fetch_upstream_icon = true
 fetch_bare_info = true
 
 [[blocks]]
-alignment = "right"
-type = "prompt"
-
-[[blocks.segments]]
-foreground = "white"
-style = "plain"
-template = " {{ .FormattedMs }} "
-type = "executiontime"
-
-[blocks.segments.properties]
-always_enabled = true
-style = "round"
-
-[[blocks.segments]]
-foreground = "green"
-foreground_templates = ["{{ if gt .Code 0 }}red{{ end }}"]
-style = "plain"
-template = " {{ if gt .Code 0 }}{{else}}{{ end }} "
-type = "status"
-
-[blocks.segments.properties]
-always_enabled = true
-
-[[blocks]]
 alignment = "left"
 newline = true
 type = "prompt"
 
 [[blocks.segments]]
-foreground = "lightBlue"
+foreground_templates = [
+  "{{if gt .Code 0}}red{{end}}",
+  "{{if eq .Code 0}}lightBlue{{end}}",
+]
 style = "plain"
 template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>└─</> {{ if .Root }}<lightRed>#</>{{ else }}${{ end }}"
 type = "text"
