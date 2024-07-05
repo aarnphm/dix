@@ -67,6 +67,7 @@
       Bitwarden = 1352778147;
       TestFlight = 899247664;
       Messenger = 1480068668;
+      DaisyDisk = 411643860;
       "Slack for Desktop" = 803453959;
       "NordVPN - VPN for privacy" = 905953485;
       "WhatsApp Messenger" = 310633997;

@@ -58,6 +58,7 @@ in {
           ".idea/"
           "out/"
           "local.properties"
+          "/.ipynb_checkpoints"
           "*.o"
           "*.so"
           "*.7z"
