@@ -5,7 +5,7 @@
   buildNpmPackage,
   fetchFromGitHub,
   nodejs_18,
-  python3,
+  python311,
   darwin,
   installShellFiles,
 }:
@@ -26,7 +26,7 @@ buildNpmPackage rec {
 
   nativeBuildInputs =
     [
-      python3
+      python311
       installShellFiles
     ]
     ++ lib.optionals stdenv.isDarwin [

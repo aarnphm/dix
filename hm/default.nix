@@ -96,7 +96,6 @@
     hexyl
     catimg
     tmux
-    asciinema
     watch
     ffmpeg
     cmake

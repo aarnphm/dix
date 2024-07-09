@@ -68,7 +68,7 @@
 
               python3-tools = super.buildEnv {
                 name = "python3-tools";
-                paths = [(self.python3.withPackages (ps: with ps; [pynvim]))];
+                paths = [(self.python311.withPackages (ps: with ps; [pynvim]))];
                 meta = {mainProgram = "python";};
               };
             })
