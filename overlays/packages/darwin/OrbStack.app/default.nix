@@ -11,14 +11,14 @@
 in
   installDmg rec {
     name = "OrbStack";
-    version = "1.6.1_17010";
+    version = "1.6.4_17192";
     sourceRoot = "${name}.app";
 
     src = fetchurl {
       url = "https://cdn-updates.orbstack.dev/${arch}/${name}_v${version}_${arch}.dmg";
       hash =
         if isArm
-        then "sha256-0ZhP1EA+8BOaCuXG5QYcdqopIcWmzHkT9HtVGzJKGFo="
+        then "sha256-oWr9BLl5AIlG/n0RMubZla56qkoKfiWlW+S9xIcg4nc="
         else lib.fakeSha256;
     };
 

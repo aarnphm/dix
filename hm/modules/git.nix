@@ -31,7 +31,7 @@ in {
             co = "pr checkout";
             pv = "pr view";
           };
-          pager = "${lib.getExe pkgs.bat} --paging=always --color=always --decoration=never --";
+          pager = "${lib.getExe pkgs.bat} --paging=always --color=always --decorations=never --";
         };
       };
       git = {

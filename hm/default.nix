@@ -9,7 +9,7 @@
   filterNone = value: builtins.filter (x: x != null) value;
   packages = with pkgs; [
     # nix
-    cachix
+    # cachix
 
     # editor
     vim
@@ -253,13 +253,13 @@ in {
     identityPaths = ["${config.home.homeDirectory}/.pubkey.txt"];
     secrets =
       {
-        id_ed25519-github = {
+        github = {
           file = ./secrets/${user}-id_ed25519-github.age;
           path = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
         };
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        id_ed25519-paperspace = {
+        paperspace = {
           file = ./secrets/${user}-id_ed25519-paperspace.age;
           path = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
         };
@@ -392,6 +392,7 @@ in {
       gck = "${lib.getExe pkgs.git} checkout";
       gdf = "${lib.getExe pkgs.git} diff";
       gb = "${lib.getExe pkgs.git} branches";
+      gbd = "${lib.getExe pkgs.git} branch -D";
       gprc = "${lib.getExe pkgs.gh} pr create";
 
       # editor
@@ -422,7 +423,7 @@ in {
       # nix-commands
       nrb =
         if pkgs.stdenv.isDarwin
-        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -vvv --show-trace''
+        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -v --show-trace''
         else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
       ned = ''
         ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
