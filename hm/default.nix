@@ -106,7 +106,6 @@
     gnupg
     gpg-tui
     gnumake
-    agenix
     alejandra
 
     # dix packages overlays
@@ -223,7 +222,6 @@ in {
     ./modules
     # NOTE: since we are unifying everything under home manager
     # would need to homeManagerModules instead of darwinModules
-    inputs.agenix.homeManagerModules.default
     inputs.nix-index-database.hmModules.nix-index
   ];
 
@@ -248,23 +246,6 @@ in {
   ssh.enable = true;
   zsh.enable = true;
   zoxide.enable = true;
-
-  age = {
-    identityPaths = ["${config.home.homeDirectory}/.pubkey.txt"];
-    secrets =
-      {
-        github = {
-          file = ./secrets/${user}-id_ed25519-github.age;
-          path = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
-        };
-      }
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        paperspace = {
-          file = ./secrets/${user}-id_ed25519-paperspace.age;
-          path = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
-        };
-      };
-  };
 
   # include neovim, vimrc, and oh-my-posh symlink
   xdg = {

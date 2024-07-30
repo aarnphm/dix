@@ -27,13 +27,6 @@
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks.inputs.nixpkgs-stable.follows = "nixpkgs";
 
-    # secrets stuff
-    agenix.url = "github:ryantm/agenix/main";
-    agenix.inputs.darwin.follows = "nix-darwin";
-    agenix.inputs.home-manager.follows = "home-manager";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
-    agenix.inputs.systems.follows = "systems";
-
     # config stuff
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     neovim.inputs.nixpkgs.follows = "nixpkgs";
@@ -73,7 +66,6 @@
               };
             })
             inputs.neovim.overlays.default
-            inputs.agenix.overlays.default
 
             # custom overlays
             (import ./overlays/10-dev-overrides.nix)
