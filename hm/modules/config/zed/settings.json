@@ -15,9 +15,6 @@
   "inlay_hints": {
     "enabled": true
   },
-  "assistant": {
-    "button": false
-  },
   "chat_panel": {
     "enabled": false
   },

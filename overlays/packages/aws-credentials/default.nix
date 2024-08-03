@@ -3,7 +3,7 @@
   jq,
   lib,
   writeProgram,
-  dix,
+  bitwarden-cli,
   makeWrapper,
   bash,
 }: let
@@ -18,7 +18,7 @@ in
       {
         inherit (stdenv) shell;
         inherit pname;
-        bw = getExe dix.bitwarden-cli;
+        bw = getExe bitwarden-cli;
         jq = getExe jq;
       }
       ./secrets.sh;
@@ -32,7 +32,7 @@ in
 
     postFixup = ''
       wrapProgram $out/bin/${pname} \
-        --prefix PATH : "${lib.makeBinPath [dix.bitwarden-cli bash jq]}"
+        --prefix PATH : "${lib.makeBinPath [bitwarden-cli bash jq]}"
     '';
 
     meta = with lib; {

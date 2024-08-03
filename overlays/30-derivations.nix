@@ -11,7 +11,6 @@ self: super: {
       unicopy = super.callPackage ./packages/unicopy {};
       git-forest = super.callPackage ./packages/git-forest {};
       zsh-dix = super.callPackage ./packages/zsh-dix {};
-      bitwarden-cli = super.callPackage ./packages/bitwarden-cli {};
       paperspace-cli = super.callPackage ./packages/paperspace-cli {};
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
       editor = self.mkDerivationKeepSrc {

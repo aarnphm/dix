@@ -84,9 +84,8 @@
   environment = {
     shells = [pkgs.zsh];
     systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
-    systemPackages = [pkgs.ncurses];
     etc = {
-      terminfo.source = "${pkgs.ncurses}/share/terminfo";
+      terminfo.source = "${pkgs.ncurses6}/share/terminfo";
     };
   };
 
