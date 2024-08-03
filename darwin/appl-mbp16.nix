@@ -119,7 +119,6 @@
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 
   fonts.packages = with pkgs; [
-    sketchybar-app-font
     (nerdfonts.override {
       fonts = [
         "FiraCode"

@@ -46,8 +46,8 @@
     sass
     protobuf
     deno
-    nodejs_20
-    nodePackages_latest.pnpm
+    nodejs_22
+    corepack_22
     rustup
     pyenv
     xz
@@ -57,7 +57,6 @@
 
     # tools for language, lsp, linter, etc.
     tree-sitter
-    eclint
     nixfmt-rfc-style
     nixpkgs-fmt
     grpcurl
@@ -68,7 +67,7 @@
     protolint
     sqlite
     postgresql_14
-    llvm_17
+    llvm_18
     openblas
     enchant
 
@@ -99,7 +98,6 @@
     tmux
     watch
     ffmpeg
-    cmake
     dtach
     zstd
     gnused
@@ -110,7 +108,7 @@
     alejandra
 
     # dix packages overlays
-    bitwarden-cli
+    dix.bitwarden-cli
     dix.paperspace-cli
     dix.git-forest
     dix.unicopy
@@ -390,11 +388,11 @@ in {
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
-      unlock-vault = ''${lib.getExe pkgs.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
-      generate-password = "${lib.getExe pkgs.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
+      unlock-vault = ''${lib.getExe pkgs.dix.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.dix.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
+      generate-password = "${lib.getExe pkgs.dix.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
       lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.yml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
-      get-gpg-password = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-github-keys | ${lib.getExe pkgs.dix.unicopy}'';
+      get-gpg-password = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-github-keys | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
       nrb =

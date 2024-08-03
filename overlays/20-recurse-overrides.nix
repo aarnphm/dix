@@ -6,6 +6,11 @@ self: super: {
     then null
     else super.recurseIntoAttrs super.zed-editor;
 
+  python3 =
+    if super.stdenv.isDarwin
+    then super.recurseIntoAttrs super.python311
+    else super.recurseIntoAttrs super.python3;
+
   cudaPackages = super.recurseIntoAttrs (super.cudaPackages
     // {
       cudnn =
