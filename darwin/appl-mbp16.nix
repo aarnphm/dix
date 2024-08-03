@@ -58,6 +58,8 @@
       "rectangle"
       "steam"
       "zed"
+      "zed@preview"
+      "orbstack"
       # TODO: for sequoia
       # "raycast"
       # "karabiner-elements"

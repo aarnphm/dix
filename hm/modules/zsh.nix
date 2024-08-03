@@ -74,7 +74,7 @@ in {
             "${pkgs.dix.zsh-dix}/share/zsh/site-functions"
             "${pkgs.zsh-completions}/share/zsh/site-functions"
           ]
-          ++ optionals pkgs.stdenv.isDarwin ["${pkgs.dix.OrbStack}/Applications/OrbStack.app/Contents/Resources/completions/zsh"];
+          ++ optionals pkgs.stdenv.isDarwin ["/Applications/OrbStack.app/Contents/Resources/completions/zsh"];
       in
         concatStringsSepNewLine [
           ''eval "$(${lib.getExe pkgs.pyenv} init -)"''

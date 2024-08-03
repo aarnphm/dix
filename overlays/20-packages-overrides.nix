@@ -21,7 +21,6 @@ self: super: {
         install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
       '';
   });
-  tree-sitter = super.tree-sitter.override {webUISupport = true;};
   neovim = super.neovim.overrideAttrs (oldAttrs: {
     preConfigure =
       oldAttrs.preConfigure
@@ -29,6 +28,6 @@ self: super: {
         (language: grammar: ''
           ln -sf ${grammar}/parser $out/lib/nvim/parser/${super.lib.strings.removePrefix "tree-sitter-" language}.so
         '')
-        self.tree-sitter.builtGrammars);
+        super.tree-sitter.builtGrammars);
   });
 }
