@@ -12,10 +12,5 @@ self: super: {
       bitwarden-cli = super.callPackage ./packages/bitwarden-cli {};
       paperspace-cli = super.callPackage ./packages/paperspace-cli {};
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
-      editor = self.mkDerivationKeepSrc {
-        name = "editor";
-        src = super.dix.editor-nix;
-        version = self.flakeVersion super.dix.editor-nix;
-      };
     };
 }

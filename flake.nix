@@ -30,8 +30,6 @@
     # config stuff
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     neovim.inputs.nixpkgs.follows = "nixpkgs";
-    editor-nix.url = "github:aarnphm/editor";
-    editor-nix.flake = false;
   };
 
   nixConfig = {
@@ -57,8 +55,7 @@
           };
           overlays = [
             (self: super: {
-              dix = super.dix or {} // {editor-nix = inputs.editor-nix;};
-
+              dix = super.dix or {};
               python3-tools = super.buildEnv {
                 name = "python3-tools";
                 paths = [(self.python311.withPackages (ps: with ps; [pynvim]))];

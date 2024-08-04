@@ -18,6 +18,14 @@ nix run nix-darwin -- switch --flake github:aarnphm/dix#appl-mbp16
 nix run home-manager -- switch --flake github:aarnphm/dix#paperspace
 ```
 
+Finally, clone neovim:
+
+```bash
+gh repo clone aarnphm/editor $HOME/.config/nvim
+
+ln -s $HOME/.vimrc $HOME/.config/nvim/.vimrc
+```
+
 TODO:
 
 - [ ] `nix run github:aarnphm/dix -- setup <profile>`

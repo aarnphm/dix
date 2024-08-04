@@ -247,10 +247,6 @@ in {
   xdg = {
     enable = true;
     configFile = {
-      nvim = {
-        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.dix.editor}";
-        recursive = true;
-      };
       "gpg-tui/gpg-tui.toml".source = tomlFormat.generate "gpg-tui-config" gpgTuiConfig;
       "oh-my-posh/config.toml".source = ./modules/config/oh-my-posh/config.toml;
       "karabiner/karabiner.json".source = ./modules/config/karabiner/karabiner.json;
@@ -311,7 +307,6 @@ in {
       '';
     in
       {
-        ".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.dix.editor}/.vimrc";
         ".fzfrc".source = fzfConfig;
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {

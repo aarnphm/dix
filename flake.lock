@@ -17,22 +17,6 @@
         "type": "github"
       }
     },
-    "editor-nix": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1722736441,
-        "narHash": "sha256-uW03g0LllfmuBuQIzWZSjNO7TwogusjWDHstlUmU9Hk=",
-        "owner": "aarnphm",
-        "repo": "editor",
-        "rev": "5378045c4c309f0ec01bb11722ff2eee2edb2f4c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aarnphm",
-        "repo": "editor",
-        "type": "github"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -586,7 +570,6 @@
     },
     "root": {
       "inputs": {
-        "editor-nix": "editor-nix",
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "home-manager": "home-manager",
