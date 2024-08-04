@@ -1,10 +1,9 @@
 {
   stdenv,
   lib,
-  runCommand,
   buildNpmPackage,
   fetchFromGitHub,
-  nodejs_18,
+  nodejs_20,
   python311,
   darwin,
   xcbuild,
@@ -21,7 +20,7 @@ buildNpmPackage rec {
     hash = "sha256-ZnqvqPR1Xuf6huhD5kWlnu4XOAWn7yte3qxgU/HPhiQ=";
   };
 
-  nodejs = nodejs_18;
+  nodejs = nodejs_20;
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 

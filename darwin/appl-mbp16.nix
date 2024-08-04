@@ -39,8 +39,6 @@
     onActivation.cleanup = "zap";
     onActivation.extraFlags = ["--verbose"];
     taps = [
-      "homebrew/homebrew-core"
-      "homebrew/homebrew-cask"
       "homebrew/homebrew-bundle"
       "apple/apple"
     ];
@@ -86,9 +84,6 @@
   environment = {
     shells = [pkgs.zsh];
     systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
-    etc = {
-      terminfo.source = "${pkgs.ncurses6}/share/terminfo";
-    };
   };
 
   nix.settings = {

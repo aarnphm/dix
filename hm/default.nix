@@ -64,7 +64,6 @@
     stylua
     selene
     buf
-    protolint
     sqlite
     postgresql_14
     llvm_18
