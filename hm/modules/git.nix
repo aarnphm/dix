@@ -140,7 +140,7 @@ in {
             side-by-side = true;
             line-numbers = true;
             dark = true;
-            syntax-theme = "Dracula";
+            syntax-theme = "OneHalfLight";
 
             interactive = {
               keep-plus-minus-markers = false;

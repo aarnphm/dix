@@ -18,7 +18,7 @@ with lib; {
       bat = {
         enable = true;
         config = {
-          theme = "Dracula";
+          theme = "OneHalfLight";
           map-syntax = [
             ".ignore:Git Ignore"
             "config:Git Config"

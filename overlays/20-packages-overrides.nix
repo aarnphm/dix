@@ -21,13 +21,4 @@ self: super: {
         install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
       '';
   });
-  neovim = super.neovim.overrideAttrs (oldAttrs: {
-    preConfigure =
-      oldAttrs.preConfigure
-      + super.lib.concatStrings (super.lib.mapAttrsToList
-        (language: grammar: ''
-          ln -sf ${grammar}/parser $out/lib/nvim/parser/${super.lib.strings.removePrefix "tree-sitter-" language}.so
-        '')
-        super.tree-sitter.builtGrammars);
-  });
 }
