@@ -34,8 +34,6 @@ stdenv.mkDerivation rec {
 
     mkdir -p $out/bin
     mv pspace $out/bin
-
-    runHook postInstall
   '';
   postInstall = ''
     installShellCompletion --zsh --cmd pspace <($out/bin/pspace completion zsh)
