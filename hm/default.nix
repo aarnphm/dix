@@ -63,6 +63,8 @@
     taplo
     stylua
     selene
+    protolint
+    beautysh
     buf
     sqlite
     postgresql_14

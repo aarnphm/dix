@@ -36,7 +36,7 @@ with lib; {
             history = 23040;
           };
           font = {
-            size = 17;
+            size = 15;
             normal = {
               family = "BerkeleyMono Nerd Font Mono";
               style = "Regular";
