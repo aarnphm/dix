@@ -6,6 +6,11 @@ self: super: {
     then null
     else super.recurseIntoAttrs super.zed-editor;
 
+  julia_19 =
+    if super.stdenv.isDarwin
+    then null
+    else super.recurseIntoAttrs super.julia_19;
+
   cudaPackages = super.recurseIntoAttrs (super.cudaPackages
     // {
       cudnn =

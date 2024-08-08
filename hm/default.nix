@@ -49,6 +49,7 @@
     nodejs_22
     corepack_22
     rustup
+    julia_19
     pyenv
     xz
     sshx
@@ -72,6 +73,7 @@
     openblas
     enchant
     python311Packages.pylatexenc
+    luajitPackages.luarocks
 
     # terminal
     any-nix-shell

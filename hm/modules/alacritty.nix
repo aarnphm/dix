@@ -32,6 +32,9 @@ with lib; {
               y = 600;
             };
           };
+          env = {
+            TERM = "xterm-256color";
+          };
           scrolling = {
             history = 23040;
           };
@@ -56,6 +59,23 @@ with lib; {
               y = -1;
             };
           };
+          keyboard.bindings = [
+            {
+              key = "T";
+              mods = "Command";
+              chars = "\×80\xfc\x80t";
+            }
+            {
+              key = "LBracket";
+              mods = "Command";
+              chars = "\×80\xfc\×80[";
+            }
+            {
+              key = "RBracket";
+              mods = "Command";
+              chars = "\×80\xfc\×80]";
+            }
+          ];
           bell.animation = "EaseOutExpo";
           cursor = {
             style.shape = "Block";
