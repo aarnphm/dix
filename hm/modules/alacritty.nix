@@ -4,7 +4,13 @@
   pkgs,
   ...
 }:
-with lib; {
+with lib; let
+  theme =
+    if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
+    then "${pkgs.alacritty-theme}/rose-pine.toml"
+    else "${pkgs.alacritty-theme}/rose-pine-dawn.toml";
+  family = "BerkeleyMono Nerd Font Mono"; # "BerkeleyMono Nerd Font Mono" | "JetBrainsMono NFM"
+in {
   options.alacritty = {
     enable = mkOption {
       type = types.bool;
@@ -18,7 +24,7 @@ with lib; {
       alacritty = {
         enable = true;
         settings = {
-          import = ["${pkgs.alacritty-theme}/rose-pine-dawn.toml"];
+          import = [theme];
           window = {
             dynamic_padding = false;
             decorations = "buttonless";
@@ -36,19 +42,19 @@ with lib; {
             TERM = "xterm-256color";
           };
           scrolling = {
-            history = 23040;
+            history = 30000;
           };
           font = {
             size = 15;
             normal = {
-              family = "BerkeleyMono Nerd Font Mono";
+              family = family;
               style = "Regular";
             };
             bold = {
-              family = "BerkeleyMono Nerd Font Mono";
+              family = family;
             };
             italic = {
-              family = "BerkeleyMono Nerd Font Mono";
+              family = family;
             };
             offset = {
               x = 0;

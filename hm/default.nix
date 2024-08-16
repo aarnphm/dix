@@ -43,7 +43,6 @@
 
     # languages
     go
-    sass
     protobuf
     deno
     nodejs_22
@@ -53,19 +52,15 @@
     pyenv
     xz
     sshx
-    awscli2
     age
 
     # tools for language, lsp, linter, etc.
     tree-sitter
-    nixfmt-rfc-style
-    nixpkgs-fmt
     grpcurl
     taplo
     stylua
     selene
     protolint
-    beautysh
     buf
     sqlite
     postgresql_14
@@ -73,7 +68,6 @@
     openblas
     enchant
     python311Packages.pylatexenc
-    luajitPackages.luarocks
 
     # terminal
     any-nix-shell
@@ -148,6 +142,9 @@
     inherit (lib) concatStringsSep getExe makeBinPath;
   in
     {
+      # custom envvar to control theme from one spot
+      XDG_SYSTEM_THEME = "dark";
+
       # XDG
       XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
 
@@ -189,8 +186,6 @@
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # misc
       OPENBLAS = "${lib.makeLibraryPath [pkgs.openblas]}/libopenblas.dylib";
-      SQLITE_PATH = "${lib.makeLibraryPath [pkgs.sqlite]}/libsqlite3.dylib";
-      PYENCHANT_LIBRARY_PATH = "${lib.makeLibraryPath [pkgs.enchant]}/libenchant-2.2.dylib";
       LD_LIBRARY_PATH = with pkgs;
         lib.makeLibraryPath [
           (lib.getDev openssl)
@@ -238,7 +233,7 @@ in {
   };
 
   alacritty.enable = true;
-  awscli.enable = true;
+  awscli.enable = false;
   bat.enable = true;
   btop.enable = true;
   direnv.enable = true;
@@ -292,30 +287,31 @@ in {
     stateVersion = lib.trivial.release;
 
     file = let
+      concatStringsSepNewLine = iterables: lib.concatStringsSep "\n" iterables;
       # rose-pine dawn
-      # --color=fg:#797593,bg:#faf4ed,hl:#d7827e
-      # --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
-      # --color=border:#dfdad9,header:#286983,gutter:#faf4ed
-      # --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
-      # --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+      # --color=fg:#797593,bg:#faf4ed,hl:#d7827e --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e --color=border:#dfdad9,header:#286983,gutter:#faf4ed --color=spinner:#ea9d34,info:#56949f --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
       # rose-pine moon
-      # --color=fg:#908caa,bg:#191724,hl:#ebbcba
-      # --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba
-      # --color=border:#403d52,header:#31748f,gutter:#191724
-      # --color=spinner:#f6c177,info:#9ccfd8,separator:#403d52
-      # --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
-      fzfConfig = pkgs.writeText "fzfrc" ''
-        --color=fg:#797593,bg:#faf4ed,hl:#d7827e
-        --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e
-        --color=border:#dfdad9,header:#286983,gutter:#faf4ed
-        --color=spinner:#ea9d34,info:#56949f,separator:#dfdad9
-        --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
-        --bind='ctrl-/:toggle-preview'
-        --bind='ctrl-u:preview-page-up'
-        --bind='ctrl-d:preview-page-down'
-        --preview-window 'right:40%:wrap'
-        --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
-      '';
+      # --color=fg:#908caa,bg:#232136,hl:#ea9a97 --color=fg+:#e0def4,bg+:#393552,hl+:#ea9a97 --color=border:#44415a,header:#3e8fb0,gutter:#232136 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
+      # rose-pine main
+      # --color=fg:#908caa,bg:#191724,hl:#ebbcba --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba --color=border:#403d52,header:#31748f,gutter:#191724 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
+      fzfConfig = pkgs.writeText "fzfrc" (concatStringsSepNewLine [
+        (
+          if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
+          then ''
+            --color=fg:#908caa,bg:#191724,hl:#ebbcba --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba --color=border:#403d52,header:#31748f,gutter:#191724 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
+          ''
+          else ''
+            --color=fg:#797593,bg:#faf4ed,hl:#d7827e --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e --color=border:#dfdad9,header:#286983,gutter:#faf4ed --color=spinner:#ea9d34,info:#56949f --color=pointer:#907aa9,marker:#b4637a,prompt:#797593
+          ''
+        )
+        ''
+          --bind='ctrl-/:toggle-preview'
+          --bind='ctrl-u:preview-page-up'
+          --bind='ctrl-d:preview-page-down'
+          --preview-window 'right:40%:wrap'
+          --cycle --bind 'tab:toggle-up,btab:toggle-down' --prompt='» ' --marker='»' --pointer='◆' --info=right --layout='reverse' --border='sharp' --preview-window='border-sharp' --height='80%'
+        ''
+      ]);
     in
       {
         ".fzfrc".source = fzfConfig;
@@ -418,6 +414,7 @@ in {
       pip = "uv pip";
       python3 = ''$(${lib.getExe pkgs.pyenv} root)/shims/python'';
       python-install = ''CPPFLAGS="-I${pkgs.zlib.outPath}/include -I${pkgs.xz.dev.outPath}/include" LDFLAGS="-L${lib.makeLibraryPath [pkgs.zlib pkgs.xz.dev]}" ${lib.getExe pkgs.pyenv} install "$@"'';
+      python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
       k = "kubectl";

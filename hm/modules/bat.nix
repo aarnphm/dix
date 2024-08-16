@@ -18,7 +18,10 @@ with lib; {
       bat = {
         enable = true;
         config = {
-          theme = "OneHalfLight";
+          theme =
+            if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
+            then "OneHalfDark"
+            else "OneHalfLight";
           map-syntax = [
             ".ignore:Git Ignore"
             "config:Git Config"

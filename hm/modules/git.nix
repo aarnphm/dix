@@ -140,7 +140,10 @@ in {
             side-by-side = true;
             line-numbers = true;
             dark = true;
-            syntax-theme = "OneHalfLight";
+            syntax-theme =
+              if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
+              then "OneHalfDark"
+              else "OneHalfLight";
 
             interactive = {
               keep-plus-minus-markers = false;
