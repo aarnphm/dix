@@ -13,7 +13,7 @@ with lib; let
       "pinentry-program ${lib.getExe (
         if enableTouchId
         then pkgs.dix.pinentry-touchid
-        else pkgs.pinentry_mac
+        else pkgs.pinenetry-all
       )}"
     ]);
 in {
@@ -41,22 +41,19 @@ in {
           disable-ccid = true;
         };
       };
+      home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig pkgs.stdenv.isDarwin;
     }
     // lib.optionalAttrs pkgs.stdenv.isLinux {
-      services.gpg-agent =
-        {
-          enable = true;
-          enableSSHSupport = true;
-          verbose = true;
-          defaultCacheTtl = 600;
-          maxCacheTtl = 7200;
-          pinentryPackage = pkgs.pinentry-all;
-          extraConfig = ''
-            allow-loopback-pinentry
-          '';
-        }
-        // lib.optionalAttrs pkgs.stdenv.isDarwin {
-          home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig true;
-        };
+      services.gpg-agent = {
+        enable = true;
+        enableSSHSupport = true;
+        verbose = true;
+        defaultCacheTtl = 600;
+        maxCacheTtl = 7200;
+        pinentryPackage = pkgs.pinentry-all;
+        extraConfig = ''
+          allow-loopback-pinentry
+        '';
+      };
     };
 }
