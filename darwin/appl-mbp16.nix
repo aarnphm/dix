@@ -51,7 +51,6 @@
       "zoom"
       "obs"
       "gather"
-      "notion"
       "obsidian"
       "rectangle"
       "steam"
