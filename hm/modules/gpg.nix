@@ -13,7 +13,7 @@ with lib; let
       "pinentry-program ${lib.getExe (
         if enableTouchId
         then pkgs.dix.pinentry-touchid
-        else pkgs.pinenetry-all
+        else pkgs.pinentry-all
       )}"
     ]);
 in {

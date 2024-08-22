@@ -113,7 +113,6 @@
 
     # cuda
     cudatoolkit
-    cudaPackages.tensorrt
     cudaPackages.cudnn
   ];
   darwinPackages = with pkgs; [
