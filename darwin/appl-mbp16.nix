@@ -42,6 +42,9 @@
       "homebrew/homebrew-bundle"
       "apple/apple"
     ];
+    brews = [
+      "ast-grep"
+    ];
     casks = [
       "arc"
       "google-chrome"
