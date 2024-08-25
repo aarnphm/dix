@@ -12,5 +12,6 @@ self: super: {
       bitwarden-cli = super.callPackage ./packages/bitwarden-cli {};
       paperspace-cli = super.callPackage ./packages/paperspace-cli {};
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
+      gvim = super.callPackage ./packages/gvim {};
     };
 }

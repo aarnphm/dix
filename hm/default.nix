@@ -110,6 +110,7 @@
     dix.paperspace-cli
     dix.git-forest
     dix.unicopy
+    dix.gvim
 
     # cuda
     cudatoolkit
@@ -374,6 +375,7 @@ in {
       # editor
       v = "${lib.getExe pkgs.neovim}";
       vi = "${lib.getExe pkgs.vim}";
+      gv = "${lib.getExe pkgs.dix.gvim}";
       f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
 
       # general
