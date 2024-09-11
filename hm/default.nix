@@ -196,12 +196,16 @@
           stdenv.cc.cc.lib
           protobuf
           cairo
+        ]
+        ++ lib.optionals stdenv.isLinux [
+          cudatoolkit
         ];
     }
     // lib.optionalAttrs pkgs.stdenv.isLinux
     {
       GPG_TTY = "$(tty)";
       CUDA_PATH = pkgs.cudatoolkit;
+      CPATH = with pkgs; lib.makeIncludePath [cudatoolkit];
     };
 
   tomlFormat = pkgs.formats.toml {};
