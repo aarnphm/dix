@@ -61,6 +61,7 @@
                 paths = [(self.python311.withPackages (ps: with ps; [pynvim]))];
                 meta = {mainProgram = "python";};
               };
+              neovim-stable = super.neovim;
             })
             inputs.neovim.overlays.default
 

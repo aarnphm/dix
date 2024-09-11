@@ -44,6 +44,10 @@
     ];
     brews = [
       "ast-grep"
+      "gnu-tar"
+      "pngpaste"
+      "asciidoctor"
+      "plantuml"
     ];
     casks = [
       "arc"
@@ -53,6 +57,7 @@
       "discord"
       "zoom"
       "obs"
+      "ollama"
       "gather"
       "obsidian"
       "rectangle"

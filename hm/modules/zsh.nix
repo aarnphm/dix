@@ -77,7 +77,6 @@ in {
           ++ optionals pkgs.stdenv.isDarwin ["/Applications/OrbStack.app/Contents/Resources/completions/zsh"];
       in
         concatStringsSepNewLine [
-          ''eval "$(${lib.getExe pkgs.pyenv} init -)"''
           (concatStrings (map (sitePath: "fpath+=${sitePath}\n") sites))
         ];
     };

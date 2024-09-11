@@ -24,6 +24,8 @@ Finally, clone neovim:
 gh repo clone aarnphm/editor $HOME/.config/nvim
 
 ln -s $HOME/.vimrc $HOME/.config/nvim/.vimrc
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 TODO:

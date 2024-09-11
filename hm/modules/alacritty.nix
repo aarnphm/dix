@@ -45,7 +45,7 @@ in {
             history = 30000;
           };
           font = {
-            size = 17;
+            size = 14;
             normal = {
               family = family;
               style = "Regular";
