@@ -183,23 +183,23 @@
 
       # Specifics to build
       NIX_INSTALLER_NIX_BUILD_USER_ID_BASE = "400";
+      LD_LIBRARY_PATH = with pkgs;
+        lib.makeLibraryPath ([
+            (lib.getDev openssl)
+            (lib.getDev zlib)
+            (lib.getDev xz)
+            (lib.getDev readline)
+            stdenv.cc.cc.lib
+            protobuf
+            cairo
+          ]
+          ++ lib.optionals stdenv.isLinux [
+            cudatoolkit
+          ]);
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # misc
       OPENBLAS = "${lib.makeLibraryPath [pkgs.openblas]}/libopenblas.dylib";
-      LD_LIBRARY_PATH = with pkgs;
-        lib.makeLibraryPath [
-          (lib.getDev openssl)
-          (lib.getDev zlib)
-          (lib.getDev xz)
-          (lib.getDev readline)
-          stdenv.cc.cc.lib
-          protobuf
-          cairo
-        ]
-        ++ lib.optionals stdenv.isLinux [
-          cudatoolkit
-        ];
     }
     // lib.optionalAttrs pkgs.stdenv.isLinux
     {
