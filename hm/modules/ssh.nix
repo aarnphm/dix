@@ -35,6 +35,11 @@ with lib; {
               user = "paperspace";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
             };
+            "h100" = {
+              hostname = "172.83.13.151";
+              user = "paperspace";
+              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+            };
             "se3db3" = {
               hostname = "se3db3.cas.mcmaster.ca";
               user = "phama10";
