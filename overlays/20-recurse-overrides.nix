@@ -35,5 +35,5 @@ self: super: {
   cudatoolkit =
     if super.stdenv.isDarwin
     then null
-    else super.recurseIntoAttrs super.cudatoolkit;
+    else super.recurseIntoAttrs super.cudaPackages.cudatoolkit;
 }
