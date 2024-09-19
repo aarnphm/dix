@@ -184,7 +184,10 @@
       # Specifics to build
       NIX_INSTALLER_NIX_BUILD_USER_ID_BASE = "400";
       LD_LIBRARY_PATH = with pkgs;
-        lib.makeLibraryPath ([
+        lib.makeLibraryPath (
+          []
+          ++ lib.optionals stdenv.isDarwin
+          [
             (lib.getDev openssl)
             (lib.getDev zlib)
             (lib.getDev xz)
@@ -195,7 +198,8 @@
           ]
           ++ lib.optionals stdenv.isLinux [
             cudatoolkit
-          ]);
+          ]
+        );
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # misc
