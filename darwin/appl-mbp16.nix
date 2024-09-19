@@ -87,6 +87,7 @@
     home = "/Users/${user}";
     createHome = true;
   };
+  ids.uids.nixbld = 400;
 
   environment = {
     shells = [pkgs.zsh];

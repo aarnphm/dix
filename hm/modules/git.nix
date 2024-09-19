@@ -139,7 +139,7 @@ in {
             navigate = true;
             side-by-side = true;
             line-numbers = true;
-            dark = true;
+            dark = config.home.sessionVariables.XDG_SYSTEM_THEME == "dark";
             syntax-theme =
               if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
               then "OneHalfDark"
