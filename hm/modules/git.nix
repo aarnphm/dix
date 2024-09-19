@@ -85,6 +85,7 @@ in {
           "dist/**"
           "sdist/"
           "wheels/"
+          "node_modules/"
         ];
         extraConfig = {
           format = {
@@ -127,7 +128,6 @@ in {
             # https://git-scm.com/docs/git-update-index#_untracked_cache
             untrackedCache = true;
             editor = "${lib.getExe pkgs.neovim}";
-            pager = "${lib.getExe pkgs.delta}";
 
             autocrlf = "input";
           };
@@ -139,7 +139,6 @@ in {
             navigate = true;
             side-by-side = true;
             line-numbers = true;
-            dark = config.home.sessionVariables.XDG_SYSTEM_THEME == "dark";
             syntax-theme =
               if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
               then "OneHalfDark"
