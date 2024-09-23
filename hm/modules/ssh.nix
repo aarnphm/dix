@@ -35,6 +35,11 @@ with lib; {
               user = "paperspace";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
             };
+            "sam-wafer" = {
+              hostname = "75.10.7.20";
+              user = "sam";
+              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-github";
+            };
             "h100" = {
               hostname = "172.83.13.151";
               user = "paperspace";
