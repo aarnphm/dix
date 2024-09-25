@@ -51,7 +51,6 @@
     rustup
     julia_19
     xz
-    sshx
     age
 
     # tools for language, lsp, linter, etc.
@@ -425,6 +424,7 @@ in {
       python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
+      jupytertext = "uvx jupytertext";
       k = "kubectl";
       pinentry = lib.getExe (with pkgs; (
         if stdenv.isDarwin
