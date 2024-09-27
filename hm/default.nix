@@ -338,7 +338,7 @@ in {
 
       # ls-replacement
       ls = "${lib.getExe pkgs.eza}";
-      ll = "${lib.getExe pkgs.eza} -la --group-directories-first -snew --icons always";
+      ll = "${lib.getExe pkgs.eza} --git-ignore -Ml --almost-all --group-directories-first -sName --icons=always";
       sudo = "nocorrect sudo";
 
       # safe rm
