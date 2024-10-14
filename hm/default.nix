@@ -79,7 +79,6 @@
     jq
     yq
     gh
-    tree
     btop
     zip
     pstree
@@ -143,7 +142,7 @@
   in
     {
       # custom envvar to control theme from one spot
-      XDG_SYSTEM_THEME = "light";
+      XDG_SYSTEM_THEME = "dark"; # light
 
       # XDG
       XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
@@ -338,8 +337,10 @@ in {
 
       # ls-replacement
       ls = "${lib.getExe pkgs.eza}";
-      ll = "${lib.getExe pkgs.eza} --git-ignore -Ml --almost-all --group-directories-first -sName --icons=always";
+      ll = "${lib.getExe pkgs.eza} -Ml --almost-all --group-directories-first -sName --icons=always";
       sudo = "nocorrect sudo";
+      tree = "${lib.getExe pkgs.eza} --almost-all --group-directories-first --tree";
+      mtree = "${lib.getExe pkgs.eza} --almost-all -Ml --group-directories-first --tree";
 
       # safe rm
       rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";
