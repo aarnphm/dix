@@ -142,7 +142,7 @@
   in
     {
       # custom envvar to control theme from one spot
-      XDG_SYSTEM_THEME = "dark"; # light
+      XDG_SYSTEM_THEME = "light"; # dark
 
       # XDG
       XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
