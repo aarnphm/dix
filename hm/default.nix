@@ -14,9 +14,7 @@
     # editor
     vim
     bun
-    neovim
     zed-editor
-    alacritty
 
     # kubernetes and container
     kubernetes-helm
@@ -66,8 +64,8 @@
     llvm_18
     openblas
     enchant
-    luajitPackages.luacheck
-    python311Packages.pylatexenc
+    imagemagick
+    luajitPackages.luarocks
 
     # terminal
     any-nix-shell
@@ -103,6 +101,7 @@
     gpg-tui
     gnumake
     alejandra
+    ueberzugpp
 
     # dix packages overlays
     dix.bitwarden-cli
@@ -122,6 +121,7 @@
     xar
     cpio
     mas
+    mactop
     # apps
     pinentry_mac
     dix.pinentry-touchid
@@ -157,8 +157,7 @@
       # Editors
       WORKSPACE = "${config.home.homeDirectory}/workspace";
       SHELL = getExe zsh;
-      EDITOR = getExe neovim;
-      VISUAL = getExe neovim;
+      VISUAL = "nvim"; # EDITOR is set in neovim.nix
       MANPAGER = "${getExe neovim} +Man!";
       LSCOLORS = "ExFxBxDxCxegedabagacad";
 
@@ -249,6 +248,8 @@ in {
   ssh.enable = true;
   zsh.enable = true;
   zoxide.enable = true;
+  neovim.enable = true;
+  kitty.enable = true;
 
   # include neovim, vimrc, and oh-my-posh symlink
   xdg = {
@@ -382,7 +383,7 @@ in {
       gprc = "${lib.getExe pkgs.gh} pr create";
 
       # editor
-      v = "${lib.getExe pkgs.neovim}";
+      v = "bash nvim";
       vi = "${lib.getExe pkgs.vim}";
       nv-stable = "${lib.getExe pkgs.neovim-stable}";
       gv = "${lib.getExe pkgs.dix.gvim}";

@@ -66,6 +66,7 @@
       "zed@preview"
       "orbstack"
       "wezterm"
+      "alt-tab"
       # TODO: for sequoia
       # "raycast"
       # "karabiner-elements"
