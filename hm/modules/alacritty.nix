@@ -7,8 +7,8 @@
 with lib; let
   theme =
     if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-    then "${pkgs.alacritty-theme}/rose-pine.toml"
-    else "${pkgs.alacritty-theme}/rose-pine-dawn.toml";
+    then "${pkgs.alacritty-theme}/rose_pine.toml"
+    else "${pkgs.alacritty-theme}/rose_pine_dawn.toml";
   family = "BerkeleyMono Nerd Font Mono"; # "BerkeleyMono Nerd Font Mono" | "JetBrainsMono NFM"
 in {
   options.alacritty = {
@@ -24,13 +24,15 @@ in {
       alacritty = {
         enable = true;
         settings = {
-          import = [theme];
+          general = {
+            import = [theme];
+          };
           window = {
             dynamic_padding = false;
             decorations = "buttonless";
             option_as_alt = "Both";
             dimensions = {
-              columns = 120;
+              columns = 180;
               lines = 60;
             };
             position = {
@@ -71,16 +73,16 @@ in {
               mods = "Command";
               chars = "\×80\xfc\x80t";
             }
-            {
-              key = "LBracket";
-              mods = "Command";
-              chars = "\×80\xfc\×80[";
-            }
-            {
-              key = "RBracket";
-              mods = "Command";
-              chars = "\×80\xfc\×80]";
-            }
+            # {
+            #   key = "LBracket";
+            #   mods = "Command";
+            #   chars = "\×80\xfc\×80[";
+            # }
+            # {
+            #   key = "RBracket";
+            #   mods = "Command";
+            #   chars = "\×80\xfc\×80]";
+            # }
           ];
           bell.animation = "EaseOutExpo";
           cursor = {

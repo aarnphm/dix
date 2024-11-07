@@ -45,7 +45,7 @@ in {
           cursor_beam_thickness = "1.5";
           cursor_underline_thickness = 2.0;
           scrollback_lines = 20000;
-          scrollback_pager = "${lib.getExe pkgs.less} --chop-long-lines --RAW-CONTROL-CHARS +INPUT_LINE_NUMBER";
+          hide_window_decorations = "yes";
           kitty_mod = "cmd+option";
           macos_titlebar_color = "system";
           macos_window_resizable = "yes";

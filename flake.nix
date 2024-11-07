@@ -30,6 +30,7 @@
     # config stuff
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     neovim.inputs.nixpkgs.follows = "nixpkgs";
+    neovim.inputs.git-hooks.follows = "git-hooks";
   };
 
   nixConfig = {

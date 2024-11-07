@@ -42,7 +42,6 @@
     # languages
     go
     protobuf
-    deno
     nodejs_22
     corepack_22
     zulu17
@@ -65,7 +64,6 @@
     openblas
     enchant
     imagemagick
-    luajitPackages.luarocks
 
     # terminal
     any-nix-shell
@@ -105,10 +103,8 @@
 
     # dix packages overlays
     dix.bitwarden-cli
-    dix.paperspace-cli
     dix.git-forest
     dix.unicopy
-    dix.gvim
 
     # cuda
     cudatoolkit
@@ -383,10 +379,10 @@ in {
       gprc = "${lib.getExe pkgs.gh} pr create";
 
       # editor
-      v = "bash nvim";
+      v = "${lib.getExe config.programs.neovim.finalPackage}";
       vi = "${lib.getExe pkgs.vim}";
       nv-stable = "${lib.getExe pkgs.neovim-stable}";
-      gv = "${lib.getExe pkgs.dix.gvim}";
+      # gv = "${lib.getExe pkgs.dix.gvim}";
       f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
 
       # general
@@ -401,7 +397,7 @@ in {
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
       unlock-vault = ''${lib.getExe pkgs.dix.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.dix.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
       generate-password = "${lib.getExe pkgs.dix.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
-      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.yml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
+      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
       gpgpass = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
       sshpass = ''${lib.getExe pkgs.dix.bitwarden-cli} get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';

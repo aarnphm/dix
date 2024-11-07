@@ -23,7 +23,7 @@ with lib; {
       withPython3 = true;
       defaultEditor = true;
       extraPackages = [pkgs.imagemagick];
-      extraPython3Packages = ps: with ps; [pylatexenc mypy jupyter_client jupytext jupyterlab cairosvg plotly kaleido pnglatex pyperclip];
+      extraPython3Packages = ps: with ps; [mypy jupyter_client jupytext jupyterlab cairosvg plotly kaleido pnglatex pyperclip];
     };
   };
 }
