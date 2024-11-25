@@ -99,7 +99,6 @@
   nix.settings = {
     log-lines = 20;
     keep-going = false;
-    auto-optimise-store = true;
     trusted-users = [user];
     sandbox = false;
     max-jobs = "auto";

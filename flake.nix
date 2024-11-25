@@ -57,11 +57,6 @@
           overlays = [
             (self: super: {
               dix = super.dix or {};
-              python3-tools = super.buildEnv {
-                name = "python3-tools";
-                paths = [(self.python311.withPackages (ps: with ps; [pynvim]))];
-                meta = {mainProgram = "python";};
-              };
               neovim-stable = super.neovim;
             })
             inputs.neovim.overlays.default

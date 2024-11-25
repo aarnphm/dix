@@ -64,6 +64,7 @@
     openblas
     enchant
     imagemagick
+    texliveFull
 
     # terminal
     any-nix-shell
@@ -168,7 +169,6 @@
 
       # Language
       GOPATH = "${config.home.homeDirectory}/go";
-      PYTHON3_HOST_PROG = getExe pkgs.python3-tools;
       PATH = concatStringsSep ":" [
         (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf])
         "$PATH"
