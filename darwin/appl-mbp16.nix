@@ -67,6 +67,7 @@
       "orbstack"
       "wezterm"
       "alt-tab"
+      "rio"
       # TODO: for sequoia
       # "raycast"
       # "karabiner-elements"
