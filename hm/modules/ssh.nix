@@ -34,23 +34,38 @@ with lib; {
               hostname = "184.105.208.165";
               user = "paperspace";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+              setEnv = {
+                TERM = ''xterm-256color'';
+              };
             };
             "sam-wafer" = {
               hostname = "75.10.7.20";
               user = "sam";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-wafer";
+              setEnv = {
+                TERM = ''xterm-256color'';
+              };
             };
             "h100" = {
               hostname = "172.83.13.151";
               user = "paperspace";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+              setEnv = {
+                TERM = ''xterm-256color'';
+              };
             };
             "se3db3" = {
               hostname = "se3db3.cas.mcmaster.ca";
               user = "phama10";
+              setEnv = {
+                TERM = ''xterm-256color'';
+              };
             };
             "gitlab.cas.mcmaster.ca" = {
               identityFile = ''${config.home.homeDirectory}/.ssh/id_ed25519-mcmaster'';
+              setEnv = {
+                TERM = ''xterm-256color'';
+              };
             };
           };
       }

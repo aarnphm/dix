@@ -170,7 +170,7 @@
       # Language
       GOPATH = "${config.home.homeDirectory}/go";
       PATH = concatStringsSep ":" [
-        (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf])
+        (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf "${config.home.homeDirectory}/.local"])
         "$PATH"
       ];
 

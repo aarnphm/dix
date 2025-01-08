@@ -31,6 +31,12 @@
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     neovim.inputs.nixpkgs.follows = "nixpkgs";
     neovim.inputs.git-hooks.follows = "git-hooks";
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs = {
+        nixpkgs-unstable.follows = "nixpkgs";
+      };
+    };
   };
 
   nixConfig = {

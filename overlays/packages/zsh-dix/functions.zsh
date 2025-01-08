@@ -146,7 +146,7 @@ venv() {
     source "$name/bin/activate"
   fi
 
-  uv pip install pylatexenc mypy jupytext plotly pnglatex pyperclip jupyter-client pynvim
+  uv pip install pylatexenc mypy jupytext plotly pnglatex pyperclip jupyter-client pynvim jupyterlab-vim
 }
 
 # Check for virtualenvwrapper

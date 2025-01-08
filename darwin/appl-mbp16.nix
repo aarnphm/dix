@@ -123,14 +123,6 @@
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 
-  fonts.packages = with pkgs; [
-    (nerdfonts.override {
-      fonts = [
-        "FiraCode"
-      ];
-    })
-  ];
-
   # Networking
   networking = {
     knownNetworkServices = [
