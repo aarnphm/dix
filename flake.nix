@@ -17,7 +17,6 @@
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
-    nix-homebrew.inputs.flake-utils.follows = "flake-utils";
 
     # utilities
     systems.url = "github:nix-systems/default";
@@ -25,7 +24,6 @@
     flake-utils.inputs.systems.follows = "systems";
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    git-hooks.inputs.nixpkgs-stable.follows = "nixpkgs";
 
     # config stuff
     neovim.url = "github:nix-community/neovim-nightly-overlay";

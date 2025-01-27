@@ -139,7 +139,7 @@
   in
     {
       # custom envvar to control theme from one spot
-      XDG_SYSTEM_THEME = "light"; # dark
+      XDG_SYSTEM_THEME = "dark"; # dark
 
       # XDG
       XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
@@ -170,7 +170,7 @@
       # Language
       GOPATH = "${config.home.homeDirectory}/go";
       PATH = concatStringsSep ":" [
-        (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf "${config.home.homeDirectory}/.local"])
+        (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf "${config.home.homeDirectory}/.local" "/opt/homebrew/opt/ruby"])
         "$PATH"
       ];
 
