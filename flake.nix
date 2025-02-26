@@ -6,7 +6,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/master";
     nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
     nix.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.url = "github:LnL7/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -14,7 +14,7 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     # homebrew
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    nix-homebrew.url = "github:aarnphm/nix-homebrew/main";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
 
@@ -29,12 +29,6 @@
     neovim.url = "github:nix-community/neovim-nightly-overlay";
     neovim.inputs.nixpkgs.follows = "nixpkgs";
     neovim.inputs.git-hooks.follows = "git-hooks";
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-      inputs = {
-        nixpkgs-unstable.follows = "nixpkgs";
-      };
-    };
   };
 
   nixConfig = {

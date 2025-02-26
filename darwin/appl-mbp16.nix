@@ -106,7 +106,6 @@
   };
 
   nix.gc = {
-    inherit user;
     automatic = true;
     interval.Hour = 6;
     options = ''
@@ -115,7 +114,6 @@
   };
 
   nix.optimise = {
-    inherit user;
     automatic = true;
     interval.Hour = 6;
   };

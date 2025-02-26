@@ -175,7 +175,6 @@
       ];
 
       # Specifics to build
-      NIX_INSTALLER_NIX_BUILD_USER_ID_BASE = "400";
       LD_LIBRARY_PATH = with pkgs;
         lib.makeLibraryPath (
           []
