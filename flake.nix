@@ -8,6 +8,8 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
+    nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # homebrew
     nix-homebrew.url = "github:aarnphm/nix-homebrew/main";
@@ -161,7 +163,7 @@
         inherit pkgs;
         extraSpecialArgs = specialArgs;
         modules = [
-          inputs.nix.homeManagerModules.default
+          nix.homeModules.default
           ./hm
         ];
       };
