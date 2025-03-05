@@ -103,6 +103,11 @@
     trusted-users = [user];
     sandbox = false;
     max-jobs = "auto";
+    always-allow-substitutes = true;
+    bash-prompt-prefix = "(nix:$name)\\040";
+    experimental-features = ["nix-command" "flakes"];
+    extra-nix-path = ["nixpkgs=flake:nixpkgs"];
+    upgrade-nix-store-path-url = "https://install.determinate.systems/nix-upgrade/stable/universal";
   };
 
   nix.gc = {
@@ -133,7 +138,7 @@
   };
 
   # add PAM
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
 
   # System preferences
   system = {

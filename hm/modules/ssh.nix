@@ -38,18 +38,18 @@ with lib; {
                 TERM = ''xterm-256color'';
               };
             };
-            "sam-wafer" = {
-              hostname = "75.10.7.20";
-              user = "sam";
-              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-wafer";
+            "h100" = {
+              hostname = "184.105.157.234";
+              user = "paperspace";
+              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
               setEnv = {
                 TERM = ''xterm-256color'';
               };
             };
-            "h100" = {
-              hostname = "172.83.13.151";
-              user = "paperspace";
-              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
+            "sam-wafer" = {
+              hostname = "75.10.7.20";
+              user = "sam";
+              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-wafer";
               setEnv = {
                 TERM = ''xterm-256color'';
               };
