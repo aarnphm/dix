@@ -362,6 +362,7 @@ in {
       gb = "${lib.getExe pkgs.git} branches";
       gbd = "${lib.getExe pkgs.git} branch -D";
       gprc = "${lib.getExe pkgs.gh} pr create";
+      sync-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff && ${lib.getExe pkgs.git} push";
 
       # editor
       v = "${lib.getExe config.programs.neovim.finalPackage}";
