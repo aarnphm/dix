@@ -326,6 +326,7 @@ in {
 
       # git
       g = "${lib.getExe pkgs.git}";
+      gcl = "${lib.getExe pkgs.gh} clone";
       ga = "${lib.getExe pkgs.git} add";
       gaa = "${lib.getExe pkgs.git} add .";
       gsw = "${lib.getExe pkgs.git} switch";
@@ -334,13 +335,15 @@ in {
       gcma = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend";
       gcman = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend --no-edit";
       grpo = "${lib.getExe pkgs.git} remote prune origin";
+      grpu = "${lib.getExe pkgs.git} remote prune upstream";
       grst = "${lib.getExe pkgs.git} restore";
       grsts = "${lib.getExe pkgs.git} restore --staged";
       gst = "${lib.getExe pkgs.git} status";
       gsi = "${lib.getExe pkgs.git} status --ignored";
       gsm = "${lib.getExe pkgs.git} status -sb";
       gfom = "${lib.getExe pkgs.git} fetch origin main";
-      grfh = "${lib.getExe pkgs.git} rebase -i FETCH_HEAD";
+      gfum = "${lib.getExe pkgs.git} rebase upstream main";
+      grfh = "${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff";
       grb = "${lib.getExe pkgs.git} rebase -i -S --signoff";
       gra = "${lib.getExe pkgs.git} rebase --abort";
       grc = "${lib.getExe pkgs.git} rebase --continue";
@@ -373,7 +376,7 @@ in {
       copy = lib.getExe pkgs.dix.unicopy;
 
       # bentoml
-      b = "bentoml";
+      b = "uvx bentoml";
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
