@@ -125,7 +125,8 @@
     nvtopPackages.full
     pinentry-all
     coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun
-    llvmPackages.libcxxClang
+    # ccache
+    # llvmPackages.libcxxClang
   ];
 
   sessionVariables = let
@@ -184,7 +185,11 @@
             cairo
           ]
           ++ lib.optionals stdenv.isLinux [
-            cudatoolkit
+            cudaPackages.cudatoolkit
+            cudaPackages.cudnn
+            cudaPackages.libcufile
+            cudaPackages.libcurand
+            cudaPackages.tensorrt
           ]
         );
     }
@@ -195,8 +200,8 @@
     // lib.optionalAttrs pkgs.stdenv.isLinux
     {
       GPG_TTY = "$(tty)";
-      CUDA_PATH = pkgs.cudatoolkit;
-      CPATH = with pkgs; lib.makeIncludePath [cudatoolkit];
+      CUDA_PATH = pkgs.cudaPackages.cudatoolkit;
+      CPATH = with pkgs; lib.makeIncludePath [cudaPackages.cudatoolkit];
     };
 
   tomlFormat = pkgs.formats.toml {};
