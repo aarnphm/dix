@@ -101,6 +101,7 @@
     alejandra
     ueberzugpp
     bitwarden-cli
+    google-cloud-sdk
 
     # dix packages overlays
     dix.git-forest
@@ -349,6 +350,7 @@ in {
       gfom = "${lib.getExe pkgs.git} fetch origin main";
       gfum = "${lib.getExe pkgs.git} fetch upstream main";
       grfh = "${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff";
+      grifh = "${lib.getExe pkgs.git} rebase -i FETCH_HEAD --autosquash";
       grb = "${lib.getExe pkgs.git} rebase -i -S --signoff";
       gra = "${lib.getExe pkgs.git} rebase --abort";
       grc = "${lib.getExe pkgs.git} rebase --continue";
