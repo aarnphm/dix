@@ -42,7 +42,7 @@
     go
     protobuf
     nodejs_22
-    corepack_22
+    corepack_23
     zulu17
     rustup
     julia_19
@@ -70,7 +70,6 @@
     zsh-completions
     oh-my-posh
     direnv
-    tmux
     curl
     jq
     yq
@@ -81,6 +80,7 @@
     eza
     zoxide
     rm-improved
+    mmv
     fd
     fzf
     bat
@@ -88,7 +88,6 @@
     ripgrep
     hexyl
     catimg
-    tmux
     watch
     ffmpeg
     dtach
@@ -100,7 +99,7 @@
     gnumake
     alejandra
     ueberzugpp
-    bitwarden-cli
+    # bitwarden-cli
     google-cloud-sdk
 
     # dix packages overlays
@@ -286,13 +285,17 @@ in {
       # --color=fg:#908caa,bg:#232136,hl:#ea9a97 --color=fg+:#e0def4,bg+:#393552,hl+:#ea9a97 --color=border:#44415a,header:#3e8fb0,gutter:#232136 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
       # rose-pine main
       # --color=fg:#908caa,bg:#191724,hl:#ebbcba --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba --color=border:#403d52,header:#31748f,gutter:#191724 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa
+      # flexoki-light
+      # --color=fg:#B7B5AC,bg:#FFFCF0,hl:#100F0F --color=fg+:#B7B5AC,bg+:#F2F0E5,hl+:#100F0F --color=border:#AF3029,header:#100F0F,gutter:#FFFCF0 --color=spinner:#3AA99F,info:#3AA99F,separator:#F2F0E5 --color=pointer:#D0A215,marker:#D14D41,prompt:#D0A215
+      # flexokit-dark
+      # --color=fg:#878580,bg:#100F0F,hl:#CECDC3 --color=fg+:#878580,bg+:#1C1B1A,hl+:#CECDC3 --color=border:#AF3029,header:#CECDC3,gutter:#100F0F --color=spinner:#24837B,info:#24837B,separator:#1C1B1A --color=pointer:#AD8301,marker:#AF3029,prompt:#AD8301
       fzfConfig = pkgs.writeText "fzfrc" (concatStringsSepNewLine [
         (
           if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
           then ''
-            --color=fg:#908caa,bg:#191724,hl:#ebbcba --color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba --color=border:#403d52,header:#31748f,gutter:#191724 --color=spinner:#f6c177,info:#9ccfd8 --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa''
+            --color=fg:#878580,bg:#100F0F,hl:#CECDC3 --color=fg+:#878580,bg+:#1C1B1A,hl+:#CECDC3 --color=border:#AF3029,header:#CECDC3,gutter:#100F0F --color=spinner:#24837B,info:#24837B,separator:#1C1B1A --color=pointer:#AD8301,marker:#AF3029,prompt:#AD8301''
           else ''
-            --color=fg:#797593,bg:#faf4ed,hl:#d7827e --color=fg+:#575279,bg+:#f2e9e1,hl+:#d7827e --color=border:#dfdad9,header:#286983,gutter:#faf4ed --color=spinner:#ea9d34,info:#56949f --color=pointer:#907aa9,marker:#b4637a,prompt:#797593''
+            --color=fg:#B7B5AC,bg:#FFFCF0,hl:#100F0F --color=fg+:#B7B5AC,bg+:#F2F0E5,hl+:#100F0F --color=border:#AF3029,header:#100F0F,gutter:#FFFCF0 --color=spinner:#3AA99F,info:#3AA99F,separator:#F2F0E5 --color=pointer:#D0A215,marker:#D14D41,prompt:#D0A215''
         )
         ''
           --bind='ctrl-/:toggle-preview'
@@ -388,12 +391,12 @@ in {
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
-      unlock-vault = ''${lib.getExe pkgs.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
-      generate-password = "${lib.getExe pkgs.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
+      # unlock-vault = ''${lib.getExe pkgs.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
+      # generate-password = "${lib.getExe pkgs.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
       lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
-      gpgpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
-      sshpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
+      # gpgpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
+      # sshpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
       nrb =

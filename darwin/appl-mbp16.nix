@@ -34,14 +34,14 @@
       HOMEBREW_NO_ANALYTICS = "1";
     };
   };
+
   homebrew = {
     enable = true;
-    onActivation.cleanup = "zap";
-    onActivation.extraFlags = ["--verbose"];
-    taps = [
-      "homebrew/homebrew-bundle"
-      "apple/apple"
-    ];
+    onActivation = {
+      cleanup = "zap";
+      extraFlags = ["--verbose"];
+      autoUpdate = true;
+    };
     brews = [
       "ast-grep"
       "gnu-tar"

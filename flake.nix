@@ -15,6 +15,10 @@
     nix-homebrew.url = "github:aarnphm/nix-homebrew/main";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
+    nix-homebrew.inputs.brew-src = {
+      url = "github:Homebrew/brew/master";
+      flake = false;
+    };
 
     # utilities
     systems.url = "github:nix-systems/default";
@@ -42,7 +46,7 @@
     ...
   } @ inputs: let
     # Define supported systems
-    supportedSystems = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+    supportedSystems = ["aarch64-darwin" "aarch64-linux" "x86_64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
     # Create overlays
