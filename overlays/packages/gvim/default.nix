@@ -3,10 +3,7 @@
   stdenv,
   neovim,
   neovide,
-  runCommand,
-  substituteInPlace,
-  bash,
-  netcat,
+  writeProgram,
 }:
 stdenv.mkDerivation rec {
   pname = "gvim";
@@ -14,49 +11,18 @@ stdenv.mkDerivation rec {
   name = pname;
 
   strictDeps = true;
-  buildInputs = [neovim neovide bash netcat];
+  buildInputs = [neovim neovide];
 
   unpackPhase = "true";
 
-  scriptContent = ''
-    #!${lib.getExe bash}
-    set -e
-    set -o pipefail
-
-    file_path="$1"
-    port=6666
-
-    if [ -n "$file_path" ]; then
-      @@nvim@@ --headless --listen 127.0.0.1:$port "$file_path" &
-    else
-      @@nvim@@ --headless --listen 127.0.0.1:$port &
-    fi
-
-    # Wait for nvim to start and listen on the port
-    while ! @@nc@@ -z 127.0.0.1 $port; do
-      sleep 0.1
-    done
-
-    # Spawn neovide and connect to the nvim server
-    @@neovide@@ --server=127.0.0.1:$port
-  '';
-
-  gvimScript = runCommand pname
+  src =
+    writeProgram "gvim"
     {
-      nativeBuildInputs = [substituteInPlace];
-      meta.mainProgram = pname;
+      inherit (stdenv) shell;
+      nvim = lib.getExe neovim;
+      neovide = lib.getExe neovide;
     }
-    '''
-      mkdir -p $out/bin
-      echo "${scriptContent}" > $out/bin/${pname}
-      chmod +x $out/bin/${pname}
-      substituteInPlace $out/bin/${pname} \
-        --replace '@@nvim@@' '${lib.getExe neovim}' \
-        --replace '@@neovide@@' '${lib.getExe neovide}' \
-        --replace '@@nc@@' '${lib.getExe netcat}'
-    ''';
-
-  src = gvimScript;
+    ./gvim.sh;
 
   installPhase = ''
     mkdir -p $out/bin
