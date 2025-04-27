@@ -17,6 +17,7 @@
 
     # kubernetes and container
     kubernetes-helm
+    kubectl
     k9s
     buildkit
     qemu
@@ -30,6 +31,7 @@
     skopeo
     earthly
     buildifier
+    awscli2
 
     # git
     git
@@ -99,7 +101,7 @@
     gnumake
     alejandra
     ueberzugpp
-    # bitwarden-cli
+    bitwarden-cli
     google-cloud-sdk
 
     # dix packages overlays
@@ -123,9 +125,9 @@
     lima
     nvtopPackages.full
     pinentry-all
-    coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun
+    # NOTE: on darwin we need to use Apple provided from xcrun
+    coreutils-full
     cudaPackages.cuda_nvcc
-    # llvmPackages.libcxxClang
   ];
 
   sessionVariables = let
@@ -380,12 +382,12 @@ in {
 
       # useful
       bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
-      # unlock-vault = ''${lib.getExe pkgs.bitwarden-cli} unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(${lib.getExe pkgs.bitwarden-cli} unlock --passwordenv BW_MASTER --raw)"}'';
-      # generate-password = "${lib.getExe pkgs.bitwarden-cli} generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
+      unlock-vault = ''bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
+      generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
       lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
       get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
-      # gpgpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
-      # sshpass = ''${lib.getExe pkgs.bitwarden-cli} get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
+      gpgpass = ''bw get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
+      sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
       nrb =
@@ -408,7 +410,7 @@ in {
       ipynb = "jupyter notebook --autoreload --debug";
       ipy = "ipython";
       jupytertext = "uvx jupytertext";
-      k = "kubectl";
+      k = ''${lib.getExe pkgs.kubectl}'';
       pinentry = lib.getExe (with pkgs; (
         if stdenv.isDarwin
         then pinentry_mac

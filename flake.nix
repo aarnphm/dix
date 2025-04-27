@@ -12,7 +12,7 @@
     nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # homebrew
-    nix-homebrew.url = "github:aarnphm/nix-homebrew/main";
+    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
     nix-homebrew.inputs.brew-src = {
@@ -42,6 +42,7 @@
     nix-darwin,
     nixpkgs,
     home-manager,
+    nix-homebrew,
     git-hooks,
     ...
   } @ inputs: let

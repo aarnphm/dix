@@ -48,11 +48,11 @@
       "pngpaste"
       "asciidoctor"
       "plantuml"
+      "bitwarden-cli"
     ];
     casks = [
       "arc"
       "google-chrome"
-      "firefox"
       "zotero"
       "discord"
       "zoom"
@@ -67,10 +67,8 @@
       "orbstack"
       "wezterm"
       "alt-tab"
-      "rio"
-      # TODO: for sequoia
-      # "raycast"
-      # "karabiner-elements"
+      "raycast"
+      "karabiner-elements"
     ];
     # nix run nixpkgs#mas -- search <apps>
     masApps = {
