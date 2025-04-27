@@ -184,13 +184,6 @@
             protobuf
             cairo
           ]
-          ++ lib.optionals stdenv.isLinux [
-            cudaPackages.cudatoolkit
-            cudaPackages.cudnn
-            cudaPackages.libcufile
-            cudaPackages.libcurand
-            cudaPackages.tensorrt
-          ]
         );
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
@@ -200,8 +193,6 @@
     // lib.optionalAttrs pkgs.stdenv.isLinux
     {
       GPG_TTY = "$(tty)";
-      CUDA_PATH = pkgs.cudaPackages.cudatoolkit;
-      CPATH = with pkgs; lib.makeIncludePath [cudaPackages.cudatoolkit];
     };
 
   tomlFormat = pkgs.formats.toml {};
