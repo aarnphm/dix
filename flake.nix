@@ -60,7 +60,6 @@
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
       (import ./overlays/30-derivations.nix)
-      (import ./overlays/50-darwin-applications.nix)
     ];
 
     # Function to get nixpkgs for a system
