@@ -40,7 +40,7 @@ in {
         autoload -U compinit && compinit
         autoload -U bashcompinit && bashcompinit
       '';
-      initExtraBeforeCompInit = ''
+      initContent = lib.mkOrder 550 ''
         ${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin
         eval "$(${lib.getExe pkgs.oh-my-posh} init zsh --config ${config.xdg.configHome}/oh-my-posh/config.toml)"
         source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh

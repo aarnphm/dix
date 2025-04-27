@@ -141,8 +141,8 @@ in {
             line-numbers = true;
             syntax-theme =
               if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-              then "OneHalfDark"
-              else "OneHalfLight";
+              then "gruvbox-dark"
+              else "gruvbox-light";
 
             interactive = {
               keep-plus-minus-markers = false;

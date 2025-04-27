@@ -20,8 +20,8 @@ with lib; {
         config = {
           theme =
             if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-            then "OneHalfDark"
-            else "OneHalfLight";
+            then "gruvbox-dark"
+            else "gruvbox-light";
           map-syntax = [
             ".ignore:Git Ignore"
             "config:Git Config"

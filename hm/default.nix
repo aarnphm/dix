@@ -117,7 +117,6 @@
     # apps
     pinentry_mac
     dix.pinentry-touchid
-    dix.Splice
   ];
   linuxPackages = with pkgs; [
     colima
@@ -125,7 +124,7 @@
     nvtopPackages.full
     pinentry-all
     coreutils-full # NOTE: on darwin we need to use Apple provided from xcrun
-    # ccache
+    cudaPackages.cuda_nvcc
     # llvmPackages.libcxxClang
   ];
 
@@ -150,9 +149,8 @@
       # Editors
       WORKSPACE = "${config.home.homeDirectory}/workspace";
       SHELL = getExe zsh;
-      VISUAL = "nvim"; # EDITOR is set in neovim.nix
+      VISUAL = getExe neovim;
       MANPAGER = "${getExe neovim} +Man!";
-      LSCOLORS = "ExFxBxDxCxegedabagacad";
 
       # Fzf
       FZF_CTRL_T_COMMAND = "${getExe fd} --hidden --follow --exclude .git";
