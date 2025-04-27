@@ -48,7 +48,6 @@
       "pngpaste"
       "asciidoctor"
       "plantuml"
-      "bitwarden-cli"
     ];
     casks = [
       "arc"

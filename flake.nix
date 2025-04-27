@@ -15,14 +15,9 @@
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
-    nix-homebrew.inputs.brew-src = {
-      url = "github:Homebrew/brew/master";
-      flake = false;
-    };
 
     # utilities
-    systems.url = "github:nix-systems/default";
-    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.url = "github:cachix/git-hooks.nix/master";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
 
     # config stuff
@@ -46,9 +41,7 @@
     git-hooks,
     ...
   } @ inputs: let
-    # Define supported systems
-    supportedSystems = ["aarch64-darwin" "aarch64-linux" "x86_64-linux"];
-    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+    forAllSystems = nixpkgs.lib.genAttrs ["aarch64-darwin" "aarch64-linux" "x86_64-linux"];
 
     # Create overlays
     overlays = [
@@ -61,7 +54,6 @@
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
       (import ./overlays/30-derivations.nix)
-      (import ./overlays/50-darwin-applications.nix)
     ];
 
     # Function to get nixpkgs for a system
@@ -153,7 +145,7 @@
               verbose = true;
             };
           }
-          ./darwin/appl-mbp16.nix
+          ./darwin
         ];
       };
     };

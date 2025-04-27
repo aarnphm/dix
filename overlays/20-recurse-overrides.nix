@@ -11,29 +11,14 @@ self: super: {
     then null
     else super.recurseIntoAttrs super.julia_19;
 
-  cudaPackages = super.recurseIntoAttrs (super.cudaPackages
-    // {
-      cudnn =
-        if super.stdenv.isDarwin
-        then null
-        else
-          (
-            super.cudaPackages.cudnn.overrideAttrs (oa: {
-              postFixup =
-                oa.postFixup
-                + ''
-                  rm $out/LICENSE
-                '';
-            })
-          );
-      tensorrt =
-        if super.stdenv.isDarwin
-        then null
-        else super.cudaPackages.tensorrt;
-    });
-
-  cudatoolkit =
+  bitwarden-cli =
     if super.stdenv.isDarwin
-    then null
-    else super.recurseIntoAttrs super.cudaPackages.cudatoolkit;
+    then
+      super.bitwarden-cli.overrideAttrs (
+        oldAttrs: {
+          nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [super.llvmPackages_18.stdenv.cc];
+          stdenv = super.llvmPackages_18.stdenv;
+        }
+      )
+    else super.recurseIntoAttrs super.bitwarden-cli;
 }

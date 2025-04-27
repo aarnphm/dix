@@ -7,9 +7,6 @@
 }: let
   filterNone = value: builtins.filter (x: x != null) value;
   packages = with pkgs; [
-    # nix
-    # cachix
-
     # editor
     vim
     bun
@@ -364,6 +361,7 @@ in {
       gbd = "${lib.getExe pkgs.git} branch -D";
       gprc = "${lib.getExe pkgs.gh} pr create";
       sync-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff && ${lib.getExe pkgs.git} push";
+      merge-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} merge FETCH_HEAD --ff && ${lib.getExe pkgs.git} push";
 
       # editor
       v = "${lib.getExe config.programs.neovim.finalPackage}";
@@ -374,7 +372,6 @@ in {
 
       # general
       cx = "chmod +x";
-      freeport = "sudo fuser -k $@";
       copy = lib.getExe pkgs.dix.unicopy;
 
       # bentoml
@@ -397,7 +394,6 @@ in {
       ned = ''
         ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
       '';
-      nflp = "nix-env -qaP | grep $1";
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";
       nstr = "nix-store --gc --print-roots";
