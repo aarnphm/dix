@@ -1,14 +1,13 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 with lib; let
   theme =
     if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-    then "${pkgs.alacritty-theme}/rose_pine.toml"
-    else "${pkgs.alacritty-theme}/rose_pine_dawn.toml";
+    then "${config.home.homeDirectory}/.config/alacritty/flexoki-dark.toml"
+    else "${config.home.homeDirectory}/.config/alacritty/flexoki-light.toml";
   family = "BerkeleyMono Nerd Font Mono"; # "BerkeleyMono Nerd Font Mono" | "JetBrainsMono NFM"
 in {
   options.alacritty = {

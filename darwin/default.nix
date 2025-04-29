@@ -2,6 +2,7 @@
   pkgs,
   lib,
   user,
+  systemVar,
   inputs,
   ...
 }: rec {
@@ -28,7 +29,7 @@
   nix-homebrew = {
     inherit user;
     enable = true;
-    enableRosetta = true;
+    enableRosetta = builtins.elem systemVar ["aarch64-darwin"];
     autoMigrate = true;
     extraEnv = {
       HOMEBREW_NO_ANALYTICS = "1";

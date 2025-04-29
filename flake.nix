@@ -40,130 +40,108 @@
     nix-homebrew,
     git-hooks,
     ...
-  } @ inputs: let
-    forAllSystems = nixpkgs.lib.genAttrs ["aarch64-darwin" "aarch64-linux" "x86_64-linux"];
-
-    # Create overlays
-    overlays = [
-      (self: super: {
-        dix = super.dix or {};
-        neovim-stable = super.neovim;
-      })
-      inputs.neovim.overlays.default
-      (import ./overlays/10-dev-overrides.nix)
-      (import ./overlays/20-packages-overrides.nix)
-      (import ./overlays/20-recurse-overrides.nix)
-      (import ./overlays/30-derivations.nix)
-    ];
-
-    # Function to get nixpkgs for a system
-    nixpkgsFor = system:
-      import nixpkgs {
-        inherit system overlays;
-        config = {
-          allowUnfree = true;
-          allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
-        };
-      };
-
-    # App builder
-    mkApp = {
-      drv,
-      name ? drv.pname or drv.name,
-      exePath ? drv.passthru.exePath or "/bin/${name}",
-    }: {
-      type = "app";
-      program = "${drv}${exePath}";
-    };
-  in {
-    # Per-system attributes
-    formatter = forAllSystems (
-      system: let
-        pkgs = nixpkgsFor system;
-      in
-        pkgs.alejandra
-    );
-
-    apps = forAllSystems (
-      system: let
-        pkgs = nixpkgsFor system;
-      in {
-        ubuntu-nvidia = mkApp {drv = pkgs.dix.ubuntu-nvidia;};
-      }
-    );
-
-    packages = forAllSystems (
-      system: let
-        pkgs = nixpkgsFor system;
-      in rec {
-        dix = pkgs.dix;
-        inherit (dix) openllm-ci;
-      }
-    );
-
-    checks = forAllSystems (
-      system: {
-        pre-commit-check = git-hooks.lib.${system}.run {
-          src = ./.;
-          hooks = {
-            alejandra.enable = true;
-            taplo.enable = true;
-          };
-        };
-      }
-    );
-
-    devShells = forAllSystems (
-      system: let
-        pkgs = nixpkgsFor system;
-      in {
-        default = pkgs.mkShell {
-          inherit (self.checks.${system}.pre-commit-check) shellHook;
-          buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
-        };
-      }
-    );
-
-    darwinConfigurations = let
-      user = "aarnphm";
-      system = "aarch64-darwin";
-      pkgs = nixpkgsFor system;
-      specialArgs = {inherit self inputs pkgs user;};
-    in {
-      appl-mbp16 = nix-darwin.lib.darwinSystem {
-        inherit system pkgs;
-        specialArgs = specialArgs;
-        modules = [
-          home-manager.darwinModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users."${user}".imports = [./hm];
-              backupFileExtension = "backup-from-hm";
-              extraSpecialArgs = specialArgs;
-              verbose = true;
+  } @ inputs:
+    builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
+      builtins.map (
+        system: let
+          pkgs = import nixpkgs {
+            inherit system;
+            # Create overlays
+            overlays = [
+              (self: super: {
+                dix = super.dix or {};
+                neovim-stable = super.neovim;
+              })
+              inputs.neovim.overlays.default
+              (import ./overlays/10-dev-overrides.nix)
+              (import ./overlays/20-packages-overrides.nix)
+              (import ./overlays/20-recurse-overrides.nix)
+              (import ./overlays/30-derivations.nix)
+            ];
+            config = {
+              allowUnfree = true;
+              allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
+              allowUnsupportedSystem = true;
             };
-          }
-          ./darwin
-        ];
-      };
-    };
+          };
+          # App builder
+          mkApp = {
+            drv,
+            name ? drv.pname or drv.name,
+            exePath ? drv.passthru.exePath or "/bin/${name}",
+          }: {
+            type = "app";
+            program = "${drv}${exePath}";
+          };
+        in {
+          formatter.${system} = pkgs.alejandra;
+          app.${system} = {
+            ubuntu-nvidia = mkApp {drv = pkgs.dix.ubuntu-nvidia;};
+          };
+          packages.${system} = {
+            dix = pkgs.dix;
+          };
+          checks.${system} = {
+            pre-commit-check = git-hooks.lib.${system}.run {
+              src = ./.;
+              hooks = {
+                alejandra.enable = true;
+                taplo.enable = true;
+              };
+            };
+          };
 
-    homeConfigurations = let
-      user = "paperspace";
-      system = "x86_64-linux";
-      pkgs = nixpkgsFor system;
-      specialArgs = {inherit self inputs pkgs user;};
-    in {
-      paperspace = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = specialArgs;
-        modules = [
-          nix.homeModules.default
-          ./hm
-        ];
-      };
-    };
-  };
+          devShells.${system} = {
+            default = pkgs.mkShell {
+              inherit (self.checks.${system}.pre-commit-check) shellHook;
+              buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
+            };
+          };
+
+          darwinConfigurations = let
+            user = "aarnphm";
+            specialArgs = {
+              inherit self inputs pkgs user;
+              systemVar = system;
+            };
+          in {
+            appl-mbp16 = nix-darwin.lib.darwinSystem {
+              inherit system pkgs;
+              specialArgs = specialArgs;
+              modules = [
+                home-manager.darwinModules.home-manager
+                {
+                  home-manager = {
+                    useGlobalPkgs = true;
+                    useUserPackages = true;
+                    users."${user}".imports = [./hm];
+                    backupFileExtension = "backup-from-hm";
+                    extraSpecialArgs = specialArgs;
+                    verbose = true;
+                  };
+                }
+                ./darwin
+              ];
+            };
+          };
+
+          homeConfigurations = let
+            user = "paperspace";
+            specialArgs = {
+              inherit self inputs pkgs user;
+              systemVar = system;
+            };
+          in {
+            paperspace = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              extraSpecialArgs = specialArgs;
+              modules = [
+                nix.homeModules.default
+                ./hm
+              ];
+            };
+          };
+        }
+      ) ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"]
+    );
 }
