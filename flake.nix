@@ -40,24 +40,86 @@
     nix-homebrew,
     git-hooks,
     ...
-  } @ inputs:
-    builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
+  } @ inputs: let
+    # Create overlays
+    overlays = [
+      (self: super: {
+        dix = super.dix or {};
+        neovim-stable = super.neovim;
+      })
+      inputs.neovim.overlays.default
+      (import ./overlays/10-dev-overrides.nix)
+      (import ./overlays/20-packages-overrides.nix)
+      (import ./overlays/20-recurse-overrides.nix)
+      (import ./overlays/30-derivations.nix)
+    ];
+  in
+    builtins.foldl' nixpkgs.lib.recursiveUpdate {
+      darwinConfigurations = let
+        user = "aarnphm";
+        system = "aarch64-darwin";
+        pkgs = import nixpkgs {
+          inherit system overlays;
+          config = {
+            allowUnfree = true;
+            allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
+            allowUnsupportedSystem = true;
+          };
+        };
+        specialArgs = {
+          inherit self inputs pkgs user;
+          systemVar = system;
+        };
+      in {
+        appl-mbp16 = nix-darwin.lib.darwinSystem {
+          inherit system pkgs;
+          specialArgs = specialArgs;
+          modules = [
+            home-manager.darwinModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users."${user}".imports = [./hm];
+                backupFileExtension = "backup-from-hm";
+                extraSpecialArgs = specialArgs;
+                verbose = true;
+              };
+            }
+            ./darwin
+          ];
+        };
+      };
+
+      homeConfigurations = let
+        user = "paperspace";
+        system = "x86_64-linux";
+        pkgs = import nixpkgs {
+          inherit system overlays;
+          config = {
+            allowUnfree = true;
+            allowBroken = true;
+          };
+        };
+        specialArgs = {
+          inherit self inputs pkgs user;
+          systemVar = system;
+        };
+      in {
+        paperspace = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = specialArgs;
+          modules = [
+            nix.homeModules.default
+            ./hm
+          ];
+        };
+      };
+    } (
       builtins.map (
         system: let
           pkgs = import nixpkgs {
-            inherit system;
-            # Create overlays
-            overlays = [
-              (self: super: {
-                dix = super.dix or {};
-                neovim-stable = super.neovim;
-              })
-              inputs.neovim.overlays.default
-              (import ./overlays/10-dev-overrides.nix)
-              (import ./overlays/20-packages-overrides.nix)
-              (import ./overlays/20-recurse-overrides.nix)
-              (import ./overlays/30-derivations.nix)
-            ];
+            inherit system overlays;
             config = {
               allowUnfree = true;
               allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
@@ -95,50 +157,6 @@
             default = pkgs.mkShell {
               inherit (self.checks.${system}.pre-commit-check) shellHook;
               buildInputs = self.checks.${system}.pre-commit-check.enabledPackages;
-            };
-          };
-
-          darwinConfigurations = let
-            user = "aarnphm";
-            specialArgs = {
-              inherit self inputs pkgs user;
-              systemVar = system;
-            };
-          in {
-            appl-mbp16 = nix-darwin.lib.darwinSystem {
-              inherit system pkgs;
-              specialArgs = specialArgs;
-              modules = [
-                home-manager.darwinModules.home-manager
-                {
-                  home-manager = {
-                    useGlobalPkgs = true;
-                    useUserPackages = true;
-                    users."${user}".imports = [./hm];
-                    backupFileExtension = "backup-from-hm";
-                    extraSpecialArgs = specialArgs;
-                    verbose = true;
-                  };
-                }
-                ./darwin
-              ];
-            };
-          };
-
-          homeConfigurations = let
-            user = "paperspace";
-            specialArgs = {
-              inherit self inputs pkgs user;
-              systemVar = system;
-            };
-          in {
-            paperspace = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              extraSpecialArgs = specialArgs;
-              modules = [
-                nix.homeModules.default
-                ./hm
-              ];
             };
           };
         }
