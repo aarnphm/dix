@@ -14,13 +14,12 @@ self: super: {
   isArm = builtins.match "aarch64-.*" super.stdenv.hostPlatform.system != null;
 
   writeProgram = name: env: src:
-    super.runCommand name env ''
-      export PATH=${super.lib.makeBinPath [super.coreutils super.gnused]}:$PATH
-      dst=$out/bin/${name}
-      mkdir -p $(dirname $dst)
-      substitute ${src} $dst --subst-var-by SHELL ${super.stdenv.shell} ${builtins.concatStringsSep " " (super.lib.mapAttrsToList (n: v: "--subst-var-by '${n}' '${toString v}'") env)}
-      chmod +x $dst
-    '';
+    super.substituteAll ({
+        inherit name src;
+        dir = "bin";
+        isExecutable = true;
+      }
+      // env);
 
   installDmg = {
     name,
