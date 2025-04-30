@@ -16,10 +16,12 @@ in
     src =
       writeProgram pname
       {
-        inherit (stdenv) shell;
-        inherit pname;
-        bw = getExe bitwarden-cli;
-        jq = getExe jq;
+        replacements = {
+          inherit (stdenv) shell;
+          inherit pname;
+          bw = getExe bitwarden-cli;
+          jq = getExe jq;
+        };
       }
       ./secrets.sh;
     strictDeps = true;

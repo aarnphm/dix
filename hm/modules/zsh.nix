@@ -7,12 +7,14 @@
 with lib; let
   concatStringsSepNewLine = iterables: concatStringsSep "\n" iterables;
 
-  fzfComplete =
-    pkgs.writeProgram "fzf_complete_realpath.zsh" {
-      bat = lib.getExe pkgs.bat;
-      hexyl = lib.getExe pkgs.hexyl;
-      tree = lib.getExe pkgs.tree;
-      catimg = lib.getExe pkgs.catimg;
+  fzfComplete = with pkgs;
+    writeProgram "fzf_complete_realpath.zsh" {
+      replacements = {
+        bat = lib.getExe bat;
+        hexyl = lib.getExe hexyl;
+        tree = lib.getExe tree;
+        catimg = lib.getExe catimg;
+      };
       dir = ".";
     }
     ./config/fzf_complete_realpath.zsh.in;

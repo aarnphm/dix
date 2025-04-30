@@ -18,9 +18,11 @@ stdenv.mkDerivation rec {
   src =
     writeProgram "gvim"
     {
-      inherit (stdenv) shell;
-      nvim = lib.getExe neovim;
-      neovide = lib.getExe neovide;
+      replacements = {
+        inherit (stdenv) shell;
+        nvim = lib.getExe neovim;
+        neovide = lib.getExe neovide;
+      };
     }
     ./gvim.sh;
 

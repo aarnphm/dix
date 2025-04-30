@@ -14,18 +14,20 @@ stdenv.mkDerivation (finalAttrs: {
   src =
     writeProgram "copy"
     {
-      inherit (stdenv) shell;
-      xclip = lib.getExe xclip;
-      pbcopy = lib.getExe (
-        runCommand "impureHostDarwinCopy"
-        {
-          meta = {mainProgram = "pbcopy";};
-        }
-        ''
-          mkdir -p $out/bin
-          ln -s /usr/bin/pbcopy $out/bin
-        ''
-      );
+      replacements = {
+        inherit (stdenv) shell;
+        xclip = lib.getExe xclip;
+        pbcopy = lib.getExe (
+          runCommand "impureHostDarwinCopy"
+          {
+            meta = {mainProgram = "pbcopy";};
+          }
+          ''
+            mkdir -p $out/bin
+            ln -s /usr/bin/pbcopy $out/bin
+          ''
+        );
+      };
     }
     ./copy.sh;
 

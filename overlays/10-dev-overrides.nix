@@ -14,7 +14,7 @@ self: super: {
   isArm = builtins.match "aarch64-.*" super.stdenv.hostPlatform.system != null;
 
   writeProgram = name: env: src:
-    super.substituteAll ({
+    super.replaceVarsWith ({
         inherit name src;
         dir = "bin";
         isExecutable = true;
