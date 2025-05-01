@@ -92,7 +92,7 @@
       };
 
       homeConfigurations = let
-        user = "paperspace";
+        user = "ubuntu";
         system = "x86_64-linux";
         pkgs = import nixpkgs {
           inherit system overlays;
@@ -106,7 +106,7 @@
           systemVar = system;
         };
       in {
-        paperspace = home-manager.lib.homeManagerConfiguration {
+        ubuntu = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = specialArgs;
           modules = [
