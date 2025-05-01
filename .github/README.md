@@ -15,7 +15,7 @@ nix run nix-darwin -- switch --flake github:aarnphm/dix#appl-mbp16
 # On Darwin, install additional Raycast, Karabiner-Element
 
 # build for home-manager
-nix run home-manager -- switch --flake github:aarnphm/dix#paperspace
+nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu
 ```
 
 Finally, clone neovim:
