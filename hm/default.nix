@@ -388,8 +388,8 @@ in {
       # nix-commands
       nrb =
         if pkgs.stdenv.isDarwin
-        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" -v --show-trace''
-        else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace'';
+        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" --show-trace -L''
+        else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace -L'';
       ned = ''
         ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
       '';
