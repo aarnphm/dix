@@ -402,6 +402,7 @@ setup_instance() {
 
 	@scp@ -i "$SSH_KEY" "$HOME/bw.pass" "${REMOTE_USER}@${ip_address}:~/bw.pass"
 	@scp@ -i "$SSH_KEY" "$HOME/.ssh/id_ed25519-github" "${REMOTE_USER}@${ip_address}:~/.ssh/id_ed25519-github"
+	@scp@ -i "$SSH_KEY" "$HOME/gpg-private-lambdalabs.key" "${REMOTE_USER}@${ip_address}:~/gpg-private-lambdalabs.key"
 	@scp@ -i "$SSH_KEY" "$BENTOML_HOME/.yatai.yaml" "${REMOTE_USER}@${ip_address}:~/.yatai.yaml"
 	@scp@ -i "$SSH_KEY" "$local_script_path" "${REMOTE_USER}@${ip_address}:${remote_script_path}"
 
