@@ -50,21 +50,10 @@ else
 	echo "Warning: Could not find nix profile to source after HM switch." >&2
 fi
 
-echo "--- [Remote Setup] Authenticating GitHub CLI --- "
-if command -v gh &>/dev/null; then
-	if ! gh auth status &>/dev/null; then
-		echo "Logging into GitHub CLI using token"
-		gh auth login -p ssh --with-token --insecure-storage
-		gh auth status
-	else
-		echo "GitHub CLI already authenticated"
-	fi
-fi
+echo "--- [Remote Setup] Authenticating GitHub CLI and setup workspace --- "
 
-echo "--- [Remote Setup] Cloning Repositories --- "
 WORKSPACE_DIR="$HOME/workspace"
 mkdir -p "$WORKSPACE_DIR"
-pushd "$WORKSPACE_DIR" >/dev/null
 
 REPOS=(
 	"aarnphm/avante.nvim:neovim-plugins/avante.nvim"
@@ -74,7 +63,17 @@ REPOS=(
 	"bentoml/openllm-models:openllm-models"
 )
 
+pushd "$WORKSPACE_DIR" >/dev/null
+
 if command -v gh &>/dev/null; then
+	if ! gh auth status &>/dev/null; then
+		echo "Logging into GitHub CLI using token"
+		echo "#GH_TOKEN#" | gh auth login -p ssh --with-token
+		gh auth status
+	else
+		echo "GitHub CLI already authenticated"
+	fi
+
 	for item in "${REPOS[@]}"; do
 		IFS=":" read -r repo_path target_dir <<<"$item"
 		target_full_path="$WORKSPACE_DIR/$target_dir"
@@ -93,13 +92,11 @@ if command -v gh &>/dev/null; then
 	else
 		gh repo clone aarnphm/editor "$HOME/.config/nvim"
 	fi
-else
-	echo "Warning: gh command not found. Cannot clone repositories." >&2
 fi
 
 popd >/dev/null
 
-mkdir -p $BENTOML_HOME && mv ~/.yatai.yaml $BENTOML_HOME/.yatai.yaml
+mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
 
 echo "--- [Remote Setup] Changing shell for #REMOTE_USER# --- "
 echo "toor" | sudo chsh -s /usr/bin/zsh #REMOTE_USER#

@@ -380,37 +380,28 @@ setup_instance() {
 		exit 1
 	fi
 
-	# local gh_token
-	# gh_token=$(@bw@ get notes pat-lambda)
-	# if [[ -z "$gh_token" ]]; then
-	# 	log_error "Failed to retrieve GITHUB_TOKEN (item 'pat-lambda' password) from Bitwarden." >&2
-	# 	exit 1
-	# fi
-
-	local bw_pass_tmp
-	bw_pass_tmp=$(mktemp)
-	trap 'rm -f "$bw_pass_tmp"' EXIT # Ensure cleanup
-	if ! cat ~/bw.pass >"$bw_pass_tmp"; then
-		log_error "Failed to retrieve bw.pass (item 'bw.pass' notes) from Bitwarden." >&2
-		exit 1
-	fi
-	if [[ ! -s "$bw_pass_tmp" ]]; then
-		log_error "Retrieved bw.pass notes are empty." >&2
+	local gh_token
+	gh_token=$(@bw@ get notes pat-lambda)
+	if [[ -z "$gh_token" ]]; then
+		log_error "Failed to retrieve GITHUB_TOKEN (item 'pat-lambda' notes) from Bitwarden." >&2
 		exit 1
 	fi
 
 	local remote_script_path="/tmp/setup_remote_${instance_name}.sh"
 	local local_script_path
 	local_script_path=$(mktemp)
-	trap 'rm -f "$bw_pass_tmp" "$local_script_path"' EXIT # Add local script to cleanup
+	trap 'rm -f "$local_script_path"' EXIT # Add local script to cleanup
 
 	# Substitute variables in the template
-	sed "s|#REMOTE_USER#|$REMOTE_USER|g" @LAMBDA_SETUP_TEMPLATE@ >"$local_script_path"
+	sed -e "s|#REMOTE_USER#|$REMOTE_USER|g" \
+		-e "s|#GH_TOKEN#|$gh_token|g" \
+		@LAMBDA_SETUP_TEMPLATE@ >"$local_script_path"
 	chmod +x "$local_script_path"
 	log_debug "Remote script generated at $local_script_path"
 
-	@scp@ -i "$SSH_KEY" "$bw_pass_tmp" "${REMOTE_USER}@${ip_address}:~/bw.pass"
-	@scp@ -i "$SSH_KEY" "$BENTOML_HOME/.yatai.yaml" "${REMOTE_USER}@${ip_address}:~/yatai.yaml"
+	@scp@ -i "$SSH_KEY" "$HOME/bw.pass" "${REMOTE_USER}@${ip_address}:~/bw.pass"
+	@scp@ -i "$SSH_KEY" "$HOME/.ssh/id_ed25519-github" "${REMOTE_USER}@${ip_address}:~/.ssh/id_ed25519-github"
+	@scp@ -i "$SSH_KEY" "$BENTOML_HOME/.yatai.yaml" "${REMOTE_USER}@${ip_address}:~/.yatai.yaml"
 	@scp@ -i "$SSH_KEY" "$local_script_path" "${REMOTE_USER}@${ip_address}:${remote_script_path}"
 
 	log_info "Executing remote setup script on '$instance_name'... This may take a while."
