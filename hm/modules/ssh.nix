@@ -30,22 +30,6 @@ with lib; {
             };
           }
           // lib.optionalAttrs pkgs.stdenv.isDarwin {
-            "a100" = {
-              hostname = "184.105.208.165";
-              user = "paperspace";
-              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
-              setEnv = {
-                TERM = ''xterm-256color'';
-              };
-            };
-            "h100" = {
-              hostname = "209.20.159.165";
-              user = "ubuntu";
-              identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
-              setEnv = {
-                TERM = ''xterm-256color'';
-              };
-            };
             "sam-wafer" = {
               hostname = "75.10.7.20";
               user = "sam";

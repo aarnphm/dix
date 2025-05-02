@@ -123,7 +123,6 @@
     pinentry-all
     # NOTE: on darwin we need to use Apple provided from xcrun
     coreutils-full
-    cudaPackages.cuda_nvcc
   ];
 
   sessionVariables = let
