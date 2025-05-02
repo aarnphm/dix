@@ -112,7 +112,7 @@ create_instance() {
 	local requested_instance_type_name="gpu_${num_gpus}x_${gpu_type}"
 	local instance_name="aaron-${num_gpus}_${gpu_type}"
 
-	log_info "Checking for existing instance named '$instance_name'..."
+	log_info "Checking for existing instance named '$instance_name'"
 	local existing_instance
 	existing_instance=$(get_instance_by_exact_name "$instance_name")
 	if [[ -n "$existing_instance" ]]; then
@@ -123,7 +123,7 @@ create_instance() {
 		exit 0
 	fi
 
-	log_info "Looking for instance type: ${requested_instance_type_name}..."
+	log_info "Looking for instance type: ${requested_instance_type_name}"
 
 	# Fetch details for the specific instance type requested
 	local instance_type_details
@@ -182,12 +182,12 @@ create_instance() {
 
 	local filesystem_name="aaron-${region}"
 
-	log_info "Checking for existing filesystem '$filesystem_name' in region '$region'..."
+	log_info "Checking for existing filesystem '$filesystem_name' in region '$region'"
 	local fs_name
 	fs_name=$(api_request GET "/file-systems" | @jq@ -r --arg name "$filesystem_name" '.data[] | select(.name == $name) | .name')
 
 	if [[ -z "$fs_name" ]]; then
-		log_info "Filesystem '$filesystem_name' not found. Creating it..."
+		log_info "Filesystem '$filesystem_name' not found. Creating it"
 		local create_fs_payload
 		create_fs_payload=$(jq -n --arg name "$filesystem_name" --arg region "$region" \
 			'{name: [$name], region_name: $region}')
@@ -201,7 +201,7 @@ create_instance() {
 		log_info "Using existing filesystem '$fs_name'"
 	fi
 
-	echo "Creating instance '$instance_name' ($instance_type_name) in region '$region' attached to filesystem '$fs_name'..."
+	log_info "Creating instance '$instance_name' ($instance_type_name) in region '$region' attached to filesystem '$fs_name'"
 
 	local create_payload
 	create_payload=$(jq -n --arg region "$region" --arg type "$instance_type_name" --arg name "$instance_name" --arg fs "$fs_name" \
@@ -218,7 +218,7 @@ create_instance() {
 		exit 1
 	fi
 
-	log_info "Instance launch initiated with ID: $instance_id. Waiting for IP address..."
+	log_info "Instance launch initiated with ID: $instance_id. Waiting for IP address"
 
 	local ip_address=""
 	local status=""
@@ -227,7 +227,7 @@ create_instance() {
 		instance_info=$(api_request GET "/instances" | @jq@ -r --arg id "$instance_id" '.data[] | select(.id == $id)')
 
 		if [[ -z "$instance_info" ]]; then
-			log_warn "Instance info not found in list yet. Waiting... ($i/20)"
+			log_warn "Instance info not found in list yet. Waiting ($i/20)"
 			sleep 30
 			continue
 		fi
@@ -262,7 +262,7 @@ connect_instance() {
 		log_info "Usage: lambda connect <instance_name>" >&2
 		exit 1
 	fi
-	log_info "Looking for instance with name '$instance_name'..."
+	log_info "Looking for instance with name '$instance_name'"
 
 	local instance_info
 	instance_info=$(get_instance_by_exact_name "$instance_name")
@@ -291,7 +291,7 @@ connect_instance() {
 		exit 1
 	fi
 
-	log_info "Connecting to instance '$instance_name' (${ip_address})..."
+	log_info "Connecting to instance '$instance_name' (${ip_address})"
 	@ssh@ -i "$SSH_KEY" "${REMOTE_USER}@${ip_address}"
 }
 
@@ -304,7 +304,7 @@ delete_instance() {
 		exit 1
 	fi
 
-	log_info "Looking for instance with name '$instance_name' to delete..."
+	log_info "Looking for instance with name '$instance_name' to delete"
 	local instance_info
 	instance_info=$(get_instance_by_exact_name "$instance_name")
 
@@ -318,7 +318,7 @@ delete_instance() {
 	local instance_status
 	instance_status=$(echo "$instance_info" | @jq@ -r '.status')
 
-	log_warn "Found instance '$instance_name' (ID: $instance_id, Status: $instance_status). Proceeding with termination..."
+	log_warn "Found instance '$instance_name' (ID: $instance_id, Status: $instance_status). Proceeding with termination"
 
 	local delete_payload
 	delete_payload=$(jq -n --argjson ids "[\"$instance_id\"]" '{instance_ids: $ids}')
@@ -348,7 +348,7 @@ setup_instance() {
 		exit 1
 	fi
 
-	log_info "Looking for instance with name '$instance_name'..."
+	log_info "Looking for instance with name '$instance_name'"
 	local instance_info
 	instance_info=$(get_instance_by_exact_name "$instance_name")
 
@@ -373,7 +373,7 @@ setup_instance() {
 		exit 1
 	fi
 
-	log_info "Preparing setup for instance '$instance_name' (${ip_address})..."
+	log_info "Preparing setup for instance '$instance_name' (${ip_address})"
 
 	if ! @bw@ login --check --quiet; then
 		log_error "Bitwarden vault is locked or not logged in. Please log in using 'bw login'." >&2
@@ -405,12 +405,12 @@ setup_instance() {
 	@scp@ -i "$SSH_KEY" "$BENTOML_HOME/.yatai.yaml" "${REMOTE_USER}@${ip_address}:~/.yatai.yaml"
 	@scp@ -i "$SSH_KEY" "$local_script_path" "${REMOTE_USER}@${ip_address}:${remote_script_path}"
 
-	log_info "Executing remote setup script on '$instance_name'... This may take a while."
+	log_info "Executing remote setup script on '$instance_name' This may take a while."
 	# Use -t to allocate a pseudo-tty, which might help with interactive prompts if any occur (though shouldn't)
 	@ssh@ -i "$SSH_KEY" -t "${REMOTE_USER}@${ip_address}" "INSTANCE_ID=${instance_name} bash ${remote_script_path}"
 
 	log_info "Setup script finished execution on '$instance_name'."
-	log_info "Cleaning up temporary files..."
+	log_info "Cleaning up temporary files"
 
 	log_info "Setup complete for instance '$instance_name'. You may need to reconnect to see all changes."
 }
