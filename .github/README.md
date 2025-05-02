@@ -16,6 +16,12 @@ nix run nix-darwin -- switch --flake github:aarnphm/dix#appl-mbp16 --show-trace 
 
 # build for home-manager
 nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L
+
+# login
+gh auth login -p ssh
+
+# rustup
+rustup toolchain install nightly
 ```
 
 Finally, clone neovim:
