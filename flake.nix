@@ -147,12 +147,15 @@
           };
         in {
           formatter.${system} = pkgs.alejandra;
-          app.${system} = {
+          apps.${system} = {
             ubuntu-nvidia = mkApp {
               drv = pkgs.dix.ubuntu-nvidia;
             };
             lambda = mkApp {
               drv = pkgs.dix.lambda;
+            };
+            aws-credentials = mkApp {
+              drv = pkgs.dix.aws-credentials;
             };
           };
           packages.${system} = with pkgs; {inherit dix;};

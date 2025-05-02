@@ -3,7 +3,7 @@
   jq,
   lib,
   writeProgram,
-  dix,
+  bitwarden-cli,
   makeWrapper,
   bash,
 }: let
