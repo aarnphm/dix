@@ -4,26 +4,38 @@
   inputs = {
     # system stuff
     nixpkgs.url = "github:NixOS/nixpkgs/master";
-    nix-darwin.url = "github:LnL7/nix-darwin/master";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/master";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nix.url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
-    nix.inputs.nixpkgs.follows = "nixpkgs";
-
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix = {
+      url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # homebrew
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
-    nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
-    nix-homebrew.inputs.nix-darwin.follows = "nix-darwin";
-
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nix-darwin.follows = "nix-darwin";
+      };
+    };
     # utilities
-    git-hooks.url = "github:cachix/git-hooks.nix/master";
-    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
-
-    # config stuff
-    neovim.url = "github:nix-community/neovim-nightly-overlay";
-    neovim.inputs.nixpkgs.follows = "nixpkgs";
-    neovim.inputs.git-hooks.follows = "git-hooks";
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    neovim = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        git-hooks.follows = "git-hooks";
+      };
+    };
   };
 
   nixConfig = {
@@ -37,7 +49,6 @@
     nix-darwin,
     nixpkgs,
     home-manager,
-    nix-homebrew,
     git-hooks,
     ...
   } @ inputs: let
@@ -62,7 +73,6 @@
           inherit system overlays;
           config = {
             allowUnfree = true;
-            allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
             allowUnsupportedSystem = true;
           };
         };
@@ -72,8 +82,7 @@
         };
       in {
         appl-mbp16 = nix-darwin.lib.darwinSystem {
-          inherit system pkgs;
-          specialArgs = specialArgs;
+          inherit system pkgs specialArgs;
           modules = [
             home-manager.darwinModules.home-manager
             {
@@ -140,15 +149,13 @@
           app.${system} = {
             ubuntu-nvidia = mkApp {drv = pkgs.dix.ubuntu-nvidia;};
           };
-          packages.${system} = {
-            dix = pkgs.dix;
-          };
+          packages.${system} = with pkgs; {inherit dix;};
           checks.${system} = {
             pre-commit-check = git-hooks.lib.${system}.run {
               src = ./.;
               hooks = {
                 alejandra.enable = true;
-                taplo.enable = true;
+                statix.enable = true;
               };
             };
           };

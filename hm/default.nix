@@ -11,6 +11,7 @@
     vim
     bun
     zed-editor
+    uv
 
     # kubernetes and container
     kubernetes-helm
@@ -99,6 +100,7 @@
     alejandra
     ueberzugpp
     google-cloud-sdk
+    bitwarden-cli
 
     # dix packages overlays
     dix.git-forest
@@ -140,8 +142,6 @@
       BENTOML_HOME = "${config.home.sessionVariables.XDG_DATA_HOME}/bentoml";
       BENTOML_DO_NOT_TRACK = "True";
       BENTOML_BUNDLE_LOCAL_BUILD = "True";
-      OPENLLM_DEV_BUILD = "True";
-      OPENLLM_DISABLE_WARNING = "False";
 
       # Editors
       WORKSPACE = "${config.home.homeDirectory}/workspace";
@@ -165,22 +165,6 @@
         "$PATH"
       ];
       UV_COMPILE_BYTECODE = 1;
-
-      # Specifics to build
-      LD_LIBRARY_PATH = with pkgs;
-        lib.makeLibraryPath (
-          []
-          ++ lib.optionals stdenv.isDarwin
-          [
-            (lib.getDev openssl)
-            (lib.getDev zlib)
-            (lib.getDev xz)
-            (lib.getDev readline)
-            stdenv.cc.cc.lib
-            protobuf
-            cairo
-          ]
-        );
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # misc
@@ -311,7 +295,7 @@ in {
       "......" = ".....;..";
 
       # ls-replacement
-      ls = "${lib.getExe pkgs.eza}";
+      ls = lib.getExe pkgs.eza;
       ll = "${lib.getExe pkgs.eza} -Ml --almost-all --group-directories-first -sName --icons=always";
       sudo = "nocorrect sudo";
       tree = "${lib.getExe pkgs.eza} --almost-all --group-directories-first --tree";
@@ -321,8 +305,8 @@ in {
       rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";
 
       # git
-      g = "${lib.getExe pkgs.git}";
-      gcl = "${lib.getExe pkgs.gh} clone";
+      g = lib.getExe pkgs.git;
+      gcl = "${lib.getExe pkgs.gh} repo clone";
       ga = "${lib.getExe pkgs.git} add";
       gaa = "${lib.getExe pkgs.git} add .";
       gsw = "${lib.getExe pkgs.git} switch";
@@ -363,21 +347,33 @@ in {
       merge-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} merge FETCH_HEAD --ff && ${lib.getExe pkgs.git} push";
 
       # editor
-      v = "${lib.getExe config.programs.neovim.finalPackage}";
-      vi = "${lib.getExe pkgs.vim}";
-      nv-stable = "${lib.getExe pkgs.neovim-stable}";
-      # gv = "${lib.getExe pkgs.dix.gvim}";
+      v = lib.getExe config.programs.neovim.finalPackage;
+      vi = lib.getExe pkgs.vim;
+      nv-stable = lib.getExe pkgs.neovim-stable;
+      gv = lib.getExe pkgs.dix.gvim;
       f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
 
       # general
       cx = "chmod +x";
       copy = lib.getExe pkgs.dix.unicopy;
 
-      # bentoml
-      b = "uvx bentoml";
+      # aliases
+      pip = ''${lib.getExe pkgs.uv} pip'';
+      b = ''${lib.getExe' pkgs.uv "uvx"} bentoml'';
+      k = lib.getExe pkgs.kubectl;
+      cat = lib.getExe pkgs.bat;
+      hf = ''${lib.getExe' pkgs.uv "uvx"} --with 'huggingface-hub[cli]' huggingface-cli'';
+      jupytertext = ''${lib.getExe' pkgs.uv "uvx"} jupytertext'';
+      ipynb = ''${lib.getExe' pkgs.uv "uvx"} jupyter notebook --autoreload --debug'';
+      ipy = "ipython --autoindent --ext=autoreload -c='%autoreload 2'";
+      pinentry = lib.getExe (
+        if pkgs.stdenv.isDarwin
+        then pkgs.pinentry_mac
+        else pkgs.pinentry-all
+      );
 
       # useful
-      bwpass = "[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}";
+      bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}'';
       unlock-vault = ''bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
       generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
       lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
@@ -386,31 +382,11 @@ in {
       sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
 
       # nix-commands
-      nrb =
-        if pkgs.stdenv.isDarwin
-        then ''darwin-rebuild switch --flake "$WORKSPACE/dix#appl-mbp16" --show-trace -L''
-        else ''home-manager switch --flake "$WORKSPACE/dix#paperspace" --show-trace -L'';
-      ned = ''
-        ${lib.getExe pkgs.fd} --hidden --exclude .git --type f ${config.home.homeDirectory}/workspace/dix | FZF_DEFAULT_OPTS=$(__fzf_defaults ""  "--preview '_fzf_complete_realpath {}' +m ''${FZF_CTRL_F_OPTS-}") FZF_DEFAULT_OPTS_FILE="" __fzfcmd | xargs ${lib.getExe pkgs.neovim}
-      '';
       ncg = "nix-collect-garbage -d";
       nsp = "nix-shell --pure";
       nstr = "nix-store --gc --print-roots";
 
-      # program opts
-      cat = "${lib.getExe pkgs.bat}";
-      # python
-      pip = "uv pip";
       python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
-      ipynb = "jupyter notebook --autoreload --debug";
-      ipy = "ipython";
-      jupytertext = "uvx jupytertext";
-      k = ''${lib.getExe pkgs.kubectl}'';
-      pinentry = lib.getExe (with pkgs; (
-        if stdenv.isDarwin
-        then pinentry_mac
-        else pinentry-all
-      ));
     };
   };
 }

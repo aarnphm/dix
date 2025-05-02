@@ -48,14 +48,14 @@ in {
           font = {
             size = 14;
             normal = {
-              family = family;
+              inherit family;
               style = "Regular";
             };
             bold = {
-              family = family;
+              inherit family;
             };
             italic = {
-              family = family;
+              inherit family;
             };
             offset = {
               x = 0;

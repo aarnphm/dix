@@ -35,12 +35,11 @@ self: super: {
   }:
     with super;
       stdenv.mkDerivation {
+        inherit src sourceRoot postInstall;
         name = "${name}-${version}";
         version = "${version}";
-        src = src;
         buildInputs = [unzip];
         nativeBuildInputs = [installShellFiles] ++ nativeBuildInputs;
-        sourceRoot = sourceRoot;
         phases = ["unpackPhase" "installPhase"];
         unpackCmd = ''
           echo "File to unpack: $curSrc"
@@ -74,10 +73,8 @@ self: super: {
 
           runHook postInstall
         '';
-        postInstall = postInstall;
         meta = with self.lib; {
-          homepage = homepage;
-          description = description;
+          inherit homepage description;
           maintainers = with maintainers; [aarnphm];
           platforms = platforms.darwin;
         };

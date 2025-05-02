@@ -1,10 +1,11 @@
 self: super: {
   dix = super.dix or {};
   bitwarden-cli = super.bitwarden-cli.overrideAttrs (
-    oldAttrs: {
-      nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [super.llvmPackages_18.stdenv.cc];
-      stdenv = super.llvmPackages_18.stdenv;
-    }
+    oldAttrs:
+      with super.llvmPackages_18; {
+        inherit stdenv;
+        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [stdenv.cc];
+      }
   );
   gitstatus = super.gitstatus.overrideAttrs (oldAttrs: {
     installPhase =

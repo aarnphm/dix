@@ -1,5 +1,5 @@
 #:schema https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
-version = 2
+version = 3
 final_space = true
 
 [transient_prompt]
@@ -14,59 +14,65 @@ foreground_templates = [
 alignment = "left"
 type = "prompt"
 
-[[blocks.segments]]
-foreground = "lightBlue"
-foreground_templates = ["{{ if .Root }}lightRed{{ end }}"]
-style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>┌──(</>{{ .UserName }}{{ if .Root }}💀{{ else }}@{{ end }}{{ .HostName }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>)</>"
-type = "session"
+  [[blocks.segments]]
+  foreground = "lightBlue"
+  foreground_templates = ["{{ if .Root }}lightRed{{ end }}"]
+  style = "plain"
+  template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>┌──(</>{{ .UserName }}{{ if .Root }}💀{{ else }}@{{ end }}{{ .HostName }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>)</>"
+  type = "session"
 
-[blocks.segments.properties]
-display_host = true
+    [blocks.segments.properties]
+    display_host = true
 
-[[blocks.segments]]
-foreground = "yellow"
-style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
-type = "python"
+  [[blocks.segments]]
+  foreground = "yellow"
+  style = "plain"
+  template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+  type = "python"
 
-[blocks.segments.properties]
-fetch_version = true
-fetch_virtual_env = true
+    [blocks.segments.properties]
+    fetch_version = true
+    fetch_virtual_env = true
 
-[[blocks.segments]]
-foreground = "lightWhite"
-style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .Path }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
-type = "path"
+  [[blocks.segments]]
+  foreground = "magenta"
+  style = "plain"
+  template = "{{ if .Type }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> nix-{{ .Type }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>{{ end }}"
+  type = "nix-shell"
 
-[blocks.segments.properties]
-folder_separator_icon = "<#c0c0c0>/</>"
-style = "unique"
+  [[blocks.segments]]
+  foreground = "lightWhite"
+  style = "plain"
+  template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ .Path }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+  type = "path"
 
-[[blocks.segments]]
-foreground = "white"
-style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ if .IsWorkTree }}{{ .CommitIcon }}{{ .WorkTreeCount }}{{ else }}{{ .HEAD }}{{ end }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
-type = "git"
+    [blocks.segments.properties]
+    folder_separator_icon = "<#c0c0c0>/</>"
+    style = "unique"
 
-[blocks.segments.properties]
-branch_icon = "\uE0A0 "
-fetch_status = true
-fetch_stash_count = true
-fetch_upstream_icon = true
-fetch_bare_info = true
+  [[blocks.segments]]
+  foreground = "white"
+  style = "plain"
+  template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</>{{ if .IsWorkTree }}{{ .CommitIcon }}{{ .WorkTreeCount }}{{ else }}{{ .HEAD }}{{ end }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>"
+  type = "git"
+
+    [blocks.segments.properties]
+    branch_icon = "\uE0A0 "
+    fetch_status = true
+    fetch_stash_count = true
+    fetch_upstream_icon = true
+    fetch_bare_info = true
 
 [[blocks]]
 alignment = "left"
 newline = true
 type = "prompt"
 
-[[blocks.segments]]
-foreground_templates = [
-  "{{if gt .Code 0}}red{{end}}",
-  "{{if eq .Code 0}}lightBlue{{end}}",
-]
-style = "plain"
-template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>└─</> {{ if .Root }}<lightRed>#</>{{ else }}${{ end }}"
-type = "text"
+  [[blocks.segments]]
+  foreground_templates = [
+    "{{if gt .Code 0}}red{{end}}",
+    "{{if eq .Code 0}}lightBlue{{end}}",
+  ]
+  style = "plain"
+  template = "<{{ if .Root }}lightBlue{{ else }}green{{ end }}>└─</> {{ if .Root }}<lightRed>#</>{{ else }}${{ end }}"
+  type = "text"
