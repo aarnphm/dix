@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "--- [Remote Setup] Starting --- "
+
+if [[ -f ~/.setup-once ]]; then
+	echo "This should only be run once. Use lambda connect instead." >&2
+	exit 0
+fi
+
+echo "--- [Remote Setup] Installing Nix --- "
+if ! command -v nix &>/dev/null; then
+	curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux --no-confirm
+	# Source Nix environment for the current script
+	# This path might need adjustment depending on the exact installation details
+	if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
+		. "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+	else
+		echo "Warning: Could not find nix-daemon.sh to source. Nix commands might fail." >&2
+		# Attempt common user profile path as fallback
+		if [[ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
+			. "$HOME/.nix-profile/etc/profile.d/nix.sh"
+		fi
+	fi
+	echo "Nix installed."
+else
+	echo "Nix is already installed."
+fi
+
+echo "--- [Remote Setup] Changing password for #REMOTE_USER# --- "
+# Note: passwd requires interaction or specific flags depending on the system.
+# Using chpasswd is generally more script-friendly.
+if echo "#REMOTE_USER#:toor" | sudo chpasswd; then
+	echo "Password changed successfully."
+else
+	echo "Warning: Failed to change password using chpasswd. Manual intervention might be required." >&2
+fi
+
+echo "--- [Remote Setup] Running nix --- "
+nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L --option accept-flake-config true
+
+# Source again after home-manager potentially changed profiles
+# Source Nix environment for the current script
+# This path might need adjustment depending on the exact installation details
+if [[ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
+	. "$HOME/.nix-profile/etc/profile.d/nix.sh"
+elif [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
+	. "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+else
+	echo "Warning: Could not find nix profile to source after HM switch." >&2
+fi
+
+echo "--- [Remote Setup] Authenticating GitHub CLI --- "
+if command -v gh &>/dev/null; then
+	if ! gh auth status &>/dev/null; then
+		echo "Logging into GitHub CLI using token"
+		gh auth login -p ssh --with-token --insecure-storage
+		gh auth status
+	else
+		echo "GitHub CLI already authenticated"
+	fi
+fi
+
+echo "--- [Remote Setup] Cloning Repositories --- "
+WORKSPACE_DIR="$HOME/workspace"
+mkdir -p "$WORKSPACE_DIR"
+pushd "$WORKSPACE_DIR" >/dev/null
+
+REPOS=(
+	"aarnphm/avante.nvim:neovim-plugins/avante.nvim"
+	"aarnphm/surf.nvim:neovim-plugins/surf.nvim"
+	"aarnphm/vllm:vllm"
+	"bentoml/BentoVLLM:bentovllm"
+	"bentoml/openllm-models:openllm-models"
+)
+
+if command -v gh &>/dev/null; then
+	for item in "${REPOS[@]}"; do
+		IFS=":" read -r repo_path target_dir <<<"$item"
+		target_full_path="$WORKSPACE_DIR/$target_dir"
+		if [[ -d "$target_full_path" ]]; then
+			echo "Directory $target_full_path already exists, skipping clone."
+		else
+			mkdir -p "$(dirname "$target_full_path")"
+			echo "Cloning $repo_path into $target_full_path..."
+			gh repo clone "$repo_path" "$target_full_path"
+		fi
+	done
+
+	echo "Cloning Neovim config..."
+	if [[ -d "$HOME/.config/nvim" ]]; then
+		echo "~/.config/nvim already exists, skipping clone."
+	else
+		gh repo clone aarnphm/editor "$HOME/.config/nvim"
+	fi
+else
+	echo "Warning: gh command not found. Cannot clone repositories." >&2
+fi
+
+popd >/dev/null
+
+mkdir -p $BENTOML_HOME && mv ~/.yatai.yaml $BENTOML_HOME/.yatai.yaml
+
+echo "--- [Remote Setup] Changing shell for #REMOTE_USER# --- "
+echo "toor" | sudo chsh -s /usr/bin/zsh #REMOTE_USER#
+
+touch ~/.setup-once
+
+echo "--- [Remote Setup] Finished --- "
+exit 0

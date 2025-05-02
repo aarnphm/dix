@@ -147,7 +147,12 @@
         in {
           formatter.${system} = pkgs.alejandra;
           app.${system} = {
-            ubuntu-nvidia = mkApp {drv = pkgs.dix.ubuntu-nvidia;};
+            ubuntu-nvidia = mkApp {
+              drv = pkgs.dix.ubuntu-nvidia;
+            };
+            lambda = mkApp {
+              drv = pkgs.dix.lambda;
+            };
           };
           packages.${system} = with pkgs; {inherit dix;};
           checks.${system} = {

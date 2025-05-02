@@ -11,5 +11,6 @@ self: super: {
       zsh-dix = super.callPackage ./packages/zsh-dix {};
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
       gvim = super.callPackage ./packages/gvim {};
+      lambda = super.callPackage ./packages/lambda {};
     };
 }

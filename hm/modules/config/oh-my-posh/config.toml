@@ -37,7 +37,7 @@ type = "prompt"
   [[blocks.segments]]
   foreground = "magenta"
   style = "plain"
-  template = "{{ if .Type }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> nix-{{ .Type }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>{{ end }}"
+  template = '''<{{ if .Root }}lightBlue{{ else }}green{{ end }}>-[</> {{ if eq .Type "unknown" }}native{{ else }}nix-{{ .Type }}{{ end }}<{{ if .Root }}lightBlue{{ else }}green{{ end }}>]</>'''
   type = "nix-shell"
 
   [[blocks.segments]]

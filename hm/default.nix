@@ -105,6 +105,7 @@
     # dix packages overlays
     dix.git-forest
     dix.unicopy
+    dix.lambda
   ];
   darwinPackages = with pkgs; [
     # for some reason they don't have flock on darwin :(
@@ -138,10 +139,13 @@
       # XDG
       XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
 
-      # Bentoml
+      # bentoml
       BENTOML_HOME = "${config.home.sessionVariables.XDG_DATA_HOME}/bentoml";
       BENTOML_DO_NOT_TRACK = "True";
       BENTOML_BUNDLE_LOCAL_BUILD = "True";
+
+      UV_COMPILE_BYTECODE = 1;
+      UV_NO_PROGRESS = 1;
 
       # Editors
       WORKSPACE = "${config.home.homeDirectory}/workspace";
@@ -164,7 +168,6 @@
         (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf "${config.home.homeDirectory}/.local" "/opt/homebrew/opt/ruby"])
         "$PATH"
       ];
-      UV_COMPILE_BYTECODE = 1;
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # misc
@@ -285,108 +288,111 @@ in {
       };
 
     # shells related
-    shellAliases = {
-      reload = "exec -l $SHELL";
-      afk = "pmset displaysleepnow";
-      ".." = "__zoxide_z ..";
-      "..." = "..;..";
-      "...." = "...;..";
-      "....." = "....;..";
-      "......" = ".....;..";
+    shellAliases =
+      {
+        reload = "exec -l $SHELL";
+        afk = "pmset displaysleepnow";
+        ".." = "__zoxide_z ..";
+        "..." = "..;..";
+        "...." = "...;..";
+        "....." = "....;..";
+        "......" = ".....;..";
 
-      # ls-replacement
-      ls = lib.getExe pkgs.eza;
-      ll = "${lib.getExe pkgs.eza} -Ml --almost-all --group-directories-first -sName --icons=always";
-      sudo = "nocorrect sudo";
-      tree = "${lib.getExe pkgs.eza} --almost-all --group-directories-first --tree";
-      mtree = "${lib.getExe pkgs.eza} --almost-all -Ml --group-directories-first --tree";
+        # ls-replacement
+        ls = lib.getExe pkgs.eza;
+        ll = "${lib.getExe pkgs.eza} -Ml --almost-all --group-directories-first -sName --icons=always";
+        sudo = "nocorrect sudo";
+        tree = "${lib.getExe pkgs.eza} --almost-all --group-directories-first --tree";
+        mtree = "${lib.getExe pkgs.eza} --almost-all -Ml --group-directories-first --tree";
 
-      # safe rm
-      rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";
+        # safe rm
+        rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";
 
-      # git
-      g = lib.getExe pkgs.git;
-      gcl = "${lib.getExe pkgs.gh} repo clone";
-      ga = "${lib.getExe pkgs.git} add";
-      gaa = "${lib.getExe pkgs.git} add .";
-      gsw = "${lib.getExe pkgs.git} switch";
-      gcm = "${lib.getExe pkgs.git} commit -S --signoff -sv";
-      gcmm = "${lib.getExe pkgs.git} commit -S --signoff -svm";
-      gcma = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend";
-      gcman = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend --no-edit";
-      grpo = "${lib.getExe pkgs.git} remote prune origin";
-      grpu = "${lib.getExe pkgs.git} remote prune upstream";
-      grst = "${lib.getExe pkgs.git} restore";
-      grsts = "${lib.getExe pkgs.git} restore --staged";
-      gst = "${lib.getExe pkgs.git} status";
-      gsi = "${lib.getExe pkgs.git} status --ignored";
-      gsm = "${lib.getExe pkgs.git} status -sb";
-      gfom = "${lib.getExe pkgs.git} fetch origin main";
-      gfum = "${lib.getExe pkgs.git} fetch upstream main";
-      grfh = "${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff";
-      grifh = "${lib.getExe pkgs.git} rebase -i FETCH_HEAD --autosquash";
-      grb = "${lib.getExe pkgs.git} rebase -i -S --signoff";
-      gra = "${lib.getExe pkgs.git} rebase --abort";
-      grc = "${lib.getExe pkgs.git} rebase --continue";
-      gri = "${lib.getExe pkgs.git} rebase -i";
-      gcp = "${lib.getExe pkgs.git} cherry-pick --gpg-sign --signoff";
-      gcpa = "${lib.getExe pkgs.git} cherry-pick --abort";
-      gcpc = "${lib.getExe pkgs.git} cherry-pick --continue";
-      gp = "${lib.getExe pkgs.git} pull";
-      gpu = "${lib.getExe pkgs.git} push";
-      gpuf = "${lib.getExe pkgs.git} push --force-with-lease";
-      gs = "${lib.getExe pkgs.git} stash";
-      gsp = "${lib.getExe pkgs.git} stash pop";
-      gckb = "${lib.getExe pkgs.git} checkout -b";
-      gck = "${lib.getExe pkgs.git} checkout";
-      gdf = "${lib.getExe pkgs.git} diff";
-      gb = "${lib.getExe pkgs.git} branches";
-      gbd = "${lib.getExe pkgs.git} branch -D";
-      gprc = "${lib.getExe pkgs.gh} pr create";
-      sync-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff && ${lib.getExe pkgs.git} push";
-      merge-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} merge FETCH_HEAD --ff && ${lib.getExe pkgs.git} push";
+        # git
+        g = lib.getExe pkgs.git;
+        gcl = "${lib.getExe pkgs.gh} repo clone";
+        ga = "${lib.getExe pkgs.git} add";
+        gaa = "${lib.getExe pkgs.git} add .";
+        gsw = "${lib.getExe pkgs.git} switch";
+        gcm = "${lib.getExe pkgs.git} commit -S --signoff -sv";
+        gcmm = "${lib.getExe pkgs.git} commit -S --signoff -svm";
+        gcma = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend";
+        gcman = "${lib.getExe pkgs.git} commit -S --signoff -sv --amend --no-edit";
+        grpo = "${lib.getExe pkgs.git} remote prune origin";
+        grpu = "${lib.getExe pkgs.git} remote prune upstream";
+        grst = "${lib.getExe pkgs.git} restore";
+        grsts = "${lib.getExe pkgs.git} restore --staged";
+        gst = "${lib.getExe pkgs.git} status";
+        gsi = "${lib.getExe pkgs.git} status --ignored";
+        gsm = "${lib.getExe pkgs.git} status -sb";
+        gfom = "${lib.getExe pkgs.git} fetch origin main";
+        gfum = "${lib.getExe pkgs.git} fetch upstream main";
+        grfh = "${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff";
+        grifh = "${lib.getExe pkgs.git} rebase -i FETCH_HEAD --autosquash";
+        grb = "${lib.getExe pkgs.git} rebase -i -S --signoff";
+        gra = "${lib.getExe pkgs.git} rebase --abort";
+        grc = "${lib.getExe pkgs.git} rebase --continue";
+        gri = "${lib.getExe pkgs.git} rebase -i";
+        gcp = "${lib.getExe pkgs.git} cherry-pick --gpg-sign --signoff";
+        gcpa = "${lib.getExe pkgs.git} cherry-pick --abort";
+        gcpc = "${lib.getExe pkgs.git} cherry-pick --continue";
+        gp = "${lib.getExe pkgs.git} pull";
+        gpu = "${lib.getExe pkgs.git} push";
+        gpuf = "${lib.getExe pkgs.git} push --force-with-lease";
+        gs = "${lib.getExe pkgs.git} stash";
+        gsp = "${lib.getExe pkgs.git} stash pop";
+        gckb = "${lib.getExe pkgs.git} checkout -b";
+        gck = "${lib.getExe pkgs.git} checkout";
+        gdf = "${lib.getExe pkgs.git} diff";
+        gb = "${lib.getExe pkgs.git} branches";
+        gbd = "${lib.getExe pkgs.git} branch -D";
+        gprc = "${lib.getExe pkgs.gh} pr create";
+        sync-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} rebase FETCH_HEAD --autosquash --ff && ${lib.getExe pkgs.git} push";
+        merge-upstream = "${lib.getExe pkgs.git} fetch upstream main && ${lib.getExe pkgs.git} merge FETCH_HEAD --ff && ${lib.getExe pkgs.git} push";
 
-      # editor
-      v = lib.getExe config.programs.neovim.finalPackage;
-      vi = lib.getExe pkgs.vim;
-      nv-stable = lib.getExe pkgs.neovim-stable;
-      gv = lib.getExe pkgs.dix.gvim;
-      f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
+        # editor
+        v = lib.getExe config.programs.neovim.finalPackage;
+        vi = lib.getExe pkgs.vim;
+        nv-stable = lib.getExe pkgs.neovim-stable;
+        f = ''${lib.getExe pkgs.fd} --type f --hidden --exclude .git | ${lib.getExe pkgs.fzf} --preview "_fzf_complete_realpath {}" | xargs ${lib.getExe pkgs.neovim}'';
 
-      # general
-      cx = "chmod +x";
-      copy = lib.getExe pkgs.dix.unicopy;
+        # general
+        cx = "chmod +x";
+        copy = lib.getExe pkgs.dix.unicopy;
 
-      # aliases
-      pip = ''${lib.getExe pkgs.uv} pip'';
-      b = ''${lib.getExe' pkgs.uv "uvx"} bentoml'';
-      k = lib.getExe pkgs.kubectl;
-      cat = lib.getExe pkgs.bat;
-      hf = ''${lib.getExe' pkgs.uv "uvx"} --with 'huggingface-hub[cli]' huggingface-cli'';
-      jupytertext = ''${lib.getExe' pkgs.uv "uvx"} jupytertext'';
-      ipynb = ''${lib.getExe' pkgs.uv "uvx"} jupyter notebook --autoreload --debug'';
-      ipy = "ipython --autoindent --ext=autoreload -c='%autoreload 2'";
-      pinentry = lib.getExe (
-        if pkgs.stdenv.isDarwin
-        then pkgs.pinentry_mac
-        else pkgs.pinentry-all
-      );
+        # aliases
+        pip = ''${lib.getExe pkgs.uv} pip'';
+        b = ''${lib.getExe' pkgs.uv "uvx"} bentoml'';
+        k = lib.getExe pkgs.kubectl;
+        cat = lib.getExe pkgs.bat;
+        hf = ''${lib.getExe' pkgs.uv "uvx"} --with 'huggingface-hub[cli]' huggingface-cli'';
+        jupytertext = ''${lib.getExe' pkgs.uv "uvx"} jupytertext'';
+        ipynb = ''${lib.getExe' pkgs.uv "uvx"} jupyter notebook --autoreload --debug'';
+        ipy = "ipython --autoindent --ext=autoreload -c='%autoreload 2'";
+        pinentry = lib.getExe (
+          if pkgs.stdenv.isDarwin
+          then pkgs.pinentry_mac
+          else pkgs.pinentry-all
+        );
 
-      # useful
-      bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}'';
-      unlock-vault = ''bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
-      generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
-      lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
-      get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
-      gpgpass = ''bw get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
-      sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
+        # useful
+        bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}'';
+        unlock-vault = ''bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
+        generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
+        lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
+        get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
+        gpgpass = ''bw get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
+        sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
 
-      # nix-commands
-      ncg = "nix-collect-garbage -d";
-      nsp = "nix-shell --pure";
-      nstr = "nix-store --gc --print-roots";
+        # nix-commands
+        ncg = "nix-collect-garbage -d";
+        nsp = "nix-shell --pure";
+        nstr = "nix-store --gc --print-roots";
 
-      python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
-    };
+        python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
+      }
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        gv = lib.getExe pkgs.dix.gvim;
+      };
   };
 }
