@@ -46,7 +46,7 @@ in {
           key =
             if pkgs.stdenv.isDarwin
             then "18974753009D2BFA"
-            else "5707C3A4ECC3EA0A";
+            else "E312D48FF7275E74";
           signByDefault = true;
         };
         ignores = [

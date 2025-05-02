@@ -156,6 +156,9 @@ mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bent
 log_info "Changing shell for #REMOTE_USER#"
 echo "toor" | sudo chsh -s /usr/bin/zsh #REMOTE_USER#
 
+gpgconf --kill all
+gpg --recv-keys 97C6E8E89D3E7CF3D810F83FE312D48FF7275E74
+
 touch ~/.setup-once
 
 log_info "Remote Setup Finished"
