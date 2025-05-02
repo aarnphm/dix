@@ -98,7 +98,6 @@
     gnumake
     alejandra
     ueberzugpp
-    bitwarden-cli
     google-cloud-sdk
 
     # dix packages overlays

@@ -39,8 +39,8 @@ with lib; {
               };
             };
             "h100" = {
-              hostname = "184.105.157.234";
-              user = "paperspace";
+              hostname = "209.20.159.165";
+              user = "ubuntu";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-paperspace";
               setEnv = {
                 TERM = ''xterm-256color'';
@@ -50,13 +50,6 @@ with lib; {
               hostname = "75.10.7.20";
               user = "sam";
               identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519-wafer";
-              setEnv = {
-                TERM = ''xterm-256color'';
-              };
-            };
-            "se3db3" = {
-              hostname = "se3db3.cas.mcmaster.ca";
-              user = "phama10";
               setEnv = {
                 TERM = ''xterm-256color'';
               };
