@@ -165,6 +165,7 @@
         (makeBinPath ["${config.home.homeDirectory}/.cargo" pkgs.protobuf "${config.home.homeDirectory}/.local" "/opt/homebrew/opt/ruby"])
         "$PATH"
       ];
+      UV_COMPILE_BYTECODE = 1;
 
       # Specifics to build
       LD_LIBRARY_PATH = with pkgs;
