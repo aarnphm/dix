@@ -8,6 +8,11 @@ WARN_COLOR="\033[0;34m"  # Blue
 DEBUG_COLOR="\033[0;35m" # Purple
 RESET_COLOR="\033[0m"
 
+API_URL="https://cloud.lambda.ai/api/v1"
+SSH_KEY="~/.ssh/id_ed25519-github"
+DEFAULT_REGION="us-south-3"
+REMOTE_USER="ubuntu"
+REMOTE_PASSWORD="toor"
 log() {
 	local level=$1
 	local caller=$2
@@ -59,11 +64,6 @@ log_debug() {
 	local message=$1
 	log "DEBUG" "SYS" "$message"
 }
-
-API_URL="https://cloud.lambda.ai/api/v1"
-SSH_KEY="~/.ssh/id_ed25519-github"
-DEFAULT_REGION="us-south-3"
-REMOTE_USER="ubuntu"
 
 ensure_api_key() {
 	if [[ -z "${LAMBDA_API_KEY:-}" ]]; then
@@ -390,10 +390,11 @@ setup_instance() {
 	local remote_script_path="/tmp/setup_remote_${instance_name}.sh"
 	local local_script_path
 	local_script_path=$(mktemp)
-	trap 'rm -f "$local_script_path"' EXIT # Add local script to cleanup
 
 	# Substitute variables in the template
-	sed -e "s|#REMOTE_USER#|$REMOTE_USER|g" \
+	@sed@ \
+		-e "s|#REMOTE_USER#|$REMOTE_USER|g" \
+		-e "s|#REMOTE_PASSWORD#|$REMOTE_PASSWORD|g" \
 		-e "s|#GH_TOKEN#|$gh_token|g" \
 		@LAMBDA_SETUP_TEMPLATE@ >"$local_script_path"
 	chmod +x "$local_script_path"
@@ -406,7 +407,7 @@ setup_instance() {
 
 	log_info "Executing remote setup script on '$instance_name'... This may take a while."
 	# Use -t to allocate a pseudo-tty, which might help with interactive prompts if any occur (though shouldn't)
-	@ssh@ -i "$SSH_KEY" -t "${REMOTE_USER}@${ip_address}" "bash ${remote_script_path}"
+	@ssh@ -i "$SSH_KEY" -t "${REMOTE_USER}@${ip_address}" "INSTANCE_ID=${instance_name} bash ${remote_script_path}"
 
 	log_info "Setup script finished execution on '$instance_name'."
 	log_info "Cleaning up temporary files..."
@@ -418,7 +419,7 @@ usage() {
 	echo "Usage: lambda <command> [options]"
 	echo
 	echo "Commands:"
-	echo "  create <gpus>x<type> [region]   Create a new Lambda Cloud instance (e.g., lambda create 1xA100 us-tx-1)"
+	echo "  create <gpus>x<type> [region]   Create a new Lambda Cloud instance (e.g., lambda create 1xA100 ${DEFAULT_REGION})"
 	echo "                                     Requires LAMBDA_API_KEY env var."
 	echo "  connect <instance_name>        Connect via SSH to the specified active instance."
 	echo "                                     Requires LAMBDA_API_KEY env var."

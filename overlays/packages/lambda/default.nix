@@ -4,6 +4,7 @@
   writeProgram,
   curl,
   jq,
+  gnused,
   openssh,
   bitwarden-cli,
   gh,
@@ -20,6 +21,7 @@ stdenv.mkDerivation rec {
         inherit (stdenv) shell;
         curl = getExe curl;
         jq = getExe jq;
+        sed = getExe gnused;
         ssh = getExe' openssh "ssh";
         scp = getExe' openssh "scp";
         bw = getExe bitwarden-cli;
