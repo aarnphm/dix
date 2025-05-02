@@ -124,8 +124,7 @@ pushd "$WORKSPACE_DIR" >/dev/null
 if command -v gh &>/dev/null; then
 	if ! gh auth status &>/dev/null; then
 		log_info "Logging into GitHub CLI using token"
-		echo "#GH_TOKEN#" | gh auth login -p ssh --with-token
-		gh auth status
+		(echo "#GH_TOKEN#" | gh auth login -p ssh --with-token) || true
 	else
 		log_info "GitHub CLI already authenticated"
 	fi
