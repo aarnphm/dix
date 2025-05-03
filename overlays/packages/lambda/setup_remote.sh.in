@@ -61,7 +61,7 @@ log_debug() {
 
 log_info "Starting Remote Setup"
 
-if [[ -f ~/.setup-once ]]; then
+if [[ -f ~/.lambda-setup-once ]]; then
 	log_warn "Setup has been ran once. Use 'lambda connect $INSTANCE_ID' instead."
 	exit 0
 fi
@@ -159,7 +159,7 @@ echo "toor" | sudo chsh -s /usr/bin/zsh #REMOTE_USER#
 gpgconf --kill all
 gpg --import-secrete-keys ~/gpg-private-lambdalabs.key && rm ~/gpg-private-lambdalabs.key
 
-touch ~/.setup-once
+touch ~/.lambda-setup-once
 
 log_info "Remote Setup Finished"
 exit 0

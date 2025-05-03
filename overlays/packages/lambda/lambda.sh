@@ -334,7 +334,6 @@ delete_instance() {
 		log_info "Instance '$instance_name' (ID: $instance_id) termination initiated successfully."
 	else
 		log_error "Failed to initiate termination for instance '$instance_name' (ID: $instance_id)." >&2
-		log_debug "API Response: $response" >&2
 		exit 1
 	fi
 }
@@ -465,7 +464,7 @@ main() {
 		fi
 		setup_instance "$@"
 		;;
-	delete)
+	delete | terminate)
 		if [[ $# -lt 1 ]]; then
 			log_error "Missing instance name for delete." >&2
 			usage
