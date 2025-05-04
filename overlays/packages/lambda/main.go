@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 	"golang.org/x/term"
 )
 
@@ -29,7 +31,7 @@ const (
 	sshKeyName        = "aaron-mbp16"
 	remoteUser        = "ubuntu"
 	remotePassword    = "toor"
-	defaultSSHKeyPath = "~/.ssh/id_ed25519-github"
+	defaultSSHKeyPath = "~/.ssh/id_ed25519-paperspace"
 	bitwardenNoteName = "pat-lambda"
 )
 
@@ -41,8 +43,6 @@ type remoteSetupParams struct {
 	RemotePassword string
 	GhToken        string
 }
-
-// --- SSH Helper Functions ---
 
 func expandPath(path string) (string, error) {
 	if strings.HasPrefix(path, "~/") {
@@ -60,28 +60,45 @@ func getSSHKey(keyPath string) (ssh.Signer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("expanding SSH key path '%s': %w", keyPath, err)
 	}
+	log.Debugf("Attempting to read SSH private key from: %s", expandedPath)
 	keyBytes, err := os.ReadFile(expandedPath)
 	if err != nil {
 		return nil, fmt.Errorf("reading SSH key file '%s': %w", expandedPath, err)
 	}
+	log.Debugf("Read %d bytes from key file.", len(keyBytes))
+
 	signer, err := ssh.ParsePrivateKey(keyBytes)
 	if err != nil {
+		log.Debugf("Parsing private key failed initially: %v", err)
 		// Check if it needs a passphrase
 		if _, ok := err.(*ssh.PassphraseMissingError); ok {
+			log.Infof("SSH key %s seems to be encrypted.", expandedPath)
 			fmt.Printf("Enter passphrase for key %s: ", expandedPath)
 			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 			if err != nil {
 				return nil, fmt.Errorf("reading passphrase: %w", err)
 			}
 			fmt.Println()
+			log.Debug("Attempting to parse key with passphrase.")
 			signer, err = ssh.ParsePrivateKeyWithPassphrase(keyBytes, bytePassword)
 			if err != nil {
 				return nil, fmt.Errorf("parsing private key with passphrase: %w", err)
 			}
+			log.Debug("Successfully parsed key with passphrase.")
 		} else {
 			return nil, fmt.Errorf("parsing private key '%s': %w", expandedPath, err)
 		}
+	} else {
+		log.Debugf("Successfully parsed unencrypted private key.")
 	}
+
+	// Log the public key fingerprint being used
+	if signer != nil {
+		pubKey := signer.PublicKey()
+		fingerprint := ssh.FingerprintSHA256(pubKey)
+		log.Debugf("Using public key %s with fingerprint: %s", pubKey.Type(), fingerprint)
+	}
+
 	return signer, nil
 }
 
@@ -142,13 +159,13 @@ func copyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
 
 	go func() {
 		defer stdin.Close()
-		fmt.Fprintf(stdin, "C%s %d %s\n", perms, len(content), filename)
+		fmt.Fprintf(stdin, "C%s %d %s", perms, len(content), filename)
 		stdin.Write([]byte(content))
 		fmt.Fprint(stdin, "\x00") // Terminate with null byte
 	}()
 
 	log.Infof("Copying local file '%s' to remote '%s'", expandedLocalPath, remotePath)
-	err = session.Run(fmt.Sprintf("/usr/bin/scp -qt %s", directory))
+	err = session.Run(fmt.Sprintf("scp -qt %s", directory))
 	if err != nil {
 		return fmt.Errorf("failed to run scp command for '%s': %w", remotePath, err)
 	}
@@ -172,7 +189,7 @@ func copyContentToRemote(client *ssh.Client, content []byte, remotePath string, 
 
 	go func() {
 		defer stdin.Close()
-		fmt.Fprintf(stdin, "C%s %d %s\n", perms, len(content), filename)
+		fmt.Fprintf(stdin, "C%s %d %s", perms, len(content), filename)
 		stdin.Write(content)
 		fmt.Fprint(stdin, "\x00") // Terminate with null byte
 	}()
@@ -222,7 +239,7 @@ func (c *apiClient) request(method, endpoint string, body interface{}, result in
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	log.Debugf("API Request: %s %s\n", method, url)
+	log.Debugf("API Request: %s %s", method, url)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)
@@ -330,6 +347,17 @@ type CreateFilesystemResponse struct {
 	} `json:"data"`
 }
 
+// Added for delete command
+type TerminateRequest struct {
+	InstanceIDs []string `json:"instance_ids"`
+}
+
+type TerminateResponse struct {
+	Data struct {
+		TerminatedInstanceIDs []string `json:"terminated_instance_ids"`
+	} `json:"data"`
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "lambda",
 	Short: "A CLI tool for managing Lambda Cloud resources",
@@ -363,10 +391,10 @@ var createCmd = &cobra.Command{
 		requestedInstanceTypeName := fmt.Sprintf("gpu_%sx_%s", numGPUs, gpuType)
 		instanceName := fmt.Sprintf("aaron-%s_%s", numGPUs, gpuType)
 
-		log.Infof("Requesting instance type: %s, Name: %s\n", requestedInstanceTypeName, instanceName)
+		log.Infof("Requesting instance type: %s, Name: %s", requestedInstanceTypeName, instanceName)
 
 		// 2. Check for existing instance with the same name
-		log.Infof("Checking for existing instance named '%s'\n", instanceName)
+		log.Infof("Checking for existing instance named '%s'", instanceName)
 		var instancesResp InstancesResponse
 		err = client.request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -390,14 +418,14 @@ var createCmd = &cobra.Command{
 
 		instanceTypeDetails, ok := typesResp.Data[requestedInstanceTypeName]
 		if !ok {
-			log.Errorf("Instance type '%s' not found.\n", requestedInstanceTypeName)
+			log.Errorf("Instance type '%s' not found.", requestedInstanceTypeName)
 			log.Infof("Available instance types:")
 			for name, details := range typesResp.Data {
 				var regionNames []string
 				for _, r := range details.RegionsWithCapacity {
 					regionNames = append(regionNames, r.Name)
 				}
-				log.Infof("  - %s: %d GPUs (%s), Available in: %s\n",
+				log.Infof("  - %s: %d GPUs (%s), Available in: %s",
 					name,
 					details.InstanceType.Specs.Gpus,
 					details.InstanceType.GpuDescription,
@@ -417,36 +445,36 @@ var createCmd = &cobra.Command{
 		if userRegion != "" {
 			if availableRegionMap[userRegion] {
 				targetRegion = userRegion
-				log.Infof("Using user-specified region: %s (available for %s)\n", targetRegion, requestedInstanceTypeName)
+				log.Infof("Using user-specified region: %s (available for %s)", targetRegion, requestedInstanceTypeName)
 			} else {
-				log.Errorf("Requested instance type '%s' is not available in the specified region '%s'.\n", requestedInstanceTypeName, userRegion)
+				log.Errorf("Requested instance type '%s' is not available in the specified region '%s'.", requestedInstanceTypeName, userRegion)
 				var availableNames []string
 				for _, r := range availableRegions {
 					availableNames = append(availableNames, r.Name)
 				}
-				log.Infof("Available regions: %s\n", strings.Join(availableNames, ", "))
+				log.Infof("Available regions: %s", strings.Join(availableNames, ", "))
 				os.Exit(1)
 			}
 		} else {
 			if availableRegionMap[defaultRegion] {
 				targetRegion = defaultRegion
-				log.Infof("Using default region: %s (available for %s)\n", targetRegion, requestedInstanceTypeName)
+				log.Infof("Using default region: %s (available for %s)", targetRegion, requestedInstanceTypeName)
 			} else {
 				// Find first available US region
 				for _, r := range availableRegions {
 					if strings.HasPrefix(r.Name, "us-") {
 						targetRegion = r.Name
-						log.Infof("Default region '%s' not available for '%s'. Using first available US region: %s\n", defaultRegion, requestedInstanceTypeName, targetRegion)
+						log.Infof("Default region '%s' not available for '%s'. Using first available US region: %s", defaultRegion, requestedInstanceTypeName, targetRegion)
 						break
 					}
 				}
 				if targetRegion == "" { // Still not found
-					log.Errorf("Requested instance type '%s' is not available in the default region ('%s') or any US region.\n", requestedInstanceTypeName, defaultRegion)
+					log.Errorf("Requested instance type '%s' is not available in the default region ('%s') or any US region.", requestedInstanceTypeName, defaultRegion)
 					var availableNames []string
 					for _, r := range availableRegions {
 						availableNames = append(availableNames, r.Name)
 					}
-					log.Infof("Available regions: %s\n", strings.Join(availableNames, ", "))
+					log.Infof("Available regions: %s", strings.Join(availableNames, ", "))
 					os.Exit(1)
 				}
 			}
@@ -454,7 +482,7 @@ var createCmd = &cobra.Command{
 
 		// 5. Check/Create Filesystem
 		filesystemName := fmt.Sprintf("aaron-%s", targetRegion)
-		log.Infof("Checking for filesystem '%s' in region '%s'...", filesystemName, targetRegion)
+		log.Infof("Checking for filesystem '%s' in region '%s'", filesystemName, targetRegion)
 		var filesystemsResp FileSystemsResponse
 		foundFS := false
 		err = client.request("GET", "/file-systems", nil, &filesystemsResp)
@@ -463,14 +491,14 @@ var createCmd = &cobra.Command{
 		}
 		for _, fs := range filesystemsResp.Data {
 			if fs.Name == filesystemName && fs.Region.Name == targetRegion {
-				log.Infof("Using existing filesystem: %s\n", filesystemName)
+				log.Infof("Using existing filesystem: %s", filesystemName)
 				foundFS = true
 				break
 			}
 		}
 
 		if !foundFS {
-			log.Infof("Filesystem '%s' not found. Creating...\n", filesystemName)
+			log.Infof("Filesystem '%s' not found. Creating", filesystemName)
 			createFsReq := CreateFilesystemRequest{
 				RegionName: targetRegion,
 				Name:       []string{filesystemName},
@@ -482,13 +510,13 @@ var createCmd = &cobra.Command{
 			}
 			// API seems inconsistent here, response gives 'name', not ID? Assuming name is sufficient.
 			if createFsResp.Data.Name != filesystemName {
-				log.Warnf("Filesystem creation response name mismatch (expected %s, got %s), proceeding...", filesystemName, createFsResp.Data.Name)
+				log.Warnf("Filesystem creation response name mismatch (expected %s, got %s), proceeding", filesystemName, createFsResp.Data.Name)
 			}
-			log.Infof("Filesystem '%s' created successfully.\n", filesystemName)
+			log.Infof("Filesystem '%s' created successfully.", filesystemName)
 		}
 
 		// 6. Launch Instance
-		log.Infof("Launching instance '%s' (%s) in region '%s' with filesystem '%s'...\n",
+		log.Infof("Launching instance '%s' (%s) in region '%s' with filesystem '%s'",
 			instanceName, requestedInstanceTypeName, targetRegion, filesystemName)
 		launchReq := LaunchRequest{
 			RegionName:       targetRegion,
@@ -507,7 +535,7 @@ var createCmd = &cobra.Command{
 			log.Fatalf("Instance launch initiated, but no instance ID returned.")
 		}
 		instanceID := launchResp.Data.InstanceIDs[0]
-		log.Infof("Instance launch initiated with ID: %s. Waiting for it to become active...\n", instanceID)
+		log.Infof("Instance launch initiated with ID: %s. Waiting for it to become active", instanceID)
 
 		// 7. Poll for Active Status and IP
 		const maxRetries = 40 // 40 * 30s = 20 minutes
@@ -517,14 +545,14 @@ var createCmd = &cobra.Command{
 			var currentInstances InstancesResponse
 			err = client.request("GET", "/instances", nil, &currentInstances)
 			if err != nil {
-				log.Warnf("Error fetching instances during poll: %v. Retrying...", err)
+				log.Warnf("Error fetching instances during poll: %v. Retrying", err)
 				continue
 			}
 
 			found := false
 			for _, inst := range currentInstances.Data {
 				if inst.ID == instanceID {
-					log.Infof("Polling instance %s: Status=%s, IP=%s (%d/%d)\n", instanceID, inst.Status, inst.IP, i+1, maxRetries)
+					log.Infof("Polling instance %s: Status=%s, IP=%s (%d/%d)", instanceID, inst.Status, inst.IP, i+1, maxRetries)
 					if inst.Status == "active" && inst.IP != "" && inst.IP != "null" {
 						finalInstance = inst
 						found = true
@@ -544,7 +572,7 @@ var createCmd = &cobra.Command{
 			}
 
 			if !found {
-				log.Warnf("Instance %s not found in list yet. Retrying... (%d/%d)", instanceID, i+1, maxRetries)
+				log.Warnf("Instance %s not found in list yet. Retrying (%d/%d)", instanceID, i+1, maxRetries)
 			}
 		}
 
@@ -553,22 +581,124 @@ var createCmd = &cobra.Command{
 		}
 
 		log.Println("--------------------------------------------------")
-		log.Infof("Instance '%s' created successfully!\n", finalInstance.Name)
-		log.Infof("  ID: %s\n", finalInstance.ID)
-		log.Infof("  Type: %s\n", requestedInstanceTypeName)
-		log.Infof("  Region: %s\n", finalInstance.Region.Name)
-		log.Infof("  Status: %s\n", finalInstance.Status)
-		log.Infof("  IP Address: %s\n", finalInstance.IP)
+		log.Infof("Instance '%s' created successfully!", finalInstance.Name)
+		log.Infof("  ID: %s", finalInstance.ID)
+		log.Infof("  Type: %s", requestedInstanceTypeName)
+		log.Infof("  Region: %s", finalInstance.Region.Name)
+		log.Infof("  Status: %s", finalInstance.Status)
+		log.Infof("  IP Address: %s", finalInstance.IP)
 		log.Println("--------------------------------------------------")
-		log.Infof("To connect: lambda connect %s\n", finalInstance.Name)
-		log.Infof("To setup:   lambda setup %s\n", finalInstance.Name)
+		// Expand the default SSH key path for the informational message
+		expandedKeyPath, _ := expandPath(defaultSSHKeyPath) // Ignore error for informational msg
+		log.Infof("IMPORTANT: Connect manually once to add host key:")
+		log.Infof("  ssh %s@%s -i %s", remoteUser, finalInstance.IP, expandedKeyPath)
+		log.Infof("Then connect using:")
+		log.Infof("  lambda connect %s", finalInstance.Name)
+		log.Infof("To setup:")
+		log.Infof("  lambda setup %s", finalInstance.Name)
 	},
 }
 
+// Function to fetch instance names for completion
+func completeInstanceNames(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	// Prevent completion if already an argument is provided
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	client, err := newAPIClient()
+	if err != nil {
+		// Cannot log here during completion, return default
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	var instancesResp InstancesResponse
+	err = client.request("GET", "/instances", nil, &instancesResp)
+	if err != nil {
+		// Cannot log here during completion, return default
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	var names []string
+	for _, inst := range instancesResp.Data {
+		// Simple prefix matching for completion
+		if strings.HasPrefix(inst.Name, toComplete) {
+			names = append(names, inst.Name)
+		}
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
+}
+
+// Function to establish an SSH connection
+func establishSSHConnection(ipAddress, sshKeyPath, user string, useKnownHosts bool) (*ssh.Client, error) {
+	// Get SSH key signer
+	signer, err := getSSHKey(sshKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get SSH key: %w", err)
+	}
+
+	// Configure HostKeyCallback
+	var hostKeyCallback ssh.HostKeyCallback
+	if useKnownHosts {
+		knownHostsPath, err := expandPath("~/.ssh/known_hosts")
+		if err != nil {
+			return nil, fmt.Errorf("failed to expand known_hosts path: %w", err)
+		}
+		callback, err := knownhosts.New(knownHostsPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Warnf("known_hosts file '%s' not found. Allowing first connection.", knownHostsPath)
+				// Allow first connection if known_hosts doesn't exist
+				// Or implement a prompt? For now, insecure.
+				hostKeyCallback = ssh.InsecureIgnoreHostKey()
+			} else {
+				return nil, fmt.Errorf("failed to read known_hosts file '%s': %w", knownHostsPath, err)
+			}
+		} else {
+			hostKeyCallback = callback
+		}
+	} else {
+		log.Warn("Host key checking is disabled (InsecureIgnoreHostKey).")
+		hostKeyCallback = ssh.InsecureIgnoreHostKey()
+	}
+
+	// Configure SSH client
+	sshConfig := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: hostKeyCallback,
+		Timeout:         30 * time.Second, // Increased timeout for initial connection/setup
+	}
+	log.Debugf("Attempting SSH auth with user: %s, Key Type: %s", sshConfig.User, signer.PublicKey().Type())
+
+	// Dial the SSH server
+	serverAddr := ipAddress + ":22"
+	log.Debugf("Dialing SSH server %s with user %s", serverAddr, user)
+	sshClient, err := ssh.Dial("tcp", serverAddr, sshConfig)
+	if err != nil {
+		// Specific error handling for knownhosts missing key
+		var keyErr *knownhosts.KeyError
+		if useKnownHosts && errors.As(err, &keyErr) && len(keyErr.Want) > 0 {
+			knownHostsPath, _ := expandPath("~/.ssh/known_hosts") // Ignore error as we checked earlier
+			log.Errorf("SSH host key verification failed for %s.", ipAddress)
+			log.Errorf("The host key is not present in '%s'.", knownHostsPath)
+			log.Infof("Please connect manually using 'ssh %s@%s' once to add the host key, then try again.", user, ipAddress)
+			// Return a distinct error or handle appropriately
+			return nil, fmt.Errorf("host key verification failed: %w", err)
+		}
+		return nil, fmt.Errorf("failed to dial SSH server: %w", err)
+	}
+	return sshClient, nil
+}
+
 var connectCmd = &cobra.Command{
-	Use:   "connect <instance_name>",
-	Short: "Connect via SSH to the specified active instance",
-	Args:  cobra.ExactArgs(1),
+	Use:               "connect <instance_name>",
+	Short:             "Connect via SSH to the specified active instance",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeInstanceNames,
 	Run: func(cmd *cobra.Command, args []string) {
 		instanceName := args[0]
 
@@ -577,7 +707,7 @@ var connectCmd = &cobra.Command{
 			log.Fatalf("Error initializing API client: %v", err)
 		}
 
-		log.Infof("Looking for instance '%s'...\n", instanceName)
+		log.Infof("Looking for instance '%s'", instanceName)
 		var instancesResp InstancesResponse
 		err = client.request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -605,49 +735,88 @@ var connectCmd = &cobra.Command{
 		}
 
 		ipAddress := targetInstance.IP
-		log.Infof("Connecting to instance '%s' (%s)...\n", instanceName, ipAddress)
+		log.Infof("Connecting to instance '%s' (%s)", instanceName, ipAddress)
 
-		// Expand ~ in ssh key path
-		sshKeyPath := defaultSSHKeyPath
-		if strings.HasPrefix(sshKeyPath, "~/") {
-			usr, err := user.Current()
-			if err != nil {
-				log.Fatalf("Error getting current user for SSH key path expansion: %v", err)
+		// Establish SSH connection using the helper function (with known_hosts check)
+		sshClient, err := establishSSHConnection(ipAddress, defaultSSHKeyPath, remoteUser, true) // Use known_hosts
+		if err != nil {
+			log.Fatalf("Failed to establish SSH connection: %v", err)
+			// Specific error handling for host key verification failure is now inside establishSSHConnection
+		}
+		defer sshClient.Close()
+
+		// Create a new session
+		session, err := sshClient.NewSession()
+		if err != nil {
+			log.Fatalf("Failed to create SSH session: %v", err)
+		}
+		defer session.Close()
+		log.Debug("SSH session created.")
+
+		// Set up terminal modes
+		modes := ssh.TerminalModes{
+			ssh.ECHO:          1,     // enable echoing
+			ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+		}
+
+		// Get terminal dimensions
+		fd := int(os.Stdin.Fd())
+		termWidth, termHeight, err := term.GetSize(fd)
+		if err != nil {
+			log.Warnf("Failed to get terminal size, using default 80x40: %v", err)
+			termWidth = 80
+			termHeight = 40
+		}
+
+		// Request PTY
+		if err := session.RequestPty("xterm-256color", termHeight, termWidth, modes); err != nil {
+			log.Fatalf("Request for pseudo terminal failed: %v", err)
+		}
+		log.Debug("Requested PTY.")
+
+		// Set up stdin, stdout, stderr
+		session.Stdin = os.Stdin
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
+
+		// Put the local terminal into raw mode
+		oldState, err := term.MakeRaw(fd)
+		if err != nil {
+			log.Fatalf("Failed to put terminal into raw mode: %v", err)
+		}
+		defer term.Restore(fd, oldState)
+		log.Debug("Terminal set to raw mode.")
+
+		// Start the remote shell
+		if err := session.Shell(); err != nil {
+			log.Fatalf("Failed to start remote shell: %v", err)
+		}
+
+		// Wait for the session to finish
+		if err := session.Wait(); err != nil {
+			// We expect an error when the session closes, often io.EOF or similar.
+			// We don't want to fatalf here unless it's an unexpected error type.
+			if err != io.EOF && !strings.Contains(err.Error(), "wait: remote command exited without exit status") && !strings.Contains(err.Error(), "session closed") {
+				// Log non-standard exit errors but don't necessarily exit fatally
+				log.Warnf("SSH session ended with error: %v", err)
 			}
-			sshKeyPath = filepath.Join(usr.HomeDir, sshKeyPath[2:])
 		}
-
-		sshArgs := []string{
-			"-i", sshKeyPath,
-			fmt.Sprintf("%s@%s", remoteUser, ipAddress),
-		}
-
-		log.Debugf("Executing SSH command: ssh %s", strings.Join(sshArgs, " "))
-
-		sshCmd := exec.Command("ssh", sshArgs...)
-		sshCmd.Stdin = os.Stdin
-		sshCmd.Stdout = os.Stdout
-		sshCmd.Stderr = os.Stderr
-
-		if err := sshCmd.Run(); err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				// SSH likely exited with a non-zero code, which is common (e.g., user exits shell)
-				// We don't necessarily need to treat this as a fatal error of the lambda tool itself.
-				log.Debugf("SSH command finished with exit code: %d", exitErr.ExitCode())
-				os.Exit(exitErr.ExitCode())
-			} else {
-				// Other error (e.g., ssh command not found)
-				log.Fatalf("Error executing SSH command: %v", err)
-			}
-		}
+		log.Debug("SSH session finished.")
 	},
 }
 
 var setupCmd = &cobra.Command{
-	Use:   "setup <instance_name>",
-	Short: "Run the setup process on the specified active instance",
-	Args:  cobra.ExactArgs(1),
+	Use:               "setup <instance_name>",
+	Short:             "Run the setup process on the specified active instance",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: completeInstanceNames,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Check if Bitwarden session exists
+		if os.Getenv("BW_SESSION") == "" {
+			log.Fatal("Bitwarden vault is locked. Please unlock it first (e.g., run 'bw unlock').")
+		}
+
 		instanceName := args[0]
 
 		// 1. Find Instance
@@ -655,7 +824,7 @@ var setupCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error initializing API client: %v", err)
 		}
-		log.Infof("Looking for instance '%s'...\n", instanceName)
+		log.Infof("Looking for instance '%s'", instanceName)
 		var instancesResp InstancesResponse
 		err = client.request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -678,12 +847,12 @@ var setupCmd = &cobra.Command{
 			log.Fatalf("Error: Instance '%s' is active but does not have an IP address. Cannot setup yet.", instanceName)
 		}
 		ipAddress := targetInstance.IP
-		log.Infof("Preparing setup for instance '%s' (%s)...\n", instanceName, ipAddress)
+		log.Infof("Preparing setup for instance '%s' (%s)", instanceName, ipAddress)
 
 		// 2. Get GitHub Token from Bitwarden
-		log.Info("Retrieving GitHub token from Bitwarden...")
+		log.Info("Retrieving GitHub token from Bitwarden")
 		bwCmd := exec.Command("bw", "get", "notes", bitwardenNoteName)
-		ghTokenBytes, err := bwCmd.Output() // Use Output to capture stdout
+		ghTokenBytes, err := bwCmd.Output()
 		if err != nil {
 			log.Error("Failed to execute 'bw get notes'. Is Bitwarden CLI installed, logged in, and unlocked?")
 			if exitErr, ok := err.(*exec.ExitError); ok {
@@ -697,45 +866,42 @@ var setupCmd = &cobra.Command{
 		}
 		log.Info("GitHub token retrieved successfully.")
 
-		// 3. Prepare SSH connection
-		sshKeyPath := defaultSSHKeyPath
-		signer, err := getSSHKey(sshKeyPath)
+		// 3. Establish SSH Connection (without strict known_hosts check for setup)
+		log.Infof("Establishing SSH connection to %s@%s", remoteUser, ipAddress)
+		// For setup, we might tolerate missing known_hosts entry initially, so set useKnownHosts=false
+		sshClient, err := establishSSHConnection(ipAddress, defaultSSHKeyPath, remoteUser, false)
 		if err != nil {
-			log.Fatalf("Failed to get SSH key: %v", err)
-		}
-		sshConfig := &ssh.ClientConfig{
-			User: remoteUser,
-			Auth: []ssh.AuthMethod{
-				ssh.PublicKeys(signer),
-			},
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: Use known_hosts checking for production
-			Timeout:         10 * time.Second,
-		}
-
-		log.Infof("Establishing SSH connection to %s@%s...", remoteUser, ipAddress)
-		sshClient, err := ssh.Dial("tcp", ipAddress+":22", sshConfig)
-		if err != nil {
-			log.Fatalf("Failed to dial SSH: %v", err)
+			log.Fatalf("Failed to establish SSH connection: %v", err)
 		}
 		defer sshClient.Close()
 		log.Info("SSH connection established.")
 
 		// 4. Copy necessary files
 		filesToCopy := map[string]string{
-			getEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                            "~/bw.pass",
-			getEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):              "~/.ssh/id_ed25519-github",
-			getEnvWithDefault("YATAI_CONFIG_FILE", "~/.config/yatai/yatai.yaml"):      "~/.yatai.yaml",                // Original script copied from BENTOML_HOME/.yatai.yaml
-			getEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"): "~/gpg-private-lambdalabs.key", // Added GPG key copy
+			getEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                               "~/bw.pass",
+			getEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
+			getEnvWithDefault("YATAI_CONFIG_FILE", "~/.local/share/bentoml/.yatai.yaml"): "~/.yatai.yaml",                // Original script copied from BENTOML_HOME/.yatai.yaml
+			getEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"):    "~/gpg-private-lambdalabs.key", // Added GPG key copy
 		}
 		for local, remote := range filesToCopy {
-			err = copyFileToRemote(sshClient, local, remote)
+			expandedLocal, err := expandPath(local) // Expand local path before copying
 			if err != nil {
-				log.Fatalf("Failed to copy file '%s' to '%s': %v", local, remote, err)
+				log.Warnf("Could not expand local path '%s', skipping copy: %v", local, err)
+				continue
+			}
+			if _, err := os.Stat(expandedLocal); os.IsNotExist(err) {
+				log.Warnf("Local file '%s' (expanded: '%s') does not exist, skipping copy.", local, expandedLocal)
+				continue
+			}
+
+			err = copyFileToRemote(sshClient, expandedLocal, remote)
+			if err != nil {
+				log.Fatalf("Failed to copy file '%s' to '%s': %v", expandedLocal, remote, err)
 			}
 		}
 
 		// 5. Render and copy setup script
-		log.Info("Rendering remote setup script...")
+		log.Info("Rendering remote setup script")
 		params := remoteSetupParams{
 			RemoteUser:     remoteUser,
 			RemotePassword: remotePassword,
@@ -758,29 +924,144 @@ var setupCmd = &cobra.Command{
 		log.Info("Remote setup script copied.")
 
 		// 6. Execute remote script
-		log.Info("Executing remote setup script... This may take a while.")
+		log.Info("Executing remote setup script This may take a while.")
 		remoteCommand := fmt.Sprintf("INSTANCE_ID=%s bash %s", instanceName, remoteScriptPath)
 		err = runRemoteCommand(sshClient, remoteCommand)
 		if err != nil {
-			log.Warnf("Remote script execution failed: %v", err)
-			// Don't make this fatal, the script might have partially succeeded or failed internally
+			// Capture the error but maybe don't make it fatal immediately
+			log.Errorf("Remote script execution failed: %v", err)
+			// Consider exiting with an error code here if the script failure is critical
+			os.Exit(1)
 		}
 
 		log.Info("--------------------------------------------------")
-		log.Info("Remote setup script execution finished.")
-		log.Info("You may need to reconnect ('lambda connect %s') to see all changes.", instanceName)
+		log.Info("Remote setup script execution finished successfully.") // Changed message on success
+		log.Infof("You may need to reconnect ('lambda connect %s') to see all changes.", instanceName)
 		log.Info("--------------------------------------------------")
 	},
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete <instance_name>",
-	Short: "Terminate the specified instance",
-	Args:  cobra.ExactArgs(1),
+	Use:               "delete <instance_name>",
+	Short:             "Terminate the specified instance",
+	Args:              cobra.ExactArgs(1),
+	Aliases:           []string{"terminate"},
+	ValidArgsFunction: completeInstanceNames,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("delete command called (not implemented yet)")
-		// TODO: Implement delete logic
-		// args[0] is the instance name
+		instanceName := args[0]
+
+		// 1. Find Instance
+		client, err := newAPIClient()
+		if err != nil {
+			log.Fatalf("Error initializing API client: %v", err)
+		}
+		log.Infof("Looking for instance '%s' to delete", instanceName)
+		var instancesResp InstancesResponse
+		err = client.request("GET", "/instances", nil, &instancesResp)
+		if err != nil {
+			log.Fatalf("Error fetching instances: %v", err)
+		}
+		var targetInstance *Instance
+		for i := range instancesResp.Data {
+			if instancesResp.Data[i].Name == instanceName {
+				targetInstance = &instancesResp.Data[i]
+				break
+			}
+		}
+		if targetInstance == nil {
+			log.Fatalf("Error: No instance found with name '%s'. Cannot delete.", instanceName)
+		}
+
+		instanceID := targetInstance.ID
+		log.Warnf("Found instance '%s' (ID: %s, Status: %s). Proceeding with termination",
+			instanceName, instanceID, targetInstance.Status)
+
+		// 2. Send Terminate Request
+		terminateReq := TerminateRequest{
+			InstanceIDs: []string{instanceID},
+		}
+		var terminateResp TerminateResponse
+		err = client.request("POST", "/instance-operations/terminate", terminateReq, &terminateResp)
+		if err != nil {
+			log.Fatalf("Error sending terminate request for instance '%s' (ID: %s): %v", instanceName, instanceID, err)
+		}
+
+		// 3. Verify Response
+		terminated := false
+		for _, terminatedID := range terminateResp.Data.TerminatedInstanceIDs {
+			if terminatedID == instanceID {
+				terminated = true
+				break
+			}
+		}
+
+		if terminated {
+			log.Infof("Instance '%s' (ID: %s) termination initiated successfully.", instanceName, instanceID)
+		} else {
+			log.Errorf("Failed to confirm termination for instance '%s' (ID: %s)", instanceName, instanceID)
+			log.Debugf("API Response Data: %+v", terminateResp.Data)
+			// Exit with error code even if API call succeeded but didn't confirm the ID
+			os.Exit(1)
+		}
+	},
+}
+
+var completionCmd = &cobra.Command{
+	Use:   "completion [bash|zsh|fish|powershell]",
+	Short: "Generate completion script",
+	Long: `To load completions:
+
+Bash:
+
+  $ source <(lambda completion bash)
+
+  # To load completions for each session, execute once:
+  # Linux:
+  $ lambda completion bash > /etc/bash_completion.d/lambda
+  # macOS:
+  $ lambda completion bash > $(brew --prefix)/etc/bash_completion.d/lambda
+
+Zsh:
+
+  # If shell completion is not already enabled in your environment,
+  # you will need to enable it.  You can execute the following once:
+
+  $ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+  # To load completions for each session, execute once:
+  $ lambda completion zsh > "${fpath[1]}/_lambda"
+
+  # You will need to start a new shell for this setup to take effect.
+
+Fish:
+
+  $ lambda completion fish | source
+
+  # To load completions for each session, execute once:
+  $ lambda completion fish > ~/.config/fish/completions/lambda.fish
+
+PowerShell:
+
+  PS> lambda completion powershell | Out-String | Invoke-Expression
+
+  # To load completions for every new session, run:
+  PS> lambda completion powershell > lambda.ps1
+  # and source this file from your PowerShell profile.
+`,
+	DisableFlagsInUseLine: true,
+	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
+	Args:                  cobra.ExactValidArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		switch args[0] {
+		case "bash":
+			cmd.Root().GenBashCompletion(os.Stdout)
+		case "zsh":
+			cmd.Root().GenZshCompletion(os.Stdout)
+		case "fish":
+			cmd.Root().GenFishCompletion(os.Stdout, true)
+		case "powershell":
+			cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout)
+		}
 	},
 }
 
@@ -790,6 +1071,7 @@ func init() {
 	rootCmd.AddCommand(connectCmd)
 	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(deleteCmd)
+	rootCmd.AddCommand(completionCmd)
 
 	// TODO: Add flags if necessary (e.g., --api-key, --ssh-key)
 }
@@ -807,8 +1089,20 @@ func main() {
 		FullTimestamp: true,
 	})
 	log.SetOutput(os.Stdout)
-	// Optionally set log level from env var or flag later
-	// log.SetLevel(log.InfoLevel)
+	// Set log level based on environment variable
+	logLevel := getEnvWithDefault("LOG_LEVEL", "info")
+	switch strings.ToLower(logLevel) {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "warn", "warning":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "verbose":
+		log.SetLevel(log.TraceLevel)
+	default:
+		log.SetLevel(log.InfoLevel)
+	}
 
 	if err := rootCmd.Execute(); err != nil {
 		// Cobra already prints the error, just exit

@@ -28,34 +28,23 @@ buildGoModule rec {
     gh
   ];
 
-  preBuild = ''
-    go mod tidy
-    go mod vendor
-  '';
-  # buildPhase = ''
-  #   runHook preBuild
-  #
-  #   runHook postBuild
-  # '';
-  # installPhase = ''
-  #   runHook preInstall
-  #
-  #   install -Dm555 ${pname} $out/bin/${pname}
-  #
-  #   runHook postInstall
-  # '';
+  postInstall =
+    ''
+      mkdir -p $out/bin
+      install -Dm755 $GOPATH/bin/${pname} $out/bin/${pname}
+      install -Dm755 $GOPATH/bin/${pname} $out/bin/lm
+    ''
+    + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+      installShellCompletion --cmd ${pname} \
+        --bash <($out/bin/${pname} completion bash) \
+        --fish <($out/bin/${pname} completion fish) \
+        --zsh <($out/bin/${pname} completion zsh)
 
-  postFixup = ''
-    wrapProgram $out/bin/${pname} \
-      --prefix PATH : "${lib.makeBinPath buildInputs}"
-  '';
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd ${pname} \
-      --bash <($out/bin/${pname} completion bash) \
-      --fish <($out/bin/${pname} completion fish) \
-      --zsh <($out/bin/${pname} completion zsh)
-  '';
+      installShellCompletion --cmd lm \
+        --bash <($out/bin/lm completion bash) \
+        --fish <($out/bin/lm completion fish) \
+        --zsh <($out/bin/lm completion zsh)
+    '';
 
   meta = with lib; {
     mainProgram = pname;

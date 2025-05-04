@@ -1,12 +1,10 @@
-module github.com/aarnphm/dix
+module github.com/aarnphm/dix/overlays/packages/lambda
 
 go 1.24.2
 
-require github.com/spf13/cobra v1.9.1
-
-require github.com/sirupsen/logrus v1.9.3
-
 require (
+	github.com/sirupsen/logrus v1.9.3
+	github.com/spf13/cobra v1.9.1
 	golang.org/x/crypto v0.37.0
 	golang.org/x/term v0.31.0
 )
