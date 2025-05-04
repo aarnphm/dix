@@ -83,10 +83,10 @@ else
 	log_warn "Nix is already installed."
 fi
 
-log_info "Changing password for #REMOTE_USER#"
+log_info "Changing password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.
-if echo "#REMOTE_USER#:#REMOTE_PASSWORD#" | sudo chpasswd; then
+if echo "{{ .RemoteUser }}:{{ .RemotePassword }}" | sudo chpasswd; then
 	log_info "Password changed successfully."
 else
 	log_warn "Failed to change password using chpasswd. Manual intervention might be required."
@@ -124,7 +124,7 @@ pushd "$WORKSPACE_DIR" >/dev/null
 if command -v gh &>/dev/null; then
 	if ! gh auth status &>/dev/null; then
 		log_info "Logging into GitHub CLI using token"
-		(echo "#GH_TOKEN#" | gh auth login -p ssh --with-token) || true
+		(echo "{{ .GhToken }}" | gh auth login -p ssh --with-token) || true
 	else
 		log_info "GitHub CLI already authenticated"
 	fi
@@ -153,8 +153,8 @@ popd >/dev/null
 
 mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
 
-log_info "Changing shell for #REMOTE_USER#"
-echo "toor" | sudo chsh -s /usr/bin/zsh #REMOTE_USER#
+log_info "Changing shell for {{ .RemoteUser }}"
+echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
 
 gpgconf --kill all
 gpg --import-secrete-keys ~/gpg-private-lambdalabs.key && rm ~/gpg-private-lambdalabs.key

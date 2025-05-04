@@ -222,12 +222,13 @@ create_instance() {
 
 	local ip_address=""
 	local status=""
-	for i in {1..40}; do
+	local end=40
+	for i in {1..$end}; do
 		local instance_info
 		instance_info=$(api_request GET "/instances" | @jq@ -r --arg id "$instance_id" '.data[] | select(.id == $id)')
 
 		if [[ -z "$instance_info" ]]; then
-			log_warn "Instance info not found in list yet. Waiting ($i/20)"
+			log_warn "Instance info not found in list yet. Waiting ($i/$end)"
 			sleep 30
 			continue
 		fi
@@ -239,7 +240,7 @@ create_instance() {
 			log_info "Instance is active!"
 			break
 		fi
-		log_info "Current status: $status... ($i/20)"
+		log_info "Current status: $status... ($i/$end)"
 		sleep 30
 	done
 

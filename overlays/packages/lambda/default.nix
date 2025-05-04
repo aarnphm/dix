@@ -1,51 +1,65 @@
 {
-  stdenv,
   lib,
-  writeProgram,
-  curl,
-  jq,
-  gnused,
-  openssh,
-  bitwarden-cli,
-  gh,
-  bash,
+  stdenv,
+  buildGoModule,
   makeWrapper,
-  ...
+  installShellFiles,
+  bitwarden-cli,
+  openssh,
+  gh,
 }:
-stdenv.mkDerivation rec {
+buildGoModule rec {
   pname = "lambda";
-  version = "0.0.1";
-  src =
-    writeProgram pname {
-      replacements = with lib; {
-        inherit (stdenv) shell;
-        curl = getExe curl;
-        jq = getExe jq;
-        sed = getExe gnused;
-        ssh = getExe' openssh "ssh";
-        scp = getExe' openssh "scp";
-        bw = getExe bitwarden-cli;
-        LAMBDA_SETUP_TEMPLATE = ./setup_remote.sh.in;
-      };
-    }
-    ./lambda.sh;
-  strictDeps = true;
-  nativeBuildInputs = [makeWrapper];
-  buildInputs = [bash jq];
+  version = "0.1.0";
 
-  installPhase = ''
-    mkdir -p $out/bin
-    ln -s $src/bin/${pname} $out/bin/${pname}
+  src = ./.;
+
+  ldflags = ["-s" "-w"];
+
+  vendorHash = null;
+
+  nativeBuildInputs = [makeWrapper installShellFiles];
+
+  proxyVendor = true;
+
+  buildInputs = [
+    bitwarden-cli
+    openssh
+    gh
+  ];
+
+  preBuild = ''
+    go mod tidy
+    go mod vendor
   '';
+  # buildPhase = ''
+  #   runHook preBuild
+  #
+  #   runHook postBuild
+  # '';
+  # installPhase = ''
+  #   runHook preInstall
+  #
+  #   install -Dm555 ${pname} $out/bin/${pname}
+  #
+  #   runHook postInstall
+  # '';
 
   postFixup = ''
     wrapProgram $out/bin/${pname} \
-      --prefix PATH : "${lib.makeBinPath [bitwarden-cli bash jq gh]}"
+      --prefix PATH : "${lib.makeBinPath buildInputs}"
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd ${pname} \
+      --bash <($out/bin/${pname} completion bash) \
+      --fish <($out/bin/${pname} completion fish) \
+      --zsh <($out/bin/${pname} completion zsh)
   '';
 
   meta = with lib; {
-    mainProgram = "${pname}";
-    description = "Lambda Cloud ops";
+    mainProgram = pname;
+    description = "Lambda Cloud operations tool";
     homepage = "https://github.com/aarnphm/dix";
     license = licenses.asl20;
     maintainers = with maintainers; [aarnphm];
