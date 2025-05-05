@@ -2,7 +2,6 @@
   lib,
   stdenv,
   buildGoModule,
-  makeWrapper,
   installShellFiles,
   bitwarden-cli,
   openssh,
@@ -10,7 +9,7 @@
 }:
 buildGoModule rec {
   pname = "lambda";
-  version = "0.1.0";
+  version = "0.0.2";
 
   src = ./.;
 
@@ -18,7 +17,7 @@ buildGoModule rec {
 
   vendorHash = null;
 
-  nativeBuildInputs = [makeWrapper installShellFiles];
+  nativeBuildInputs = [installShellFiles];
 
   proxyVendor = true;
 

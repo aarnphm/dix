@@ -3,7 +3,6 @@ package configutil
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 )
@@ -25,11 +24,11 @@ func ExpandPath(path string) (string, error) {
 		return "", fmt.Errorf("path cannot be empty")
 	}
 	if strings.HasPrefix(path, "~/") {
-		usr, err := user.Current()
+		home, err := os.UserHomeDir()
 		if err != nil {
 			return "", fmt.Errorf("getting current user: %w", err)
 		}
-		return filepath.Join(usr.HomeDir, path[2:]), nil
+		return filepath.Join(home, path[2:]), nil
 	}
 	// Handle absolute paths or paths starting without ~/
 	return filepath.Abs(path)
