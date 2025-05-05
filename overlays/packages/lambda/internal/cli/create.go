@@ -117,18 +117,19 @@ var CreateCmd = &cobra.Command{
 
 		instanceTypeDetails, ok := typesResp.Data[requestedInstanceTypeName]
 		if !ok {
-			log.Errorf("Instance type '%s' not found.", requestedInstanceTypeName)
-			log.Infof("Available instance types:")
+			log.Warnf("Instance type '%s' not found. Available instance types:", requestedInstanceTypeName)
 			for name, details := range typesResp.Data {
 				var regionNames []string
 				for _, r := range details.RegionsWithCapacity {
 					regionNames = append(regionNames, r.Name)
 				}
-				log.Infof("  - %s: %d GPUs (%s), Available in: %s",
-					name,
-					details.InstanceType.Specs.Gpus,
-					details.InstanceType.GpuDescription,
-					strings.Join(regionNames, ", "))
+				if len(regionNames) != 0 {
+					log.Warnf("  %s: %d GPUs (%s), Available in: %s",
+						name,
+						details.InstanceType.Specs.Gpus,
+						details.InstanceType.GpuDescription,
+						strings.Join(regionNames, ", "))
+				}
 			}
 			return fmt.Errorf("instance type '%s' not found", requestedInstanceTypeName)
 		}

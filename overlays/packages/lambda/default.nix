@@ -9,11 +9,11 @@
 }:
 buildGoModule rec {
   pname = "lm";
-  version = "0.0.2";
+  version = "0.0.3";
 
   src = ./.;
 
-  ldflags = ["-s" "-w"];
+  ldflags = ["-s" "-w" "-X main.version=${version}"];
 
   vendorHash = null;
 

@@ -15,6 +15,7 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:           "lm",
+		Aliases:       []string{"lambda"},
 		Short:         "A CLI tool for managing Lambda Cloud resources",
 		Long:          `lm is a command-line tool to interact with the Lambda Cloud API for creating, connecting, setting up, and deleting instances.`,
 		SilenceUsage:  true,
@@ -33,6 +34,17 @@ var (
 		},
 	}
 	apiKey string
+
+	// version of the CLI, set during build via ldflags
+	version = "dev"
+
+	VersionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version of lm",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("lm %s\n", version)
+		},
+	}
 )
 
 func init() {
@@ -47,6 +59,7 @@ func init() {
 	rootCmd.AddCommand(cli.CompletionCmd)
 	rootCmd.AddCommand(cli.ListCmd)
 	rootCmd.AddCommand(cli.RestartCmd)
+	rootCmd.AddCommand(VersionCmd)
 }
 
 func main() {
