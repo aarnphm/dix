@@ -1,4 +1,4 @@
-package lambda
+package main
 
 import (
 	"fmt"
@@ -13,20 +13,37 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "lambda",
-	Short: "A CLI tool for managing Lambda Cloud resources",
-	Long:  `lambda is a command-line tool to interact with the Lambda Cloud API for creating, connecting, setting up, and deleting instances.`,
-}
+var (
+	rootCmd = &cobra.Command{
+		Use:   "lambda",
+		Short: "A CLI tool for managing Lambda Cloud resources",
+		Long:  `lambda is a command-line tool to interact with the Lambda Cloud API for creating, connecting, setting up, and deleting instances.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// Read API key from flag or environment variable
+			if apiKey == "" {
+				apiKey = configutil.GetEnvWithDefault("LAMBDA_API_KEY", "")
+				log.Debugf("API key loaded from environment variable LAMBDA_API_KEY: %s", apiKey)
+			} else {
+				log.Debugf("API key loaded from --api-key: %s", apiKey)
+			}
+			if apiKey == "" {
+				log.Warn("API key not provided via --api-key flag or LAMBDA_API_KEY environment variable.")
+			}
+		},
+	}
+	apiKey string
+)
 
 func init() {
+	// Add persistent flags
+	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "Lambda Cloud API key (env: LAMBDA_API_KEY)")
+
+	// Add commands
 	rootCmd.AddCommand(cli.CreateCmd)
 	rootCmd.AddCommand(cli.ConnectCmd)
 	rootCmd.AddCommand(cli.SetupCmd)
 	rootCmd.AddCommand(cli.DeleteCmd)
 	rootCmd.AddCommand(cli.CompletionCmd)
-
-	// TODO: Add flags if necessary (e.g., --api-key, --ssh-key)
 }
 
 func main() {
@@ -36,7 +53,7 @@ func main() {
 	}
 
 	// Read DEBUG environment variable
-	debugLevel, err := strconv.Atoi(configutil.GetEnvWithDefault("DEBUG", "0"))
+	debugLevel, err := strconv.Atoi(configutil.GetEnvWithDefault("DEBUG", "1"))
 	if err != nil {
 		log.Warnf("Invalid DEBUG level '%d'. Using default level 0 (WARN). Error: %v", debugLevel, err)
 		debugLevel = 0
@@ -66,6 +83,7 @@ func main() {
 	log.Debugf("Log level set to %s based on DEBUG=%d", log.GetLevel(), debugLevel)
 
 	if err := rootCmd.Execute(); err != nil {
+		log.Fatalf("Error executing command: %v", err)
 		os.Exit(1)
 	}
 }

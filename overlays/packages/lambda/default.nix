@@ -30,6 +30,7 @@ buildGoModule rec {
   postInstall =
     ''
       mkdir -p $out/bin
+      ls -rthla $GOPATH/bin
       install -Dm755 $GOPATH/bin/${pname} $out/bin/${pname}
     ''
     + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''

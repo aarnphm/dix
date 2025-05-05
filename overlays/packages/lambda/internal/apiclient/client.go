@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -23,10 +22,9 @@ type APIClient struct {
 }
 
 // NewAPIClient creates a new client for interacting with the Lambda Cloud API.
-func NewAPIClient() (*APIClient, error) {
-	apiKey := os.Getenv("LAMBDA_API_KEY")
+func NewAPIClient(apiKey string) (*APIClient, error) {
 	if apiKey == "" {
-		return nil, fmt.Errorf("LAMBDA_API_KEY environment variable is not set")
+		return nil, fmt.Errorf("API key cannot be empty")
 	}
 	return &APIClient{
 		apiKey: apiKey,

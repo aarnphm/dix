@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -19,19 +20,20 @@ var ConnectCmd = &cobra.Command{
 	Short:             "Connect via SSH to the specified active instance",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: completeInstanceNames,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		instanceName := args[0]
 
-		client, err := api.NewAPIClient()
+		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
+		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
-			log.Fatalf("Error initializing API client: %v", err)
+			return fmt.Errorf("failed to create API client: %w", err)
 		}
 
 		log.Infof("Looking for instance '%s'", instanceName)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
-			log.Fatalf("Error fetching instances: %v", err)
+			return fmt.Errorf("error fetching instances: %w", err)
 		}
 
 		var targetInstance *api.Instance
@@ -43,15 +45,15 @@ var ConnectCmd = &cobra.Command{
 		}
 
 		if targetInstance == nil {
-			log.Fatalf("Error: No instance found with name '%s'.", instanceName)
+			return fmt.Errorf("no instance found with name '%s'", instanceName)
 		}
 
 		if targetInstance.Status != "active" {
-			log.Fatalf("Error: Instance '%s' found, but it is not active (status: '%s'.", instanceName, targetInstance.Status)
+			return fmt.Errorf("instance '%s' found, but it is not active (status: '%s')", instanceName, targetInstance.Status)
 		}
 
 		if targetInstance.IP == "" || targetInstance.IP == "null" {
-			log.Fatalf("Error: Instance '%s' is active but does not have an IP address yet. Please try again shortly.", instanceName)
+			return fmt.Errorf("instance '%s' is active but does not have an IP address yet. Please try again shortly", instanceName)
 		}
 
 		ipAddress := targetInstance.IP
@@ -60,14 +62,14 @@ var ConnectCmd = &cobra.Command{
 		// Establish SSH connection using the helper function (with known_hosts check)
 		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, configutil.DefaultSSHKeyPath, configutil.RemoteUser, true)
 		if err != nil {
-			log.Fatalf("Failed to establish SSH connection: %v", err)
+			return fmt.Errorf("failed to establish SSH connection: %w", err)
 		}
 		defer sshClient.Close()
 
 		// Create a new session
 		session, err := sshClient.NewSession()
 		if err != nil {
-			log.Fatalf("Failed to create SSH session: %v", err)
+			return fmt.Errorf("failed to create SSH session: %w", err)
 		}
 		defer session.Close()
 		log.Debug("SSH session created.")
@@ -90,7 +92,7 @@ var ConnectCmd = &cobra.Command{
 
 		// Request PTY
 		if err := session.RequestPty("xterm-256color", termHeight, termWidth, modes); err != nil {
-			log.Fatalf("Request for pseudo terminal failed: %v", err)
+			return fmt.Errorf("request for pseudo terminal failed: %w", err)
 		}
 		log.Debug("Requested PTY.")
 
@@ -102,24 +104,28 @@ var ConnectCmd = &cobra.Command{
 		// Put the local terminal into raw mode
 		oldState, err := term.MakeRaw(fd)
 		if err != nil {
-			log.Fatalf("Failed to put terminal into raw mode: %v", err)
+			return fmt.Errorf("failed to put terminal into raw mode: %w", err)
 		}
 		defer term.Restore(fd, oldState)
 		log.Debug("Terminal set to raw mode.")
 
 		// Start the remote shell
 		if err := session.Shell(); err != nil {
-			log.Fatalf("Failed to start remote shell: %v", err)
+			return fmt.Errorf("failed to start remote shell: %w", err)
 		}
 
 		// Wait for the session to finish
-		if err := session.Wait(); err != nil {
+		waitErr := session.Wait()
+		if waitErr != nil {
 			// We expect an error when the session closes, often io.EOF or similar.
 			// We don't want to fatalf here unless it's an unexpected error type.
-			if err != io.EOF && !strings.Contains(err.Error(), "wait: remote command exited without exit status") && !strings.Contains(err.Error(), "session closed") {
+			if waitErr != io.EOF && !strings.Contains(waitErr.Error(), "wait: remote command exited without exit status") && !strings.Contains(waitErr.Error(), "session closed") {
 				// Log non-standard exit errors but don't necessarily exit fatally
-				log.Warnf("SSH session ended with error: %v", err)
+				log.Warnf("SSH session ended with error: %v", waitErr)
+				return fmt.Errorf("ssh session ended with error: %w", waitErr)
 			}
+			log.Debugf("SSH session wait finished with expected error: %v", waitErr)
 		}
+		return nil
 	},
 }

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"os"
+	"fmt"
 
 	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
 	log "github.com/sirupsen/logrus"
@@ -14,19 +14,20 @@ var DeleteCmd = &cobra.Command{
 	Args:              cobra.ExactArgs(1),
 	Aliases:           []string{"terminate"},
 	ValidArgsFunction: completeInstanceNames,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		instanceName := args[0]
 
 		// 1. Find Instance
-		client, err := api.NewAPIClient()
+		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
+		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
-			log.Fatalf("Error initializing API client: %v", err)
+			return fmt.Errorf("failed to create API client: %w", err)
 		}
-		log.Infof("Looking for instance '%s' to delete", instanceName)
+		log.Debugf("Looking for instance '%s' to delete", instanceName)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
-			log.Fatalf("Error fetching instances: %v", err)
+			return fmt.Errorf("error fetching instances: %w", err)
 		}
 		var targetInstance *api.Instance
 		for i := range instancesResp.Data {
@@ -36,11 +37,11 @@ var DeleteCmd = &cobra.Command{
 			}
 		}
 		if targetInstance == nil {
-			log.Fatalf("Error: No instance found with name '%s'. Cannot delete.", instanceName)
+			return fmt.Errorf("no instance found with name '%s'. Cannot delete", instanceName)
 		}
 
 		instanceID := targetInstance.ID
-		log.Warnf("Found instance '%s' (ID: %s, Status: %s). Proceeding with termination",
+		log.Debugf("Found instance '%s' (ID: %s, Status: %s). Proceeding with termination",
 			instanceName, instanceID, targetInstance.Status)
 
 		// 2. Send Terminate Request
@@ -50,7 +51,7 @@ var DeleteCmd = &cobra.Command{
 		var terminateResp api.TerminateResponse
 		err = client.Request("POST", "/instance-operations/terminate", terminateReq, &terminateResp)
 		if err != nil {
-			log.Fatalf("Error sending terminate request for instance '%s' (ID: %s): %v", instanceName, instanceID, err)
+			return fmt.Errorf("error sending terminate request for instance '%s' (ID: %s): %w", instanceName, instanceID, err)
 		}
 
 		// 3. Verify Response
@@ -67,8 +68,8 @@ var DeleteCmd = &cobra.Command{
 		} else {
 			log.Errorf("Failed to confirm termination for instance '%s' (ID: %s)", instanceName, instanceID)
 			log.Debugf("API Response Data: %+v", terminateResp.Data)
-			// Exit with error code even if API call succeeded but didn't confirm the ID
-			os.Exit(1)
+			return fmt.Errorf("failed to confirm termination for instance '%s' (ID: %s)", instanceName, instanceID)
 		}
+		return nil
 	},
 }

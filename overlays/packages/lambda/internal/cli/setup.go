@@ -30,24 +30,26 @@ var SetupCmd = &cobra.Command{
 	Short:             "Run the setup process on the specified active instance",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: completeInstanceNames,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// Check if Bitwarden session exists
 		if os.Getenv("BW_SESSION") == "" {
-			log.Fatal("Bitwarden vault is locked. Please unlock it first (e.g., run 'bw unlock').")
+			return fmt.Errorf("bitwarden vault is locked. Please unlock it first (e.g., run 'bw unlock')")
 		}
 
 		instanceName := args[0]
 
 		// 1. Find Instance
-		client, err := api.NewAPIClient()
+		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
+		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
-			log.Fatalf("Error initializing API client: %v", err)
+			return fmt.Errorf("error initializing API client: %w", err)
 		}
+
 		log.Infof("Looking for instance '%s'", instanceName)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
-			log.Fatalf("Error fetching instances: %v", err)
+			return fmt.Errorf("error fetching instances: %w", err)
 		}
 		var targetInstance *api.Instance
 		for i := range instancesResp.Data {
@@ -57,31 +59,32 @@ var SetupCmd = &cobra.Command{
 			}
 		}
 		if targetInstance == nil {
-			log.Fatalf("Error: No instance found with name '%s'.", instanceName)
+			return fmt.Errorf("no instance found with name '%s'", instanceName)
 		}
 		if targetInstance.Status != "active" {
-			log.Fatalf("Error: Instance '%s' found, but it is not active (status: '%s'. Cannot setup.", instanceName, targetInstance.Status)
+			return fmt.Errorf("instance '%s' found, but it is not active (status: '%s'). Cannot setup", instanceName, targetInstance.Status)
 		}
 		if targetInstance.IP == "" || targetInstance.IP == "null" {
-			log.Fatalf("Error: Instance '%s' is active but does not have an IP address. Cannot setup yet.", instanceName)
+			return fmt.Errorf("instance '%s' is active but does not have an IP address. Cannot setup yet", instanceName)
 		}
 		ipAddress := targetInstance.IP
 		log.Infof("Preparing setup for instance '%s' (%s)", instanceName, ipAddress)
 
-		// 2. Get GitHub Token from Bitwarden
 		log.Info("Retrieving GitHub token from Bitwarden")
 		bwCmd := exec.Command("bw", "get", "notes", configutil.BitwardenNoteName)
 		ghTokenBytes, err := bwCmd.Output()
 		if err != nil {
 			log.Error("Failed to execute 'bw get notes'. Is Bitwarden CLI installed, logged in, and unlocked?")
+			stderr := ""
 			if exitErr, ok := err.(*exec.ExitError); ok {
-				log.Errorf("Bitwarden CLI stderr: %s", string(exitErr.Stderr))
+				stderr = string(exitErr.Stderr)
+				log.Errorf("Bitwarden CLI stderr: %s", stderr)
 			}
-			log.Fatalf("Error running bitwarden command: %v", err)
+			return fmt.Errorf("error running bitwarden command: %w. Stderr: %s", err, stderr)
 		}
 		ghToken := strings.TrimSpace(string(ghTokenBytes))
 		if ghToken == "" {
-			log.Fatalf("Failed to retrieve GitHub token (item note '%s') from Bitwarden. Is the note populated?", configutil.BitwardenNoteName)
+			return fmt.Errorf("failed to retrieve GitHub token (item note '%s') from Bitwarden. Is the note populated?", configutil.BitwardenNoteName)
 		}
 		log.Info("GitHub token retrieved successfully.")
 
@@ -89,7 +92,7 @@ var SetupCmd = &cobra.Command{
 		log.Infof("Establishing SSH connection to %s@%s", configutil.RemoteUser, ipAddress)
 		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, configutil.DefaultSSHKeyPath, configutil.RemoteUser, true)
 		if err != nil {
-			log.Fatalf("Failed to establish SSH connection: %v", err)
+			return fmt.Errorf("failed to establish SSH connection: %w", err)
 		}
 		defer sshClient.Close()
 		log.Info("SSH connection established.")
@@ -114,7 +117,7 @@ var SetupCmd = &cobra.Command{
 
 			err = sshutil.CopyFileToRemote(sshClient, expandedLocal, remote)
 			if err != nil {
-				log.Fatalf("Failed to copy file '%s' to '%s': %v", expandedLocal, remote, err)
+				return fmt.Errorf("failed to copy file '%s' to '%s': %w", expandedLocal, remote, err)
 			}
 		}
 
@@ -127,17 +130,17 @@ var SetupCmd = &cobra.Command{
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
 		if err != nil {
-			log.Fatalf("Failed to parse remote script template: %v", err)
+			return fmt.Errorf("failed to parse remote script template: %w", err)
 		}
 		var scriptBuf bytes.Buffer
 		if err := tmpl.Execute(&scriptBuf, params); err != nil {
-			log.Fatalf("Failed to execute remote script template: %v", err)
+			return fmt.Errorf("failed to execute remote script template: %w", err)
 		}
 
 		remoteScriptPath := fmt.Sprintf("/tmp/setup_remote_%s.sh", instanceName)
 		err = sshutil.CopyContentToRemote(sshClient, scriptBuf.Bytes(), remoteScriptPath, "0755")
 		if err != nil {
-			log.Fatalf("Failed to copy rendered script to '%s': %v", remoteScriptPath, err)
+			return fmt.Errorf("failed to copy rendered script to '%s': %w", remoteScriptPath, err)
 		}
 		log.Info("Remote setup script copied.")
 
@@ -146,15 +149,14 @@ var SetupCmd = &cobra.Command{
 		remoteCommand := fmt.Sprintf("INSTANCE_ID=%s bash %s", instanceName, remoteScriptPath)
 		err = sshutil.RunRemoteCommand(sshClient, remoteCommand)
 		if err != nil {
-			// Capture the error but maybe don't make it fatal immediately
 			log.Errorf("Remote script execution failed: %v", err)
-			// Consider exiting with an error code here if the script failure is critical
-			os.Exit(1)
+			return fmt.Errorf("remote script execution failed: %w", err)
 		}
 
 		log.Info("--------------------------------------------------")
 		log.Info("Remote setup script execution finished successfully.")
 		log.Infof("You may need to reconnect ('lambda connect %s') to see all changes.", instanceName)
 		log.Info("--------------------------------------------------")
+		return nil
 	},
 }
