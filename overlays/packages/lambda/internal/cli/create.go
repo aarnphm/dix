@@ -30,6 +30,8 @@ var CreateCmd = &cobra.Command{
 
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
 		prefix, _ := cmd.Flags().GetString("prefix")
+		sshKeyName, _ := cmd.Root().PersistentFlags().GetString("ssh-key-name")
+		log.Debugf("Using SSH key name: %s", sshKeyName)
 		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
 			return fmt.Errorf("error initializing API client: %w", err)
@@ -225,7 +227,7 @@ var CreateCmd = &cobra.Command{
 		launchReq := api.LaunchRequest{
 			RegionName:       targetRegion,
 			InstanceTypeName: requestedInstanceTypeName,
-			SSHKeyNames:      []string{configutil.SSHKeyName},
+			SSHKeyNames:      []string{sshKeyName},
 			FileSystemNames:  []string{filesystemName},
 			Name:             instanceName,
 		}

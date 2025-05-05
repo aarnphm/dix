@@ -40,16 +40,18 @@ var SetupCmd = &cobra.Command{
 			return fmt.Errorf("bitwarden vault is locked. Please unlock it first (e.g., run 'bw unlock')")
 		}
 
-		instanceName := args[0]
+		instanceNameOrID := args[0]
 
 		// 1. Find Instance
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
+		sshKeyPath, _ := cmd.Root().PersistentFlags().GetString("ssh-key-path")
+		sshKeyName, _ := cmd.Root().PersistentFlags().GetString("ssh-key-name")
 		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
 			return fmt.Errorf("error initializing API client: %w", err)
 		}
 
-		log.Infof("Looking for instance '%s'", instanceName)
+		log.Infof("Looking for instance '%s'", instanceNameOrID)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -57,22 +59,22 @@ var SetupCmd = &cobra.Command{
 		}
 		var targetInstance *api.Instance
 		for i := range instancesResp.Data {
-			if instancesResp.Data[i].Name == instanceName {
+			if instancesResp.Data[i].Name == instanceNameOrID || instancesResp.Data[i].ID == instanceNameOrID {
 				targetInstance = &instancesResp.Data[i]
 				break
 			}
 		}
 		if targetInstance == nil {
-			return fmt.Errorf("no instance found with name '%s'", instanceName)
+			return fmt.Errorf("no instance found with name or ID '%s'", instanceNameOrID)
 		}
 		if targetInstance.Status != "active" {
-			return fmt.Errorf("instance '%s' found, but it is not active (status: '%s'). Cannot setup", instanceName, targetInstance.Status)
+			return fmt.Errorf("instance '%s' found, but it is not active (status: '%s'). Cannot setup", targetInstance.Name, targetInstance.Status)
 		}
 		if targetInstance.IP == "" || targetInstance.IP == "null" {
-			return fmt.Errorf("instance '%s' is active but does not have an IP address. Cannot setup yet", instanceName)
+			return fmt.Errorf("instance '%s' is active but does not have an IP address. Cannot setup yet", targetInstance.Name)
 		}
 		ipAddress := targetInstance.IP
-		log.Infof("Preparing setup for instance '%s' (%s)", instanceName, ipAddress)
+		log.Infof("Found instance: %s (%s), IP: %s, Status: %s", targetInstance.Name, targetInstance.ID, ipAddress, targetInstance.Status)
 
 		// Determine effective dix setup setting
 		effectiveDixSetup := dixFlag
@@ -113,10 +115,10 @@ var SetupCmd = &cobra.Command{
 		log.Info("GPG passphrase retrieved successfully.")
 
 		// 3. Establish SSH Connection (without strict known_hosts check for setup)
-		log.Infof("Establishing SSH connection to %s@%s", configutil.RemoteUser, ipAddress)
-		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, configutil.DefaultSSHKeyPath, configutil.RemoteUser, true)
+		log.Debugf("Attempting to establish SSH connection to %s using key %s", ipAddress, sshKeyPath)
+		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, sshKeyPath, configutil.RemoteUser, sshKeyName, true)
 		if err != nil {
-			return fmt.Errorf("failed to establish SSH connection: %w", err)
+			return fmt.Errorf("failed to establish SSH connection to %s: %w", ipAddress, err)
 		}
 		defer sshClient.Close()
 		log.Info("SSH connection established.")
@@ -166,7 +168,7 @@ var SetupCmd = &cobra.Command{
 			return fmt.Errorf("failed to execute remote script template: %w", err)
 		}
 
-		remoteScriptPath := fmt.Sprintf("/tmp/setup_remote_%s.sh", instanceName)
+		remoteScriptPath := fmt.Sprintf("/tmp/setup_remote_%s.sh", targetInstance.Name)
 		err = sshutil.CopyContentToRemote(sshClient, scriptBuf.Bytes(), remoteScriptPath, "0755")
 		if err != nil {
 			return fmt.Errorf("failed to copy rendered script to '%s': %w", remoteScriptPath, err)
@@ -175,7 +177,7 @@ var SetupCmd = &cobra.Command{
 
 		// 6. Execute remote script
 		log.Info("Executing remote setup script This may take a while.")
-		remoteCommand := fmt.Sprintf("INSTANCE_ID=%s bash %s", instanceName, remoteScriptPath)
+		remoteCommand := fmt.Sprintf("INSTANCE_ID=%s bash %s", targetInstance.Name, remoteScriptPath)
 		err = sshutil.RunRemoteCommand(sshClient, remoteCommand)
 		if err != nil {
 			return fmt.Errorf("remote script execution failed: %w", err)
@@ -187,7 +189,7 @@ var SetupCmd = &cobra.Command{
 
 		log.Info("--------------------------------------------------")
 		log.Info("Remote setup script execution finished successfully.")
-		log.Infof("Next step: 'lambda connect %s'", instanceName)
+		log.Infof("Next step: 'lambda connect %s'", targetInstance.Name)
 		log.Info("--------------------------------------------------")
 		return nil
 	},

@@ -33,7 +33,9 @@ var (
 			}
 		},
 	}
-	apiKey string
+	apiKey     string
+	sshKeyName string
+	sshKeyPath string
 
 	// version of the CLI, set during build via ldflags
 	version = "dev"
@@ -50,6 +52,8 @@ var (
 func init() {
 	// Add persistent flags
 	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "Lambda Cloud API key (env: LAMBDA_API_KEY)")
+	rootCmd.PersistentFlags().StringVar(&sshKeyName, "ssh-key-name", configutil.SSHKeyName, "SSH key name to use for instances")
+	rootCmd.PersistentFlags().StringVar(&sshKeyPath, "ssh-key-path", configutil.DefaultSSHKeyPath, "Path to the SSH private key")
 
 	// Add commands
 	rootCmd.AddCommand(cli.CreateCmd)

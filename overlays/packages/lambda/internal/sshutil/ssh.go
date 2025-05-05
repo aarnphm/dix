@@ -223,7 +223,7 @@ func CopyContentToRemote(client *ssh.Client, content []byte, remotePath string, 
 }
 
 // EstablishSSHConnection dials and configures an SSH client connection.
-func EstablishSSHConnection(ipAddress, sshKeyPath, user string, useKnownHosts bool) (*ssh.Client, error) {
+func EstablishSSHConnection(ipAddress, sshKeyPath, user, sshKeyName string, useKnownHosts bool) (*ssh.Client, error) {
 	// Get SSH key signer using the local function
 	signer, err := getSSHKey(sshKeyPath)
 	if err != nil {
@@ -284,7 +284,7 @@ func EstablishSSHConnection(ipAddress, sshKeyPath, user string, useKnownHosts bo
 		}
 		// Handle other potential dial errors (timeout, connection refused, auth failed etc.)
 		if strings.Contains(err.Error(), "unable to authenticate") {
-			log.Errorf("SSH authentication failed for user %s. Check private key ('%s') and ensure corresponding public key ('%s') is added to Lambda Cloud.", user, sshKeyPath, configutil.SSHKeyName)
+			log.Errorf("SSH authentication failed for user %s. Check private key ('%s') and ensure corresponding public key ('%s') is added to Lambda Cloud.", user, sshKeyPath, sshKeyName)
 			return nil, fmt.Errorf("SSH authentication failed: %w", err)
 		}
 		if strings.Contains(err.Error(), "connection refused") {

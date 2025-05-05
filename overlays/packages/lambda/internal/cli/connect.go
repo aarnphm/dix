@@ -21,15 +21,17 @@ var ConnectCmd = &cobra.Command{
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: completeInstanceNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		instanceIdentifier := args[0]
+		instanceNameOrID := args[0]
 
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
+		sshKeyPath, _ := cmd.Root().PersistentFlags().GetString("ssh-key-path")
+		sshKeyName, _ := cmd.Root().PersistentFlags().GetString("ssh-key-name")
 		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
-			return fmt.Errorf("failed to create API client: %w", err)
+			return fmt.Errorf("error initializing API client: %w", err)
 		}
 
-		log.Debugf("Looking for instance '%s'", instanceIdentifier)
+		log.Debugf("Looking for instance '%s'", instanceNameOrID)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -39,30 +41,30 @@ var ConnectCmd = &cobra.Command{
 		var targetInstance *api.Instance
 		// First, try matching by ID
 		for i := range instancesResp.Data {
-			if instancesResp.Data[i].ID == instanceIdentifier {
+			if instancesResp.Data[i].ID == instanceNameOrID {
 				targetInstance = &instancesResp.Data[i]
-				log.Debugf("Found instance by ID: %s", instanceIdentifier)
+				log.Debugf("Found instance by ID: %s", instanceNameOrID)
 				break
 			}
 		}
 		// If not found by ID, try matching by Name
 		if targetInstance == nil {
-			log.Debugf("Instance not found by ID '%s', trying by name", instanceIdentifier)
+			log.Debugf("Instance not found by ID '%s', trying by name", instanceNameOrID)
 			for i := range instancesResp.Data {
-				if instancesResp.Data[i].Name == instanceIdentifier {
+				if instancesResp.Data[i].Name == instanceNameOrID {
 					// Check for ambiguity (multiple instances with the same name)
 					if targetInstance != nil {
-						return fmt.Errorf("multiple instances found with the name '%s'. Please use the unique instance ID instead", instanceIdentifier)
+						return fmt.Errorf("multiple instances found with the name '%s'. Please use the unique instance ID instead", instanceNameOrID)
 					}
 					targetInstance = &instancesResp.Data[i]
-					log.Debugf("Found instance by name: %s", instanceIdentifier)
+					log.Debugf("Found instance by name: %s", instanceNameOrID)
 					// Don't break here, continue to check for duplicates
 				}
 			}
 		}
 
 		if targetInstance == nil {
-			return fmt.Errorf("no instance found with name or ID '%s'", instanceIdentifier)
+			return fmt.Errorf("no instance found with name or ID '%s'", instanceNameOrID)
 		}
 
 		instanceName := targetInstance.Name // Get name for logging/errors
@@ -78,9 +80,9 @@ var ConnectCmd = &cobra.Command{
 		log.Infof("Connecting to %s at %s", targetInstance.ID, ipAddress)
 
 		// Establish SSH connection using the helper function (with known_hosts check)
-		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, configutil.DefaultSSHKeyPath, configutil.RemoteUser, true)
+		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, sshKeyPath, configutil.RemoteUser, sshKeyName, true)
 		if err != nil {
-			return fmt.Errorf("failed to establish SSH connection: %w", err)
+			return fmt.Errorf("failed to establish SSH connection to %s: %w", ipAddress, err)
 		}
 		defer sshClient.Close()
 
