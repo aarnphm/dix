@@ -147,17 +147,18 @@
           };
         in {
           formatter.${system} = pkgs.alejandra;
-          apps.${system} = {
-            ubuntu-nvidia = mkApp {
-              drv = pkgs.dix.ubuntu-nvidia;
-            };
-            lambda = mkApp {
-              drv = pkgs.dix.lambda;
-            };
-            aws-credentials = mkApp {
-              drv = pkgs.dix.aws-credentials;
-            };
-          };
+          apps.${system} = builtins.listToAttrs (
+            builtins.map (
+              name: {
+                inherit name;
+                value = mkApp {drv = pkgs.dix.${name};};
+              }
+            ) [
+              "lambda"
+              "ubuntu-nvidia"
+              "aws-credentials"
+            ]
+          );
           packages.${system} = with pkgs; {inherit dix;};
           checks.${system} = {
             pre-commit-check = git-hooks.lib.${system}.run {

@@ -83,6 +83,10 @@ else
 	log_warn "Nix is already installed."
 fi
 
+{{ if .DixSetup }}
+
+log_info "Running nix"
+nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L --option accept-flake-config true
 log_info "Changing password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.
@@ -91,9 +95,6 @@ if echo "{{ .RemoteUser }}:{{ .RemotePassword }}" | sudo chpasswd; then
 else
 	log_warn "Failed to change password using chpasswd. Manual intervention might be required."
 fi
-
-log_info "Running nix"
-nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L --option accept-flake-config true
 
 # Source again after home-manager potentially changed profiles
 # Source Nix environment for the current script
@@ -153,11 +154,16 @@ popd >/dev/null
 
 mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
 
+log_info "Import default GPG keys for remote machine"
+echo '{{ .RemoteGpgPassphrase }}' >/tmp/gpg_passphrase
+cat /tmp/gpg_passphrase | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --import ~/gpg-private-lambdalabs.key
+rm /tmp/gpg_passphrase && rm ~/gpg-private-lambdalabs.key
+gpgconf --kill all
+
 log_info "Changing shell for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
 
-gpgconf --kill all
-gpg --import-secrete-keys ~/gpg-private-lambdalabs.key && rm ~/gpg-private-lambdalabs.key
+{{ end }}
 
 touch ~/.lambda-setup-once
 

@@ -20,10 +20,17 @@ import (
 var remoteSetupScriptTemplate string
 
 type remoteSetupParams struct {
-	RemoteUser     string
-	RemotePassword string
-	GhToken        string
+	RemoteUser          string
+	RemotePassword      string
+	RemoteGpgPassphrase string
+	GhToken             string
+	DixSetup            bool
 }
+
+var (
+	dixFlag   bool // For --dix
+	noDixFlag bool // For --no-dix
+)
 
 var SetupCmd = &cobra.Command{
 	Use:               "setup <instance_name>",
@@ -70,6 +77,12 @@ var SetupCmd = &cobra.Command{
 		ipAddress := targetInstance.IP
 		log.Infof("Preparing setup for instance '%s' (%s)", instanceName, ipAddress)
 
+		// Determine effective dix setup setting
+		effectiveDixSetup := dixFlag
+		if noDixFlag {
+			effectiveDixSetup = false
+		}
+
 		log.Info("Retrieving GitHub token from Bitwarden")
 		bwCmd := exec.Command("bw", "get", "notes", configutil.BitwardenNoteName)
 		ghTokenBytes, err := bwCmd.Output()
@@ -87,6 +100,23 @@ var SetupCmd = &cobra.Command{
 			return fmt.Errorf("failed to retrieve GitHub token (item note '%s') from Bitwarden. Is the note populated?", configutil.BitwardenNoteName)
 		}
 		log.Info("GitHub token retrieved successfully.")
+		log.Info("Retrieving GPG passphrase from Bitwarden")
+		gpgCmd := exec.Command("bw", "get", "notes", "gpg-github-paperspace-a4000-keys")
+		gpgPassphraseBytes, err := gpgCmd.Output()
+		if err != nil {
+			log.Error("Failed to execute 'bw get notes' for GPG passphrase. Is Bitwarden CLI installed, logged in, and unlocked?")
+			stderr := ""
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				stderr = string(exitErr.Stderr)
+				log.Errorf("Bitwarden CLI stderr: %s", stderr)
+			}
+			return fmt.Errorf("error running bitwarden command for GPG passphrase: %w. Stderr: %s", err, stderr)
+		}
+		remoteGpgPassphrase := strings.TrimSpace(string(gpgPassphraseBytes))
+		if remoteGpgPassphrase == "" {
+			return fmt.Errorf("failed to retrieve GPG passphrase (item note 'gpg-github-paperspace-a4000-keys') from Bitwarden. Is the note populated?")
+		}
+		log.Info("GPG passphrase retrieved successfully.")
 
 		// 3. Establish SSH Connection (without strict known_hosts check for setup)
 		log.Infof("Establishing SSH connection to %s@%s", configutil.RemoteUser, ipAddress)
@@ -97,37 +127,41 @@ var SetupCmd = &cobra.Command{
 		defer sshClient.Close()
 		log.Info("SSH connection established.")
 
-		// 4. Copy necessary files
-		filesToCopy := map[string]string{
-			configutil.GetEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                               "~/bw.pass",
-			configutil.GetEnvWithDefault("SSH_KNOWN_HOSTS_FILE", "~/.ssh/known_hosts"):              "~/.ssh/known_hosts",
-			configutil.GetEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
-			configutil.GetEnvWithDefault("YATAI_CONFIG_FILE", "~/.local/share/bentoml/.yatai.yaml"): "~/.yatai.yaml",
-			configutil.GetEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"):    "~/gpg-private-lambdalabs.key",
-		}
-		for local, remote := range filesToCopy {
-			expandedLocal, err := configutil.ExpandPath(local)
-			if err != nil {
-				log.Warnf("Could not expand local path '%s', skipping copy: %v", local, err)
-				continue
+		// 4. Copy necessary files, only for dix setup.
+		if effectiveDixSetup {
+			filesToCopy := map[string]string{
+				configutil.GetEnvWithDefault("SSH_KNOWN_HOSTS_FILE", "~/.ssh/known_hosts"):              "~/.ssh/known_hosts",
+				configutil.GetEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
+				configutil.GetEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                               "~/bw.pass",
+				configutil.GetEnvWithDefault("YATAI_CONFIG_FILE", "~/.local/share/bentoml/.yatai.yaml"): "~/.yatai.yaml",
+				configutil.GetEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"):    "~/gpg-private-lambdalabs.key",
 			}
-			if _, err := os.Stat(expandedLocal); os.IsNotExist(err) {
-				log.Warnf("Local file '%s' (expanded: '%s') does not exist, skipping copy.", local, expandedLocal)
-				continue
-			}
+			for local, remote := range filesToCopy {
+				expandedLocal, err := configutil.ExpandPath(local)
+				if err != nil {
+					log.Warnf("Could not expand local path '%s', skipping copy: %v", local, err)
+					continue
+				}
+				if _, err := os.Stat(expandedLocal); os.IsNotExist(err) {
+					log.Warnf("Local file '%s' (expanded: '%s') does not exist, skipping copy.", local, expandedLocal)
+					continue
+				}
 
-			err = sshutil.CopyFileToRemote(sshClient, expandedLocal, remote)
-			if err != nil {
-				return fmt.Errorf("failed to copy file '%s' to '%s': %w", expandedLocal, remote, err)
+				err = sshutil.CopyFileToRemote(sshClient, expandedLocal, remote)
+				if err != nil {
+					return fmt.Errorf("failed to copy file '%s' to '%s': %w", expandedLocal, remote, err)
+				}
 			}
 		}
 
 		// 5. Render and copy setup script
 		log.Info("Rendering remote setup script")
 		params := remoteSetupParams{
-			RemoteUser:     configutil.RemoteUser,
-			RemotePassword: configutil.RemotePassword,
-			GhToken:        ghToken,
+			RemoteUser:          configutil.RemoteUser,
+			RemotePassword:      configutil.RemotePassword,
+			RemoteGpgPassphrase: remoteGpgPassphrase,
+			GhToken:             ghToken,
+			DixSetup:            effectiveDixSetup,
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
 		if err != nil {
@@ -152,11 +186,20 @@ var SetupCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("remote script execution failed: %w", err)
 		}
+		err = sshutil.RunRemoteCommand(sshClient, "rm "+remoteScriptPath)
+		if err != nil {
+			return fmt.Errorf("failed to remove remote script: %w", err)
+		}
 
 		log.Info("--------------------------------------------------")
 		log.Info("Remote setup script execution finished successfully.")
-		log.Infof("You may need to reconnect ('lambda connect %s') to see all changes.", instanceName)
+		log.Infof("Next step: 'lambda connect %s'", instanceName)
 		log.Info("--------------------------------------------------")
 		return nil
 	},
+}
+
+func init() {
+	SetupCmd.Flags().BoolVar(&dixFlag, "dix", true, "Perform aarnphm/dix's specific setup steps")
+	SetupCmd.Flags().BoolVar(&noDixFlag, "no-dix", false, "Disable aarnphm/dix's specific setup steps")
 }

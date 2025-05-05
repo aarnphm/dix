@@ -75,7 +75,7 @@ var ConnectCmd = &cobra.Command{
 		}
 
 		ipAddress := targetInstance.IP
-		log.Infof("Connecting to instance '%s' (ID: %s) at %s", instanceName, targetInstance.ID, ipAddress)
+		log.Infof("Connecting to %s at %s", targetInstance.ID, ipAddress)
 
 		// Establish SSH connection using the helper function (with known_hosts check)
 		sshClient, err := sshutil.EstablishSSHConnection(ipAddress, configutil.DefaultSSHKeyPath, configutil.RemoteUser, true)
