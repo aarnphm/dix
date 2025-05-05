@@ -100,6 +100,7 @@ var SetupCmd = &cobra.Command{
 		// 4. Copy necessary files
 		filesToCopy := map[string]string{
 			configutil.GetEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                               "~/bw.pass",
+			configutil.GetEnvWithDefault("SSH_KNOWN_HOSTS_FILE", "~/.ssh/known_hosts"):              "~/.ssh/known_hosts",
 			configutil.GetEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
 			configutil.GetEnvWithDefault("YATAI_CONFIG_FILE", "~/.local/share/bentoml/.yatai.yaml"): "~/.yatai.yaml",
 			configutil.GetEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"):    "~/gpg-private-lambdalabs.key",
@@ -142,14 +143,13 @@ var SetupCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to copy rendered script to '%s': %w", remoteScriptPath, err)
 		}
-		log.Info("Remote setup script copied.")
+		log.Debug("Remote setup script copied.")
 
 		// 6. Execute remote script
 		log.Info("Executing remote setup script This may take a while.")
 		remoteCommand := fmt.Sprintf("INSTANCE_ID=%s bash %s", instanceName, remoteScriptPath)
 		err = sshutil.RunRemoteCommand(sshClient, remoteCommand)
 		if err != nil {
-			log.Errorf("Remote script execution failed: %v", err)
 			return fmt.Errorf("remote script execution failed: %w", err)
 		}
 
