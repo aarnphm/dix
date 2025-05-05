@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -294,13 +296,19 @@ var CreateCmd = &cobra.Command{
 		log.Infof("  Status: %s", finalInstance.Status)
 		log.Infof("  IP Address: %s", finalInstance.IP)
 		log.Println("--------------------------------------------------")
-		expandedKeyPath, _ := configutil.ExpandPath(configutil.DefaultSSHKeyPath)
 		log.Infof("IMPORTANT: Connect manually once to add host key:")
-		log.Infof("  ssh %s@%s -i %s", configutil.RemoteUser, finalInstance.IP, expandedKeyPath)
+		log.Infof("  ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
 		log.Infof("To connect:")
 		log.Infof("  lambda connect %s", finalInstance.Name)
-		log.Infof("To setup:")
-		log.Infof("  lambda setup %s", finalInstance.Name)
+		log.Infof("To connect:")
+		log.Infof("  lambda connect %s", finalInstance.Name)
+		// Only show setup instructions if ~/bw.pass exists
+		homeDir, _ := os.UserHomeDir()
+		bwPassPath := filepath.Join(homeDir, "bw.pass")
+		if _, err := os.Stat(bwPassPath); err == nil {
+			log.Infof("To setup:")
+			log.Infof("  lambda setup %s", finalInstance.Name)
+		}
 		return nil
 	},
 }

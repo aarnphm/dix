@@ -9,7 +9,7 @@
 }:
 buildGoModule rec {
   pname = "lm";
-  version = "0.0.3";
+  version = "0.0.0";
 
   src = ./.;
 
@@ -26,6 +26,10 @@ buildGoModule rec {
     openssh
     gh
   ];
+
+  passthru = {
+    inherit version;
+  };
 
   postInstall =
     ''

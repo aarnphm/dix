@@ -163,6 +163,9 @@ gpgconf --kill all
 log_info "Changing shell for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
 
+nvim --headless "+Lazy! sync" +qa
+nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
+
 {{ end }}
 
 touch ~/.lambda-setup-once
