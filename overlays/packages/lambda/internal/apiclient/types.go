@@ -78,8 +78,8 @@ type LaunchResponse struct {
 
 // CreateFilesystemRequest represents the payload for creating a filesystem.
 type CreateFilesystemRequest struct {
-	RegionName string   `json:"region_name"`
-	Name       []string `json:"name"`
+	RegionName string `json:"region"`
+	Name       string `json:"name"`
 }
 
 // CreateFilesystemResponse represents the API response after creating a filesystem.

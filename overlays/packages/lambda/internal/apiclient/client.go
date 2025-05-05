@@ -94,7 +94,7 @@ func (c *APIClient) Request(method, endpoint string, body any, result any) error
 			}
 			errMsg += fmt.Sprintf(". Response body: %s", truncatedBody)
 		}
-		return fmt.Errorf("%s %s failed with status %s%s", method, url, resp.Status, errMsg)
+		return fmt.Errorf("%s %s failed [%s]%s", method, url, resp.Status, errMsg)
 	}
 
 	// Decode successful response if result pointer is provided

@@ -202,7 +202,7 @@ var CreateCmd = &cobra.Command{
 			log.Infof("Filesystem '%s' not found. Creating", filesystemName)
 			createFsReq := api.CreateFilesystemRequest{
 				RegionName: targetRegion,
-				Name:       []string{filesystemName},
+				Name:       filesystemName,
 			}
 			var createFsResp api.CreateFilesystemResponse
 			err = client.Request("POST", "/filesystems", createFsReq, &createFsResp) // Endpoint was /filesystems in bash?
