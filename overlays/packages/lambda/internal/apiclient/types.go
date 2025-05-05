@@ -9,7 +9,10 @@ type Instance struct {
 	Region struct {
 		Name string `json:"name"`
 	} `json:"region"`
-	InstanceTypeName string `json:"instance_type_name,omitempty"` // Added for more context
+	InstanceType struct {
+		Name              string `json:"name"`
+		PriceCentsPerHour int    `json:"price_cents_per_hour"`
+	} `json:"instance_type"`
 }
 
 // InstancesResponse represents the API response for listing instances.
@@ -96,5 +99,17 @@ type TerminateRequest struct {
 type TerminateResponse struct {
 	Data struct {
 		TerminatedInstances []Instance `json:"terminated_instances"` // API likely returns full instance details
+	} `json:"data"`
+}
+
+// RestartRequest represents the payload for restarting instances.
+type RestartRequest struct {
+	InstanceIDs []string `json:"instance_ids"`
+}
+
+// RestartResponse represents the API response after restarting instances.
+type RestartResponse struct {
+	Data struct {
+		RestartedInstances []Instance `json:"restarted_instances"`
 	} `json:"data"`
 }

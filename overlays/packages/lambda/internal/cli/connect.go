@@ -29,7 +29,7 @@ var ConnectCmd = &cobra.Command{
 			return fmt.Errorf("failed to create API client: %w", err)
 		}
 
-		log.Infof("Looking for instance '%s'", instanceName)
+		log.Debugf("Looking for instance '%s'", instanceName)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {

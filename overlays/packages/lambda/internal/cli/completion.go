@@ -20,14 +20,12 @@ func completeInstanceNames(cmd *cobra.Command, args []string, toComplete string)
 	apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
 	client, err := api.NewAPIClient(apiKey)
 	if err != nil {
-		// Cannot log here during completion, return default
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	var instancesResp api.InstancesResponse
 	err = client.Request("GET", "/instances", nil, &instancesResp)
 	if err != nil {
-		// Cannot log here during completion, return default
 		return nil, cobra.ShellCompDirectiveError
 	}
 

@@ -45,6 +45,8 @@ func init() {
 	rootCmd.AddCommand(cli.SetupCmd)
 	rootCmd.AddCommand(cli.DeleteCmd)
 	rootCmd.AddCommand(cli.CompletionCmd)
+	rootCmd.AddCommand(cli.ListCmd)
+	rootCmd.AddCommand(cli.RestartCmd)
 }
 
 func main() {

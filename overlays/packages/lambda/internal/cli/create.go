@@ -70,7 +70,7 @@ var CreateCmd = &cobra.Command{
 				continue
 			}
 			// Extract GPU type from existing instance's type name (e.g., "gpu_1x_a100" -> "a100")
-			parts := strings.SplitN(inst.InstanceTypeName, "x_", 2)
+			parts := strings.SplitN(inst.InstanceType.Name, "x_", 2)
 			if len(parts) == 2 {
 				existingGpuType := parts[1]
 
