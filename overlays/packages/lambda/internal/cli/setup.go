@@ -27,10 +27,7 @@ type remoteSetupParams struct {
 	DixSetup            bool
 }
 
-var (
-	dixFlag   bool // For --dix
-	noDixFlag bool // For --no-dix
-)
+var dixFlag bool
 
 var SetupCmd = &cobra.Command{
 	Use:               "setup <instance_name>",
@@ -79,9 +76,6 @@ var SetupCmd = &cobra.Command{
 
 		// Determine effective dix setup setting
 		effectiveDixSetup := dixFlag
-		if noDixFlag {
-			effectiveDixSetup = false
-		}
 
 		log.Info("Retrieving GitHub token from Bitwarden")
 		bwCmd := exec.Command("bw", "get", "notes", configutil.BitwardenNoteName)
@@ -200,6 +194,5 @@ var SetupCmd = &cobra.Command{
 }
 
 func init() {
-	SetupCmd.Flags().BoolVar(&dixFlag, "dix", true, "Perform aarnphm/dix's specific setup steps")
-	SetupCmd.Flags().BoolVar(&noDixFlag, "no-dix", false, "Disable aarnphm/dix's specific setup steps")
+	SetupCmd.Flags().BoolVar(&dixFlag, "dix", false, "Perform aarnphm/dix's specific setup steps")
 }

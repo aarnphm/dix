@@ -12,5 +12,6 @@ self: super: {
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
       gvim = super.callPackage ./packages/gvim {};
       lambda = super.callPackage ./packages/lambda {};
+      setup = super.callPackage ./packages/setup {};
     };
 }

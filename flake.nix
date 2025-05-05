@@ -51,6 +51,7 @@
     nixpkgs,
     home-manager,
     git-hooks,
+    neovim,
     ...
   } @ inputs: let
     # Create overlays
@@ -59,7 +60,8 @@
         dix = super.dix or {};
         neovim-stable = super.neovim;
       })
-      inputs.neovim.overlays.default
+      neovim.overlays.default
+      nix-darwin.overlays.default
       (import ./overlays/10-dev-overrides.nix)
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
@@ -157,6 +159,7 @@
               "lambda"
               "ubuntu-nvidia"
               "aws-credentials"
+              "setup"
             ]
           );
           packages.${system} = with pkgs; {inherit dix;};

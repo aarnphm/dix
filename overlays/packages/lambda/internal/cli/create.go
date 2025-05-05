@@ -306,6 +306,6 @@ var CreateCmd = &cobra.Command{
 }
 
 func init() {
-	CreateCmd.Flags().String("prefix", "aaron", "Prefix for the instance name")
+	CreateCmd.Flags().String("prefix", "generic", "Prefix for the instance name")
 	CreateCmd.Flags().Int("max-instances-per-type", 2, "Maximum number of active instances allowed for the same GPU type")
 }
