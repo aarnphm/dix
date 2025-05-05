@@ -55,20 +55,57 @@ var CreateCmd = &cobra.Command{
 
 		log.Infof("Requesting instance type: %s, Name: %s", requestedInstanceTypeName, instanceName)
 
-		// 2. Check for existing instance with the same name
-		log.Debugf("Checking for existing instance named '%s'", instanceName)
+		maxInstancesPerType, _ := cmd.Flags().GetInt("max-instances-per-type")
+		log.Debugf("Checking max instances limit (%d) for GPU type '%s'", maxInstancesPerType, gpuType)
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
 			return fmt.Errorf("error fetching instances: %w", err)
 		}
+		existingSameTypeCount := 0
+		var existingInstancesInfo []string
 		for _, inst := range instancesResp.Data {
-			if inst.Name == instanceName {
-				log.Warnf("Instance named '%s' already exists with status '%s'", instanceName, inst.Status)
-				log.Warnf("You can connect using: lambda connect %s", instanceName)
-				return nil
+			// Only consider active instances
+			if inst.Status != "active" {
+				continue
+			}
+			// Extract GPU type from existing instance's type name (e.g., "gpu_1x_a100" -> "a100")
+			parts := strings.SplitN(inst.InstanceTypeName, "x_", 2)
+			if len(parts) == 2 {
+				existingGpuType := parts[1]
+
+				compareExistingType := existingGpuType
+				compareRequestedType := gpuType
+
+				parts = strings.SplitN(existingGpuType, "_", 2)
+				if len(parts) > 0 {
+					compareExistingType = parts[0]
+				}
+
+				parts = strings.SplitN(gpuType, "_", 2)
+				if len(parts) > 0 {
+					compareRequestedType = parts[0]
+				}
+
+				if compareExistingType == compareRequestedType {
+					existingSameTypeCount++
+					existingInstancesInfo = append(existingInstancesInfo,
+						fmt.Sprintf("  - Name: %s, ID: %s, IP: %s, Region: %s",
+							inst.Name, inst.ID, inst.IP, inst.Region.Name))
+				}
 			}
 		}
+
+		if existingSameTypeCount >= maxInstancesPerType {
+			log.Warnf("Maximum number of active instances (%d) reached for GPU type '%s'.", maxInstancesPerType, gpuType)
+			log.Warnf("Found %d existing active instance(s):", existingSameTypeCount)
+			for _, info := range existingInstancesInfo {
+				log.Warn(info)
+			}
+			log.Warnf("To connect, use: lambda connect <instance_name>")
+			return nil
+		}
+		log.Debugf("Found %d active instances of type '%s'. Limit (%d) not reached.", existingSameTypeCount, gpuType, maxInstancesPerType)
 
 		// 3. Find the requested instance type and available regions
 		log.Debugf("Fetching details for instance type '%s'", requestedInstanceTypeName)
@@ -114,7 +151,9 @@ var CreateCmd = &cobra.Command{
 				for _, r := range availableRegions {
 					availableNames = append(availableNames, r.Name)
 				}
-				log.Infof("Available regions: %s", strings.Join(availableNames, ", "))
+				if len(availableNames) > 0 {
+					log.Debugf("Available regions: %s", strings.Join(availableNames, ", "))
+				}
 				return fmt.Errorf("instance type '%s' unavailable in region '%s'", requestedInstanceTypeName, userRegion)
 			}
 		} else {
@@ -166,7 +205,7 @@ var CreateCmd = &cobra.Command{
 				Name:       []string{filesystemName},
 			}
 			var createFsResp api.CreateFilesystemResponse
-			err = client.Request("POST", "/file-systems", createFsReq, &createFsResp) // Endpoint was /filesystems in bash?
+			err = client.Request("POST", "/filesystems", createFsReq, &createFsResp) // Endpoint was /filesystems in bash?
 			if err != nil {
 				return fmt.Errorf("error creating filesystem '%s': %w", filesystemName, err)
 			}
@@ -218,7 +257,7 @@ var CreateCmd = &cobra.Command{
 					if ipDisplay == "" || ipDisplay == "null" {
 						ipDisplay = "xxx.xx.xxx.xxx"
 					}
-					log.Infof("Polling instance %s: Status=%s, IP=%s (%02d/%d)", instanceID, inst.Status, ipDisplay, attempt+1, maxRetries)
+					log.Infof("Polling instance %s: Status=%-7s, IP=%s (%02d/%d)", instanceID, inst.Status, ipDisplay, attempt+1, maxRetries)
 					if inst.Status == "active" && inst.IP != "" && inst.IP != "null" {
 						finalInstance = inst
 						found = true
@@ -267,4 +306,5 @@ var CreateCmd = &cobra.Command{
 
 func init() {
 	CreateCmd.Flags().String("prefix", "aaron", "Prefix for the instance name")
+	CreateCmd.Flags().Int("max-instances-per-type", 2, "Maximum number of active instances allowed for the same GPU type")
 }

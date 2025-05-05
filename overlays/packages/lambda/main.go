@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -15,9 +14,11 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "lambda",
-		Short: "A CLI tool for managing Lambda Cloud resources",
-		Long:  `lambda is a command-line tool to interact with the Lambda Cloud API for creating, connecting, setting up, and deleting instances.`,
+		Use:           "lm",
+		Short:         "A CLI tool for managing Lambda Cloud resources",
+		Long:          `lm is a command-line tool to interact with the Lambda Cloud API for creating, connecting, setting up, and deleting instances.`,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			// Read API key from flag or environment variable
 			if apiKey == "" {
@@ -83,7 +84,6 @@ func main() {
 	log.Debugf("Log level set to %s based on DEBUG=%d", log.GetLevel(), debugLevel)
 
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("Error executing command: %v", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

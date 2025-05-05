@@ -49,23 +49,6 @@ func completeGpuSpec(cmd *cobra.Command, args []string, toComplete string) ([]st
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	// Regex to match the start: number followed by 'x'
-	re := regexp.MustCompile(`^([1-9][0-9]*)x(.*)$`)
-	matches := re.FindStringSubmatch(toComplete)
-
-	var numGPUs string
-	var gpuPrefix string
-	if len(matches) == 3 {
-		numGPUs = matches[1]
-		gpuPrefix = matches[2] // The part after 'x' user might have started typing
-	} else {
-		// If it doesn't match <num>x, don't suggest anything specific yet,
-		// maybe user is typing number or just 'x'.
-		// Let Cobra handle default file completion or whatever it does.
-		// Or return specific guidance? For now, no suggestions.
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
 	apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
 	client, err := api.NewAPIClient(apiKey)
 	if err != nil {
@@ -78,18 +61,69 @@ func completeGpuSpec(cmd *cobra.Command, args []string, toComplete string) ([]st
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	var suggestions []string
-	expectedInstancePrefix := fmt.Sprintf("gpu_%sx_", numGPUs)
+	// Regex to match the full spec: <number>x<type>
+	specRe := regexp.MustCompile(`^([1-9][0-9]*)x([a-zA-Z0-9_]+)$`)
+	// Regex to extract spec from API type name: gpu_<number>x_<type>
+	apiNameRe := regexp.MustCompile(`^gpu_([1-9][0-9]*)x_([a-zA-Z0-9_]+)$`)
 
-	for name := range typesResp.Data {
-		if strings.HasPrefix(name, expectedInstancePrefix) {
-			gpuType := strings.TrimPrefix(name, expectedInstancePrefix)
-			// Only suggest if the type matches what the user has started typing after 'x'
-			if strings.HasPrefix(gpuType, gpuPrefix) {
-				// Format the suggestion back to the full <num>x<type> format
+	var suggestions []string
+
+	if toComplete == "" {
+		// If nothing is typed, suggest all possible specs
+		for name := range typesResp.Data {
+			matches := apiNameRe.FindStringSubmatch(name)
+			if len(matches) == 3 {
+				numGPUs := matches[1]
+				gpuType := matches[2]
 				suggestions = append(suggestions, fmt.Sprintf("%sx%s", numGPUs, gpuType))
 			}
 		}
+	} else {
+		// If user started typing, try to match and filter
+		specMatches := specRe.FindStringSubmatch(toComplete)
+		if len(specMatches) == 3 {
+			// User typed something like "1xA10"
+			numGPUs := specMatches[1]
+			gpuPrefix := specMatches[2]
+			expectedInstancePrefix := fmt.Sprintf("gpu_%sx_%s", numGPUs, gpuPrefix)
+
+			for name := range typesResp.Data {
+				if strings.HasPrefix(name, expectedInstancePrefix) {
+					// Extract the full GPU type from the API name
+					apiMatches := apiNameRe.FindStringSubmatch(name)
+					if len(apiMatches) == 3 {
+						// Format the suggestion back to the full <num>x<type> format
+						suggestions = append(suggestions, fmt.Sprintf("%sx%s", apiMatches[1], apiMatches[2]))
+					}
+				}
+			}
+		} else if numPartMatch := regexp.MustCompile(`^([1-9][0-9]*)$`).FindStringSubmatch(toComplete); len(numPartMatch) == 2 {
+			// User typed only a number like "1" or "8"
+			numGPUs := numPartMatch[1]
+			expectedInstancePrefix := fmt.Sprintf("gpu_%sx_", numGPUs)
+			for name := range typesResp.Data {
+				if strings.HasPrefix(name, expectedInstancePrefix) {
+					apiMatches := apiNameRe.FindStringSubmatch(name)
+					if len(apiMatches) == 3 {
+						suggestions = append(suggestions, fmt.Sprintf("%sx%s", apiMatches[1], apiMatches[2]))
+					}
+				}
+			}
+		} else if numXPartMatch := regexp.MustCompile(`^([1-9][0-9]*)x$`).FindStringSubmatch(toComplete); len(numXPartMatch) == 2 {
+			// User typed a number followed by 'x', like "1x"
+			numGPUs := numXPartMatch[1]
+			expectedInstancePrefix := fmt.Sprintf("gpu_%sx_", numGPUs)
+			for name := range typesResp.Data {
+				if strings.HasPrefix(name, expectedInstancePrefix) {
+					apiMatches := apiNameRe.FindStringSubmatch(name)
+					if len(apiMatches) == 3 {
+						suggestions = append(suggestions, fmt.Sprintf("%sx%s", apiMatches[1], apiMatches[2]))
+					}
+				}
+			}
+		}
+		// If toComplete doesn't match any pattern we handle, suggestions will be empty,
+		// leading to default shell completion.
 	}
 
 	return suggestions, cobra.ShellCompDirectiveNoFileComp
