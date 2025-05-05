@@ -302,8 +302,6 @@ var CreateCmd = &cobra.Command{
 		log.Infof("  ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
 		log.Infof("To connect:")
 		log.Infof("  lambda connect %s", finalInstance.Name)
-		log.Infof("To connect:")
-		log.Infof("  lambda connect %s", finalInstance.Name)
 		// Only show setup instructions if ~/bw.pass exists
 		homeDir, _ := os.UserHomeDir()
 		bwPassPath := filepath.Join(homeDir, "bw.pass")

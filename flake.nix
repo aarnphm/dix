@@ -36,6 +36,13 @@
         git-hooks.follows = "git-hooks";
       };
     };
+    # atuin
+    atuin = {
+      url = "github:atuinsh/atuin";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
 
   nixConfig = {
@@ -52,6 +59,7 @@
     home-manager,
     git-hooks,
     neovim,
+    atuin,
     ...
   } @ inputs: let
     # Create overlays
@@ -60,8 +68,11 @@
         dix = super.dix or {};
         neovim-stable = super.neovim;
       })
+      # additional packages
       neovim.overlays.default
       nix-darwin.overlays.default
+      atuin.overlays.default
+      # custom dix's overlays
       (import ./overlays/10-dev-overrides.nix)
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
