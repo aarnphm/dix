@@ -30,6 +30,7 @@
     earthly
     buildifier
     awscli2
+    atuin
 
     # git
     git

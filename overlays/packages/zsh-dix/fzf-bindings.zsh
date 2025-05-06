@@ -129,7 +129,7 @@ bindkey -M emacs '^R' fzf-history-widget
 bindkey -M vicmd '^R' fzf-history-widget
 bindkey -M viins '^R' fzf-history-widget
 
-# CTRL-F - Find a file, if exists then edit it dirrectly
+# CTRL-F - Find a file, if exists then edit it directly
 fzf-find-edit-widget() {
   local selected
   setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
