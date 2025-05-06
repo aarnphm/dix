@@ -9,7 +9,7 @@ import (
 
 // Constants related to configuration and defaults
 const (
-	DefaultRegion = "us-south-3"
+	DefaultRegion = "us-east-1"
 	SSHKeyName    = "aaron-mbp16"
 	RemoteUser    = "ubuntu"
 	// TODO: Consider removing hardcoded password

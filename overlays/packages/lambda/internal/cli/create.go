@@ -106,7 +106,7 @@ var CreateCmd = &cobra.Command{
 			for _, info := range existingInstancesInfo {
 				log.Warn(info)
 			}
-			log.Warnf("To connect, use: lambda connect <instance_name>")
+			log.Warnf("To connect, use: lm connect <instance_name>")
 			return nil
 		}
 		log.Debugf("Found %d active instances of type '%s'. Limit (%d) not reached.", existingSameTypeCount, gpuType, maxInstancesPerType)
@@ -170,7 +170,7 @@ var CreateCmd = &cobra.Command{
 				for _, r := range availableRegions {
 					if strings.HasPrefix(r.Name, "us-") {
 						targetRegion = r.Name
-						log.Infof("Default region '%s' not available for '%s'. Using first available US region: %s", configutil.DefaultRegion, requestedInstanceTypeName, targetRegion)
+						log.Warnf("Default region '%s' not available for '%s'. Using first available US region: %s", configutil.DefaultRegion, requestedInstanceTypeName, targetRegion)
 						break
 					}
 				}
@@ -260,9 +260,9 @@ var CreateCmd = &cobra.Command{
 				if inst.ID == instanceID {
 					ipDisplay := inst.IP
 					if ipDisplay == "" || ipDisplay == "null" {
-						ipDisplay = "xxx.xx.xxx.xxx"
+						ipDisplay = "xxx.xxx.xxx.xxx"
 					}
-					log.Infof("Polling instance %s: Status=%-7s, IP=%s (%02d/%d)", instanceID, inst.Status, ipDisplay, attempt+1, maxRetries)
+					log.Infof("Polling instance %s: Status=%-7s, IP=%-12s (%02d/%d)", instanceID, inst.Status, ipDisplay, attempt+1, maxRetries)
 					if inst.Status == "active" && inst.IP != "" && inst.IP != "null" {
 						finalInstance = inst
 						found = true
@@ -301,13 +301,13 @@ var CreateCmd = &cobra.Command{
 		log.Infof("IMPORTANT: Connect manually once to add host key:")
 		log.Infof("  ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
 		log.Infof("To connect:")
-		log.Infof("  lambda connect %s", finalInstance.Name)
+		log.Infof("  lm connect %s", finalInstance.Name)
 		// Only show setup instructions if ~/bw.pass exists
 		homeDir, _ := os.UserHomeDir()
 		bwPassPath := filepath.Join(homeDir, "bw.pass")
 		if _, err := os.Stat(bwPassPath); err == nil {
 			log.Infof("To setup:")
-			log.Infof("  lambda setup %s", finalInstance.Name)
+			log.Infof("  lm setup %s", finalInstance.Name)
 		}
 		return nil
 	},

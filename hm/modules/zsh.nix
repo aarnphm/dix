@@ -31,7 +31,6 @@ in {
     programs.zsh = {
       enable = true;
       enableVteIntegration = true;
-      defaultKeymap = "vicmd";
       history = {
         expireDuplicatesFirst = true;
         ignoreDups = true;
@@ -46,7 +45,9 @@ in {
       initContent = lib.mkOrder 550 ''
         ${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin
         eval "$(${lib.getExe pkgs.oh-my-posh} init zsh --config ${config.xdg.configHome}/oh-my-posh/config.toml)"
+        source ${fzfComplete}/fzf_complete_realpath.zsh
         source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh
+
       '';
       plugins = [
         {
@@ -69,7 +70,15 @@ in {
         }
       ];
       envExtra = ''
-        source ${fzfComplete}/fzf_complete_realpath.zsh
+        zmodload zsh/mapfile
+
+        bwpassfile="${config.home.homeDirectory}/bw.pass"
+        if [[ -f "$bwpassfile" ]]; then
+          bitwarden=("''${(f@)mapfile[$bwpassfile]}")
+          export BW_MASTER=$bitwarden[1]
+          export BW_CLIENTID=$bitwarden[2]
+          export BW_CLIENTSECRET=$bitwarden[3]
+        fi
       '';
       profileExtra = let
         sites =

@@ -62,7 +62,7 @@ log_debug() {
 log_info "Starting Remote Setup"
 
 if [[ -f ~/.lambda-setup-once ]]; then
-	log_warn "Setup has been ran once. Use 'lambda connect $INSTANCE_ID' instead."
+	log_warn "Setup has been ran once. Use 'lm connect $INSTANCE_ID' instead."
 	exit 0
 fi
 

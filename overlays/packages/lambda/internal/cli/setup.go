@@ -190,7 +190,7 @@ var SetupCmd = &cobra.Command{
 
 		log.Info("--------------------------------------------------")
 		log.Info("Remote setup script execution finished successfully.")
-		log.Infof("Next step: 'lambda connect %s'", targetInstance.Name)
+		log.Infof("Next step: 'lm connect %s'", targetInstance.Name)
 		log.Info("--------------------------------------------------")
 		return nil
 	},

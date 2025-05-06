@@ -62,8 +62,6 @@
       "obsidian"
       "rectangle"
       "steam"
-      "zed"
-      "zed@preview"
       "orbstack"
       "wezterm"
       "alt-tab"
