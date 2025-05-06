@@ -129,6 +129,7 @@ var SetupCmd = &cobra.Command{
 				configutil.GetEnvWithDefault("SSH_KNOWN_HOSTS_FILE", "~/.ssh/known_hosts"):              "~/.ssh/known_hosts",
 				configutil.GetEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
 				configutil.GetEnvWithDefault("BW_PASS_FILE", "~/bw.pass"):                               "~/bw.pass",
+				configutil.GetEnvWithDefault("ATUIN_PASS_FILE", "~/atuin.key"):                          "~/atuin.key",
 				configutil.GetEnvWithDefault("YATAI_CONFIG_FILE", "~/.local/share/bentoml/.yatai.yaml"): "~/.yatai.yaml",
 				configutil.GetEnvWithDefault("GPG_PRIVATE_KEY_FILE", "~/gpg-private-lambdalabs.key"):    "~/gpg-private-lambdalabs.key",
 			}
