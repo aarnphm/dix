@@ -8,7 +8,6 @@ import (
 	"text/tabwriter"
 
 	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +24,6 @@ var ListCmd = &cobra.Command{
 			return fmt.Errorf("error initializing API client: %w", err)
 		}
 
-		log.Debug("Fetching list of instances")
 		var instancesResp api.InstancesResponse
 		err = client.Request("GET", "/instances", nil, &instancesResp)
 		if err != nil {
@@ -42,14 +40,13 @@ var ListCmd = &cobra.Command{
 			}
 			fmt.Println(string(jsonData))
 		case "table", "":
-			if len(instancesResp.Data) == 0 {
-				log.Info("No active instances found.")
-				return nil
-			}
-
 			// Initialize tabwriter for aligned columns
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "NAME\tID\tIP_ADDRESS\tGPU_TYPE\tREGION\tSTATUS\tPRICE/HR\tUPTIME")
+
+			if len(instancesResp.Data) == 0 {
+				return nil
+			}
 
 			activeCount := 0
 			for _, inst := range instancesResp.Data {
@@ -89,9 +86,7 @@ var ListCmd = &cobra.Command{
 				)
 			}
 
-			if activeCount == 0 {
-				log.Debug("No active instances found. (Other instances might exist with different statuses)")
-			} else {
+			if activeCount != 0 {
 				w.Flush()
 			}
 		default:

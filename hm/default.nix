@@ -206,6 +206,7 @@ in {
   gpg.enable = true;
   ssh.enable = true;
   zsh.enable = true;
+  atuin.enable = true;
   zoxide.enable = true;
   neovim.enable = true;
 
