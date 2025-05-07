@@ -20,7 +20,7 @@ with lib; {
       flags = ["--disable-up-arrow"];
       enableZshIntegration = true;
       settings = {
-        keymap_mode = "vim-normal";
+        keymap_mode = "vim-insert";
         auto_sync = true;
         sync_frequency = "30m";
         style = "compact";

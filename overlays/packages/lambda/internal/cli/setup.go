@@ -25,9 +25,11 @@ type remoteSetupParams struct {
 	RemoteGpgPassphrase string
 	GhToken             string
 	DixSetup            bool
+	ForceSetup          bool
 }
 
 var dixFlag bool
+var forceFlag bool
 
 var SetupCmd = &cobra.Command{
 	Use:               "setup <instance_name>",
@@ -159,6 +161,7 @@ var SetupCmd = &cobra.Command{
 			RemoteGpgPassphrase: remoteGpgPassphrase,
 			GhToken:             ghToken,
 			DixSetup:            effectiveDixSetup,
+			ForceSetup:          forceFlag,
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
 		if err != nil {
@@ -198,4 +201,5 @@ var SetupCmd = &cobra.Command{
 
 func init() {
 	SetupCmd.Flags().BoolVar(&dixFlag, "dix", false, "Perform aarnphm/dix's specific setup steps")
+	SetupCmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "Force setup even if already completed once")
 }

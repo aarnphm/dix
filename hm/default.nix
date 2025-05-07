@@ -364,13 +364,13 @@ in {
 
         # aliases
         pip = ''${lib.getExe pkgs.uv} pip'';
-        b = ''${lib.getExe' pkgs.uv "uvx"} bentoml'';
+        b = ''bentoml'';
         k = lib.getExe pkgs.kubectl;
         cat = lib.getExe pkgs.bat;
         hf = ''${lib.getExe' pkgs.uv "uvx"} --with 'huggingface-hub[cli]' huggingface-cli'';
         jupytertext = ''${lib.getExe' pkgs.uv "uvx"} jupytertext'';
         ipynb = ''${lib.getExe' pkgs.uv "uvx"} jupyter notebook --autoreload --debug'';
-        ipy = "ipython --autoindent --ext=autoreload -c='%autoreload 2'";
+        ipy = "ipython --autoindent";
         pinentry = lib.getExe (
           if pkgs.stdenv.isDarwin
           then pkgs.pinentry_mac
