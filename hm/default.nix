@@ -42,8 +42,7 @@
     # languages
     go
     protobuf
-    nodejs_22
-    corepack_23
+    nodejs_24
     zulu17
     rustup
     julia_19
