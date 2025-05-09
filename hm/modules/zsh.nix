@@ -45,9 +45,7 @@ in {
       initContent = lib.mkOrder 550 ''
         ${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin
         eval "$(${lib.getExe pkgs.oh-my-posh} init zsh --config ${config.xdg.configHome}/oh-my-posh/config.toml)"
-        source ${fzfComplete}/fzf_complete_realpath.zsh
         source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh
-
       '';
       plugins = [
         {
@@ -79,6 +77,8 @@ in {
           export BW_CLIENTID=$bitwarden[2]
           export BW_CLIENTSECRET=$bitwarden[3]
         fi
+
+        source ${fzfComplete}/fzf_complete_realpath.zsh
       '';
       profileExtra = let
         sites =

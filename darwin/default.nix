@@ -124,11 +124,7 @@
 
   # Networking
   networking = {
-    knownNetworkServices = [
-      "Wi-Fi"
-      "Thunderbolt Ethernet Slot 2"
-    ];
-    dns = ["1.1.1.1" "8.8.8.8"];
+    # dns = ["1.1.1.1" "8.8.8.8"];
     computerName = "appl-mbp16";
     hostName = "appl-mbp16";
   };

@@ -28,8 +28,10 @@ type remoteSetupParams struct {
 	ForceSetup          bool
 }
 
-var dixFlag bool
-var forceFlag bool
+var (
+	dixFlag   bool
+	forceFlag bool
+)
 
 var SetupCmd = &cobra.Command{
 	Use:               "setup <instance_name>",

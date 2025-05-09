@@ -10,7 +10,6 @@
     # editor
     vim
     bun
-    zed-editor
     uv
 
     # kubernetes and container

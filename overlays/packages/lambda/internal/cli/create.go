@@ -291,13 +291,6 @@ var CreateCmd = &cobra.Command{
 		}
 
 		log.Println("--------------------------------------------------")
-		log.Infof("Instance '%s' created successfully!", finalInstance.Name)
-		log.Infof("  ID: %s", finalInstance.ID)
-		log.Infof("  Type: %s", requestedInstanceTypeName)
-		log.Infof("  Region: %s", finalInstance.Region.Name)
-		log.Infof("  Status: %s", finalInstance.Status)
-		log.Infof("  IP Address: %s", finalInstance.IP)
-		log.Println("--------------------------------------------------")
 		log.Infof("IMPORTANT: Connect manually once to add host key:")
 		log.Infof("  ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
 		log.Infof("To connect:")
@@ -307,7 +300,7 @@ var CreateCmd = &cobra.Command{
 		bwPassPath := filepath.Join(homeDir, "bw.pass")
 		if _, err := os.Stat(bwPassPath); err == nil {
 			log.Infof("To setup:")
-			log.Infof("  lm setup %s", finalInstance.Name)
+			log.Infof("  lm setup %s --dix", finalInstance.Name)
 		}
 		return nil
 	},

@@ -7,7 +7,7 @@
   rustup,
 }:
 writeShellApplication {
-  name = "setup";
+  name = "bootstrap";
   runtimeInputs = [coreutils git gh nix rustup];
   text = ''
     #!/usr/bin/env bash

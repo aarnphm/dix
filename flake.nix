@@ -170,7 +170,7 @@
               "lambda"
               "ubuntu-nvidia"
               "aws-credentials"
-              "setup"
+              "bootstrap"
             ]
           );
           packages.${system} = with pkgs; {inherit dix;};
