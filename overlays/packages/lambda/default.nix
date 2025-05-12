@@ -3,7 +3,6 @@
   stdenv,
   buildGoModule,
   installShellFiles,
-  bitwarden-cli,
   openssh,
   gh,
   version ? "0.0.0",
@@ -24,7 +23,6 @@ buildGoModule rec {
   proxyVendor = true;
 
   buildInputs = [
-    bitwarden-cli
     openssh
     gh
   ];
