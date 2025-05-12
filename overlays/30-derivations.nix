@@ -1,4 +1,12 @@
-self: super: {
+self: super: let
+  lambdaVersion = let
+    envVersion = builtins.getEnv "LAMBDA_VERSION";
+    fallbackVersion = "0.0.0-dev";
+  in
+    if envVersion != ""
+    then envVersion
+    else fallbackVersion;
+in {
   dix =
     super.dix
     or {}
@@ -10,7 +18,9 @@ self: super: {
       zsh-dix = super.callPackage ./packages/zsh-dix {};
       pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
       gvim = super.callPackage ./packages/gvim {};
-      lambda = super.callPackage ./packages/lambda {};
+      lambda = super.callPackage ./packages/lambda {
+        version = lambdaVersion;
+      };
       bootstrap = super.callPackage ./packages/bootstrap {};
     };
 }

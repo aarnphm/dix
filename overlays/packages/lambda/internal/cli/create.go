@@ -3,6 +3,7 @@ package cli
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -31,6 +32,13 @@ var CreateCmd = &cobra.Command{
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
 		prefix, _ := cmd.Flags().GetString("prefix")
 		sshKeyName, _ := cmd.Root().PersistentFlags().GetString("ssh-key-name")
+		outputFormat, _ := cmd.Root().PersistentFlags().GetString("output")
+		outputFormat = strings.ToLower(outputFormat)
+		jsonOutput := outputFormat == "json"
+
+		if outputFormat != "" && outputFormat != "json" && outputFormat != "table" {
+			return fmt.Errorf("invalid output format: %s. Supported formats: 'table', 'json'", outputFormat)
+		}
 		log.Debugf("Using SSH key name: %s", sshKeyName)
 		client, err := api.NewAPIClient(apiKey)
 		if err != nil {
@@ -290,17 +298,43 @@ var CreateCmd = &cobra.Command{
 			return fmt.Errorf("instance %s did not become active or get an IP address after %d retries", instanceID, maxRetries)
 		}
 
-		log.Println("--------------------------------------------------")
-		log.Infof("IMPORTANT: Connect manually once to add host key:")
-		log.Infof("  ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
-		log.Infof("To connect:")
-		log.Infof("  lm connect %s", finalInstance.Name)
-		// Only show setup instructions if ~/bw.pass exists
+		// Build command suggestions
+		sshCmd := fmt.Sprintf("ssh %s@%s", configutil.RemoteUser, finalInstance.IP)
+		connectCmd := fmt.Sprintf("lm connect %s", finalInstance.Name)
 		homeDir, _ := os.UserHomeDir()
 		bwPassPath := filepath.Join(homeDir, "bw.pass")
-		if _, err := os.Stat(bwPassPath); err == nil {
-			log.Infof("To setup:")
-			log.Infof("  lm setup %s --dix", finalInstance.Name)
+		setupCmd := fmt.Sprintf("lm setup %s --dix", finalInstance.Name)
+
+		if jsonOutput {
+			output := map[string]interface{}{
+				"instance_id":   instanceID,
+				"instance_name": finalInstance.Name,
+				"ip":            finalInstance.IP,
+				"ssh":           sshCmd,
+				"connect":       connectCmd,
+			}
+			nextCmd := connectCmd
+			if _, err := os.Stat(bwPassPath); err == nil {
+				output["setup"] = setupCmd
+				nextCmd = setupCmd
+			}
+			output["next"] = nextCmd
+
+			jsonBytes, err := json.Marshal(output)
+			if err != nil {
+				return fmt.Errorf("failed to marshal JSON output: %w", err)
+			}
+			fmt.Println(string(jsonBytes))
+		} else {
+			log.Println("--------------------------------------------------")
+			log.Infof("IMPORTANT: Connect manually once to add host key:")
+			log.Infof("  %s", sshCmd)
+			log.Infof("To connect:")
+			log.Infof("  %s", connectCmd)
+			if _, err := os.Stat(bwPassPath); err == nil {
+				log.Infof("To setup:")
+				log.Infof("  %s", setupCmd)
+			}
 		}
 		return nil
 	},

@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +17,13 @@ var RestartCmd = &cobra.Command{
 	ValidArgsFunction: completeInstanceNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		instanceIdentifier := args[0]
+		outputFormat, _ := cmd.Root().PersistentFlags().GetString("output")
+		outputFormat = strings.ToLower(outputFormat)
+		jsonOutput := outputFormat == "json"
+
+		if outputFormat != "" && outputFormat != "json" && outputFormat != "table" {
+			return fmt.Errorf("invalid output format: %s. Supported formats: 'json', 'table'", outputFormat)
+		}
 
 		// 1. Find Instance by ID or Name
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
@@ -83,7 +92,18 @@ var RestartCmd = &cobra.Command{
 		}
 
 		if restarted {
-			log.Infof("Instance '%s' (ID: %s) restart initiated successfully.", instanceName, instanceID)
+			if jsonOutput {
+				resp := map[string]interface{}{
+					"instance_id":   instanceID,
+					"instance_name": instanceName,
+					"action":        "restart",
+					"status":        "initiated",
+				}
+				jsonBytes, _ := json.Marshal(resp)
+				fmt.Println(string(jsonBytes))
+			} else {
+				log.Infof("Instance '%s' (ID: %s) restart initiated successfully.", instanceName, instanceID)
+			}
 		} else {
 			log.Errorf("Failed to confirm restart for instance '%s' (ID: %s)", instanceName, instanceID)
 			log.Debugf("API Response Data: %+v", restartResp.Data)

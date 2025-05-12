@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +18,13 @@ var DeleteCmd = &cobra.Command{
 	ValidArgsFunction: completeInstanceNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		instanceIdentifier := args[0]
+		outputFormat, _ := cmd.Root().PersistentFlags().GetString("output")
+		outputFormat = strings.ToLower(outputFormat)
+		jsonOutput := outputFormat == "json"
+
+		if outputFormat != "" && outputFormat != "json" && outputFormat != "table" {
+			return fmt.Errorf("invalid output format: %s. Supported formats: 'json', 'table'", outputFormat)
+		}
 
 		// 1. Find Instance by ID or Name
 		apiKey, _ := cmd.Root().PersistentFlags().GetString("api-key")
@@ -84,7 +93,18 @@ var DeleteCmd = &cobra.Command{
 		}
 
 		if terminated {
-			log.Infof("Instance '%s' (ID: %s) termination initiated successfully.", instanceName, instanceID)
+			if jsonOutput {
+				resp := map[string]interface{}{
+					"instance_id":   instanceID,
+					"instance_name": instanceName,
+					"action":        "terminate",
+					"status":        "initiated",
+				}
+				jsonBytes, _ := json.Marshal(resp)
+				fmt.Println(string(jsonBytes))
+			} else {
+				log.Infof("Instance '%s' (ID: %s) termination initiated successfully.", instanceName, instanceID)
+			}
 		} else {
 			log.Errorf("Failed to confirm termination for instance '%s' (ID: %s)", instanceName, instanceID)
 			log.Debugf("API Response Data: %+v", terminateResp.Data)

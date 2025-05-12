@@ -6,10 +6,12 @@
   bitwarden-cli,
   openssh,
   gh,
+  version ? "0.0.0",
+  ...
 }:
 buildGoModule rec {
   pname = "lm";
-  version = "0.0.0";
+  inherit version;
 
   src = ./.;
 

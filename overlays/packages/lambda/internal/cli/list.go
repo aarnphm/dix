@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var outputFormat string
-
 var ListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List running Lambda Cloud instances",
@@ -30,7 +28,7 @@ var ListCmd = &cobra.Command{
 			return fmt.Errorf("error fetching instances: %w", err)
 		}
 
-		outputFormat, _ := cmd.Flags().GetString("output")
+		outputFormat, _ := cmd.Root().PersistentFlags().GetString("output")
 
 		switch outputFormat {
 		case "json":
@@ -95,8 +93,4 @@ var ListCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func init() {
-	ListCmd.Flags().StringP("output", "o", "table", "Output format. One of: table|json")
 }
