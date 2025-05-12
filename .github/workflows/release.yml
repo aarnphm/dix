@@ -13,6 +13,7 @@ jobs:
       contents: write
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
@@ -29,7 +30,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # ratchet:softprops/action-gh-release@v2
         with:
-          name: Release v${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
           generate_release_notes: true
@@ -65,10 +66,18 @@ jobs:
 
       - name: Build Lambda CLI
         run: |
-          nix build .#apps.${{ matrix.system }}.dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
+          nix build .#dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
+          mkdir -p artifacts
+          cp -L result/bin/lm artifacts/lm-${{ matrix.system }}
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # ratchet:softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.release.outputs.version }}
+          files: artifacts/lm-${{ matrix.system }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # ratchet:actions/upload-artifact@v4
         with:
           name: lambda-cli-${{ matrix.system }}
-          path: result/bin/lm
+          path: artifacts/lm-${{ matrix.system }}
