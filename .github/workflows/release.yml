@@ -65,11 +65,10 @@ jobs:
 
       - name: Build Lambda CLI
         run: |
-          nix build .#apps.${{ matrix.system }}.lambda --print-build-logs
+          nix build .#apps.${{ matrix.system }}.dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # ratchet:actions/upload-artifact@v4
         with:
           name: lambda-cli-${{ matrix.system }}
           path: result/bin/lm
-
