@@ -63,14 +63,24 @@ log_debug() {
 }
 
 REPO="aarnphm/dix"
-BINARY_NAME="lambda"
+BINARY_NAME="lm"
 INSTALL_DIR="$HOME/.local/bin"
+TMP_DIR=$(mktemp -d)
+
+cleanup() {
+    if [[ -d "$TMP_DIR" ]]; then
+        rm -rf "$TMP_DIR"
+    fi
+}
+
+# Set up trap to ensure cleanup on exit
+trap cleanup EXIT
 
 log_info "Checking for nix"
 if command -v nix &>/dev/null; then
 	log_info "Nix is installed."
 	log_info "You can run the latest lambda directly using nix:"
-	log_info "  nix run github:${REPO}#${BINARY_NAME}"
+	log_info "  nix run github:${REPO}#lambda"
 	exit 0
 fi
 
@@ -115,7 +125,7 @@ Darwin)
 	;;
 esac
 
-RELEASE_ASSET_NAME="${BINARY_NAME}-${SYSTEM}"
+RELEASE_ASSET_NAME="lm-${SYSTEM}.zip"
 
 log_info "Detected platform: $SYSTEM"
 
@@ -132,22 +142,39 @@ log_info "Latest release tag: $LATEST_TAG"
 
 DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_TAG}/${RELEASE_ASSET_NAME}"
 INSTALL_PATH="${INSTALL_DIR}/${BINARY_NAME}"
+ZIP_PATH="${TMP_DIR}/${RELEASE_ASSET_NAME}"
 
 log_info "Creating installation directory: ${INSTALL_DIR}"
 mkdir -p "${INSTALL_DIR}"
 
-log_info "Downloading binary from: ${DOWNLOAD_URL}"
+log_info "Downloading zip from: ${DOWNLOAD_URL}"
 # Use curl's -f flag to fail silently on server errors (like 404 Not Found)
-# Pipe stderr to /dev/null to hide download progress, show custom message instead
-if ! curl -fL "${DOWNLOAD_URL}" -o "${INSTALL_PATH}" 2>/dev/null; then
-	log_error "Failed to download binary. Check URL or network:"
+if ! curl -fL "${DOWNLOAD_URL}" -o "${ZIP_PATH}" 2>/dev/null; then
+	log_error "Failed to download zip. Check URL or network:"
 	log_error "  URL: ${DOWNLOAD_URL}"
-	if [[ -f "${INSTALL_PATH}" ]]; then
-		rm -f "${INSTALL_PATH}"
-	fi
 	exit 1
 fi
 
+log_info "Extracting binary from zip..."
+if [ "$OS" = "Darwin" ]; then
+    # macOS unzip options
+    unzip -q -o "${ZIP_PATH}" -d "${TMP_DIR}"
+else
+    # Linux unzip options
+    unzip -q -o "${ZIP_PATH}" -d "${TMP_DIR}"
+fi
+
+# Find the binary in the extracted content
+EXTRACTED_BINARY="${TMP_DIR}/bin/${BINARY_NAME}"
+if [ ! -f "$EXTRACTED_BINARY" ]; then
+    log_error "Binary not found in extracted zip at expected path: ${EXTRACTED_BINARY}"
+    log_error "Zip structure may have changed. Files in the extracted directory:"
+    find "${TMP_DIR}" -type f | sort
+    exit 1
+fi
+
+log_info "Installing binary to ${INSTALL_PATH}"
+cp "${EXTRACTED_BINARY}" "${INSTALL_PATH}"
 chmod +x "${INSTALL_PATH}"
 
 # Check if INSTALL_DIR is in PATH
@@ -159,7 +186,6 @@ else
 	log_warn "Please add the following line to your shell configuration file (~/.bashrc, ~/.zshrc, etc.):"
 	log_warn "  export PATH=\"${INSTALL_DIR}:\$PATH\""
 	log_warn "Then, reload your shell for the changes to take effect (e.g., run 'source ~/.zshrc' or restart your terminal)."
-
 fi
 
 exit 0

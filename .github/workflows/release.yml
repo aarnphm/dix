@@ -67,17 +67,22 @@ jobs:
       - name: Build Lambda CLI
         run: |
           nix build .#dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
-          mkdir -p artifacts
-          cp -L result/bin/lm artifacts/lm-${{ matrix.system }}
-
+          
+      - name: Package Binary
+        run: |
+          mkdir -p artifacts/lm-${{ matrix.system }}/bin
+          cp -L result/bin/lm artifacts/lm-${{ matrix.system }}/bin/
+          cd artifacts
+          zip -r lm-${{ matrix.system }}.zip lm-${{ matrix.system }}
+        
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # ratchet:softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.release.outputs.version }}
-          files: artifacts/lm-${{ matrix.system }}
+          files: artifacts/lm-${{ matrix.system }}.zip
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # ratchet:actions/upload-artifact@v4
         with:
-          name: lambda-cli-${{ matrix.system }}
-          path: artifacts/lm-${{ matrix.system }}
+          name: lm-${{ matrix.system }}.zip
+          path: artifacts/lm-${{ matrix.system }}.zip
