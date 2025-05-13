@@ -15,4 +15,12 @@ self: super: {
         install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
       '';
   });
+  nodejs_24 = super.nodejs_24.overrideAttrs (oldAttrs: {
+    nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [super.installShellFiles];
+    postInstall =
+      (oldAttrs.postInstall or "")
+      + ''
+        $out/bin/corepack enable --install-directory=$out/bin
+      '';
+  });
 }
