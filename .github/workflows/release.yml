@@ -38,10 +38,18 @@ jobs:
   build:
     name: Build with Nix
     needs: release
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        system: [x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin]
+        include:
+          - system: x86_64-linux
+            os: ubuntu-latest
+          - system: aarch64-linux
+            os: ubuntu-24.04-arm
+          - system: x86_64-darwin
+            os: macos-13
+          - system: aarch64-darwin
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
     env:
       LAMBDA_VERSION: ${{ needs.release.outputs.version }}
     steps:
@@ -67,14 +75,14 @@ jobs:
       - name: Build Lambda CLI
         run: |
           nix build .#dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
-          
+
       - name: Package Binary
         run: |
           mkdir -p artifacts/lm-${{ matrix.system }}/bin
           cp -L result/bin/lm artifacts/lm-${{ matrix.system }}/bin/
           cd artifacts
           zip -r lm-${{ matrix.system }}.zip lm-${{ matrix.system }}
-        
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # ratchet:softprops/action-gh-release@v2
         with:
