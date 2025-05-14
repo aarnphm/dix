@@ -78,9 +78,8 @@ cleanup() {
 trap cleanup EXIT
 
 usage() {
-	echo "Usage: $0 [-h|--help] [--force-install]"
+	echo "Usage: install.sh [-h|--help] [--force-install]"
 	echo
-	echo "Installs the '${BINARY_NAME}' binary from GitHub releases."
 	echo "If Nix is detected on the system, it will suggest using Nix to run the tool"
 	echo "unless --force-install is specified."
 	echo
