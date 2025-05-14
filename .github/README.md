@@ -20,3 +20,10 @@ If you don't use Nix or only need the `lambda` tool, you can install it directly
 ```bash
 curl -sSfL https://raw.githubusercontent.com/aarnphm/dix/main/install.sh | bash
 ```
+
+This will default to check whether `nix` is available on your system, and thus recommends the default `nix` way to install this binary.
+However, if you wish to bypass this check, do the following:
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/aarnphm/dix/main/install.sh | bash -s -- --force-install
+```

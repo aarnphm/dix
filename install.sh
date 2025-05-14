@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+FORCE_INSTALL=false
+if [[ "$*" == *"--force-install"* ]]; then
+    FORCE_INSTALL=true
+fi
+
 # Logging setup from setup_remote.sh.in
 ERROR_COLOR="\033[0;31m" # Red
 LOG_COLOR="\033[0;32m"   # Green
@@ -77,16 +82,13 @@ cleanup() {
 trap cleanup EXIT
 
 log_info "Checking for nix"
-if command -v nix &>/dev/null; then
+if ! $FORCE_INSTALL && command -v nix &>/dev/null; then
 	log_info "Nix is installed."
 	log_info "You can run the latest lambda directly using nix:"
 	log_info "  nix run github:${REPO}#lambda"
 	exit 0
 fi
 
-log_warn "Nix not found. Attempting to download the latest release binary."
-
-# Determine OS and architecture
 OS=$(uname -s)
 ARCH=$(uname -m)
 
@@ -156,16 +158,10 @@ if ! curl -fL "${DOWNLOAD_URL}" -o "${ZIP_PATH}" 2>/dev/null; then
 fi
 
 log_info "Extracting binary from zip..."
-if [ "$OS" = "Darwin" ]; then
-    # macOS unzip options
-    unzip -q -o "${ZIP_PATH}" -d "${TMP_DIR}"
-else
-    # Linux unzip options
-    unzip -q -o "${ZIP_PATH}" -d "${TMP_DIR}"
-fi
+unzip -q -o "${ZIP_PATH}" -d "${TMP_DIR}"
 
 # Find the binary in the extracted content
-EXTRACTED_BINARY="${TMP_DIR}/bin/${BINARY_NAME}"
+EXTRACTED_BINARY="${TMP_DIR}/lm-${SYSTEM}/bin/${BINARY_NAME}"
 if [ ! -f "$EXTRACTED_BINARY" ]; then
     log_error "Binary not found in extracted zip at expected path: ${EXTRACTED_BINARY}"
     log_error "Zip structure may have changed. Files in the extracted directory:"
@@ -173,14 +169,14 @@ if [ ! -f "$EXTRACTED_BINARY" ]; then
     exit 1
 fi
 
+if [ -f "${INSTALL_PATH}" ] && ! $FORCE_INSTALL; then
+    log_warn "Binary '${BINARY_NAME}' already exists at ${INSTALL_PATH}. This installation will override it."
+		exit 1
+fi
+
 log_info "Installing binary to ${INSTALL_PATH}"
 cp "${EXTRACTED_BINARY}" "${INSTALL_PATH}"
 chmod +x "${INSTALL_PATH}"
-
-if [ "$OS" = "Darwin" ]; then
-    log_info "Removing quarantine attribute on macOS (requires sudo)"
-    sudo xattr -d com.apple.quarantine "${INSTALL_PATH}"
-fi
 
 # Check if INSTALL_DIR is in PATH
 if [[ ":$PATH:" == *":${INSTALL_DIR}:"* ]]; then
