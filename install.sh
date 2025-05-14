@@ -177,6 +177,11 @@ log_info "Installing binary to ${INSTALL_PATH}"
 cp "${EXTRACTED_BINARY}" "${INSTALL_PATH}"
 chmod +x "${INSTALL_PATH}"
 
+if [ "$OS" = "Darwin" ]; then
+    log_info "Removing quarantine attribute on macOS (requires sudo)"
+    sudo xattr -d com.apple.quarantine "${INSTALL_PATH}"
+fi
+
 # Check if INSTALL_DIR is in PATH
 if [[ ":$PATH:" == *":${INSTALL_DIR}:"* ]]; then
 	log_info "✅ ${BINARY_NAME} installed successfully to ${INSTALL_PATH}"
