@@ -4,7 +4,12 @@ self: super: {
     oldAttrs:
       with super.llvmPackages_18; {
         inherit stdenv;
-        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [stdenv.cc];
+        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [stdenv.cc super.installShellFiles];
+        postInstall =
+          (oldAttrs.postInstall or "")
+          + ''
+            installShellCompletion --cmd bw --zsh <($out/bin/bw completion --shell zsh)
+          '';
       }
   );
   gitstatus = super.gitstatus.overrideAttrs (oldAttrs: {

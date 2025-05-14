@@ -1,5 +1,5 @@
 {
-  description = "appl-mbp16 and adjacents";
+  description = "appl-mbp16 and adjacents setup for Aaron";
 
   inputs = {
     # system stuff
@@ -114,30 +114,33 @@
         };
       };
 
-      homeConfigurations = let
-        user = "ubuntu";
-        system = "x86_64-linux";
-        pkgs = import nixpkgs {
-          inherit system overlays;
-          config = {
-            allowUnfree = true;
-            allowBroken = true;
-          };
-        };
-        specialArgs = {
-          inherit self inputs pkgs user;
-          systemVar = system;
-        };
-      in {
-        ubuntu = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = specialArgs;
-          modules = [
-            nix.homeModules.default
-            ./hm
-          ];
-        };
-      };
+      homeConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
+        builtins.map (
+          user: let
+            system = "x86_64-linux";
+            pkgs = import nixpkgs {
+              inherit system overlays;
+              config = {
+                allowUnfree = true;
+                allowBroken = true;
+              };
+            };
+            specialArgs = {
+              inherit self inputs pkgs user;
+              systemVar = system;
+            };
+          in {
+            ubuntu = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              extraSpecialArgs = specialArgs;
+              modules = [
+                nix.homeModules.default
+                ./hm
+              ];
+            };
+          }
+        ) ["ubuntu" "paperspace"]
+      );
     } (
       builtins.map (
         system: let

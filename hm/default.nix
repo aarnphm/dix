@@ -63,6 +63,8 @@
     enchant
     imagemagick
     texliveFull
+    mermaid-cli
+    ghostscript
 
     # terminal
     any-nix-shell
@@ -339,7 +341,7 @@ in {
         gp = "${lib.getExe pkgs.git} pull";
         gpu = "${lib.getExe pkgs.git} push";
         gpuf = "${lib.getExe pkgs.git} push --force-with-lease";
-        gs = "${lib.getExe pkgs.git} stash";
+        gsts = "${lib.getExe pkgs.git} stash";
         gsp = "${lib.getExe pkgs.git} stash pop";
         gckb = "${lib.getExe pkgs.git} checkout -b";
         gck = "${lib.getExe pkgs.git} checkout";
