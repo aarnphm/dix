@@ -78,10 +78,8 @@ cleanup() {
     fi
 }
 
-# Set up trap to ensure cleanup on exit
 trap cleanup EXIT
 
-log_info "Checking for nix"
 if ! $FORCE_INSTALL && command -v nix &>/dev/null; then
 	log_info "Nix is installed."
 	log_info "You can run the latest lambda directly using nix:"
