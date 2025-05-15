@@ -61,10 +61,6 @@
     llvm_18
     openblas
     enchant
-    imagemagick
-    texliveFull
-    mermaid-cli
-    ghostscript
 
     # terminal
     any-nix-shell
@@ -116,6 +112,10 @@
     cpio
     mas
     mactop
+    imagemagick
+    texliveFull
+    mermaid-cli
+    ghostscript
     # apps
     pinentry_mac
     dix.pinentry-touchid
