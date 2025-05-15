@@ -1,8 +1,8 @@
 {
-  "theme": "Rosé Pine Dawn",
+  "theme": "Flexoki Light",
   "buffer_font_family": "BerkeleyMono Nerd Font Mono",
   "telemetry": {
-    "diagnostics": true,
+    "diagnostics": false,
     "metrics": false
   },
   "vim_mode": true,
@@ -14,9 +14,6 @@
   "ensure_final_newline_on_save": false,
   "inlay_hints": {
     "enabled": true
-  },
-  "chat_panel": {
-    "enabled": false
   },
   "lsp": {
     "Lua": {

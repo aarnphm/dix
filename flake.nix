@@ -130,7 +130,7 @@
               systemVar = system;
             };
           in {
-            ubuntu = home-manager.lib.homeManagerConfiguration {
+            ${user} = home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
               extraSpecialArgs = specialArgs;
               modules = [
