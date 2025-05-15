@@ -90,7 +90,7 @@ fi
 {{ if .DixSetup }}
 
 log_info "Running nix"
-nix run home-manager -- switch --flake github:aarnphm/dix/main#ubuntu --show-trace -L --option accept-flake-config true
+nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L --option accept-flake-config true
 log_info "Changing password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.
