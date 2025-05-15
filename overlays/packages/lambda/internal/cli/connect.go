@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
 	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
@@ -129,6 +131,47 @@ var ConnectCmd = &cobra.Command{
 		defer term.Restore(fd, oldState)
 		log.Debug("Terminal set to raw mode.")
 
+		// Handle window resize events
+		sigwinchCh := make(chan os.Signal, 1)
+		quitSIGWINCHListener := make(chan struct{})
+		signal.Notify(sigwinchCh, syscall.SIGWINCH)
+		go func() {
+			defer log.Debugf("SIGWINCH listener goroutine for instance %s has shut down.", targetInstance.ID)
+			for {
+				select {
+				case <-sigwinchCh:
+					newTermWidth, newTermHeight, err := term.GetSize(fd)
+					if err != nil {
+						log.Warnf("Failed to get new terminal size on SIGWINCH for %s: %v", targetInstance.ID, err)
+						continue
+					}
+					// Check if the session is still valid before attempting to send WindowChange
+					if session != nil {
+						err = session.WindowChange(newTermHeight, newTermWidth)
+						if err != nil {
+							// if the error is about the session being closed, we can stop.
+							if err == io.EOF || strings.Contains(err.Error(), "session closed") {
+								log.Debugf("Session closed during WindowChange, SIGWINCH listener for %s stopping.", targetInstance.ID)
+								return // Exit goroutine
+							}
+							log.Warnf("Failed to send window change for %s: %v", targetInstance.ID, err)
+						} else {
+							log.Debugf("Sent window change for %s: %dx%d", targetInstance.ID, newTermHeight, newTermWidth)
+						}
+					} else {
+						log.Debugf("Session is nil, SIGWINCH listener for %s stopping.", targetInstance.ID)
+						return // Exit goroutine if session is already nil
+					}
+				case <-quitSIGWINCHListener:
+					log.Debugf("SIGWINCH listener for %s received quit signal, stopping.", targetInstance.ID)
+					return // Exit goroutine
+				}
+			}
+		}()
+		defer signal.Stop(sigwinchCh)
+		defer close(sigwinchCh)
+		defer close(quitSIGWINCHListener) // Ensure the quit channel is closed when ConnectCmd returns
+
 		// Start the remote shell
 		if err := session.Shell(); err != nil {
 			return fmt.Errorf("failed to start remote shell: %w", err)
@@ -142,10 +185,13 @@ var ConnectCmd = &cobra.Command{
 			if waitErr != io.EOF && !strings.Contains(waitErr.Error(), "wait: remote command exited without exit status") && !strings.Contains(waitErr.Error(), "session closed") {
 				// Log non-standard exit errors but don't necessarily exit fatally
 				log.Warnf("SSH session to '%s' (ID: %s) ended with error: %v", instanceName, targetInstance.ID, waitErr)
+				// Stop the SIGWINCH listener explicitly as the session has ended.
+				// signal.Stop(sigwinchCh) // defer will handle this, but good to be aware
 				return fmt.Errorf("ssh session ended with error: %w", waitErr)
 			}
 			log.Debugf("SSH session wait finished with expected error: %v", waitErr)
 		}
+		log.Infof("Disconnected from %s.", targetInstance.ID)
 		return nil
 	},
 }

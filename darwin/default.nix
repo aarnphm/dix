@@ -63,10 +63,10 @@
       "rectangle"
       "steam"
       "orbstack"
-      "wezterm"
       "alt-tab"
       "raycast"
       "karabiner-elements"
+      "zed@preview"
     ];
     # nix run nixpkgs#mas -- search <apps>
     masApps = {
@@ -124,7 +124,11 @@
 
   # Networking
   networking = {
-    # dns = ["1.1.1.1" "8.8.8.8"];
+    dns = ["1.1.1.1" "8.8.8.8"];
+    knownNetworkServices = [
+      "Wi-Fi"
+      "Thunderbolt Ethernet Slot 2"
+    ];
     computerName = "appl-mbp16";
     hostName = "appl-mbp16";
   };
