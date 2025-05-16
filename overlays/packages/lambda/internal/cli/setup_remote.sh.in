@@ -172,8 +172,9 @@ nvim --headless "+Lazy! sync" +qa
 nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
 rustup toolchain install nightly
 
-log_info "setup atuin"
+log_info "setup atuin and install relevant tools"
 atuin account login -u aarnphm -p '{{ .RemoteGpgPassphrase }}' -k "$(cat ~/atuin.key)"
+uv tool install ty@latest
 
 log_info "Changing shell for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}

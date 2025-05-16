@@ -113,7 +113,6 @@
           ];
         };
       };
-
       homeConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
         builtins.map (
           user: let
