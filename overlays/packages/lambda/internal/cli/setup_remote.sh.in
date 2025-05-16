@@ -176,6 +176,11 @@ log_info "setup atuin and install relevant tools"
 atuin account login -u aarnphm -p '{{ .RemoteGpgPassphrase }}' -k "$(cat ~/atuin.key)"
 uv tool install ty@latest
 
+pushd "$WORKSPACE_DIR/neovim-plugins/avante.nvim" >/dev/null
+git switch feat/flake
+nix run ~/workspace/neovim-plugins/avante.nvim#plugin --show-trace -L --accept-flake-config true
+popd >/dev/null
+
 log_info "Changing shell for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
 
