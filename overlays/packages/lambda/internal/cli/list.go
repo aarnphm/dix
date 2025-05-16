@@ -43,6 +43,7 @@ var ListCmd = &cobra.Command{
 			fmt.Fprintln(w, "NAME\tID\tIP_ADDRESS\tGPU_TYPE\tREGION\tSTATUS\tPRICE/HR\tUPTIME")
 
 			if len(instancesResp.Data) == 0 {
+                w.Flush()
 				return nil
 			}
 
