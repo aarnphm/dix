@@ -54,6 +54,7 @@ if [[ $flake =~ ^(.*)\#([^\#\"]*)$ ]]; then
 	flake="${BASH_REMATCH[1]}"
 	flakeAttr="${BASH_REMATCH[2]}"
 fi
+flakeAttr=darwinConfigurations.${flakeAttr}
 
 systemConfig=$(nix --extra-experimental-features 'nix-command flakes' build --json "${extraBuildFlags[@]}" "${extraLockFlags[@]}" -- "$flake#$flakeAttr.system" | jq -r '.[0].outputs.out')
 [[ -x $systemConfig/activate-user ]] && echo "$systemConfig/activate-user"
