@@ -80,39 +80,38 @@
     ];
   in
     builtins.foldl' nixpkgs.lib.recursiveUpdate {
-      darwinConfigurations = let
-        user = "aarnphm";
-        system = "aarch64-darwin";
-        pkgs = import nixpkgs {
-          inherit system overlays;
-          config = {
-            allowUnfree = true;
-            allowUnsupportedSystem = true;
+      darwinConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
+        builtins.map (computerName: let
+          user = "aarnphm";
+          system = "aarch64-darwin";
+          pkgs = import nixpkgs {
+            inherit system overlays;
+            config = {
+              allowUnfree = true;
+              allowUnsupportedSystem = true;
+            };
           };
-        };
-        specialArgs = {
-          inherit self inputs pkgs user;
-          systemVar = system;
-        };
-      in {
-        appl-mbp16 = nix-darwin.lib.darwinSystem {
-          inherit system pkgs specialArgs;
-          modules = [
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                users."${user}".imports = [./hm];
-                backupFileExtension = "backup-from-hm";
-                extraSpecialArgs = specialArgs;
-                verbose = true;
-              };
-            }
-            ./darwin
-          ];
-        };
-      };
+          specialArgs = {inherit self inputs pkgs user computerName;};
+        in {
+          "${computerName}" = nix-darwin.lib.darwinSystem {
+            inherit system pkgs specialArgs;
+            modules = [
+              home-manager.darwinModules.home-manager
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  users."${user}".imports = [./hm];
+                  backupFileExtension = "backup-from-hm";
+                  extraSpecialArgs = specialArgs;
+                  verbose = true;
+                };
+              }
+              ./darwin
+            ];
+          };
+        }) ["appl-mbp16" "bentoml"]
+      );
       homeConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
         builtins.map (
           user: let
@@ -124,10 +123,7 @@
                 allowBroken = true;
               };
             };
-            specialArgs = {
-              inherit self inputs pkgs user;
-              systemVar = system;
-            };
+            specialArgs = {inherit self inputs pkgs user;};
           in {
             ${user} = home-manager.lib.homeManagerConfiguration {
               inherit pkgs;

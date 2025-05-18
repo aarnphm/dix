@@ -15,6 +15,10 @@ I'm using atuin to manage shell history, some custom fzf with zsh, rg + neovim +
 
 ## notes.
 
+I also include a few standalone tools that can be installed, such as `lambda`.
+
+### lambda.
+
 If you don't use Nix or only need the `lambda` tool, you can install it directly:
 
 ```bash

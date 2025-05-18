@@ -117,7 +117,7 @@ WORKSPACE_DIR="$HOME/workspace"
 mkdir -p "$WORKSPACE_DIR"
 
 REPOS=(
-	"aarnphm/avante.nvim:neovim-plugins/avante.nvim"
+	"aarnphm/avante.nvim:neovim-plugins/avante.nvim:feat/flake"
 	"aarnphm/surf.nvim:neovim-plugins/surf.nvim"
 	"aarnphm/vllm:vllm"
 	"aarnphm/dix:dix"
@@ -138,14 +138,23 @@ if command -v gh &>/dev/null; then
 	fi
 
 	for item in "${REPOS[@]}"; do
-		IFS=":" read -r repo_path target_dir <<<"$item"
+		IFS=":" read -r repo_path target_dir target_branch <<<"$item"
+
 		target_full_path="$WORKSPACE_DIR/$target_dir"
+
 		if [[ -d "$target_full_path" ]]; then
 			log_info "Directory $target_full_path already exists, skipping clone."
 		else
 			mkdir -p "$(dirname "$target_full_path")"
 			log_info "Cloning $repo_path into $target_full_path..."
-			gh repo clone "$repo_path" "$target_full_path"
+
+			clone_args=()
+			if [[ -n "$target_branch" ]]; then
+				clone_args=("--branch" "$target_branch")
+				log_info "Using branch: $target_branch"
+			fi
+
+			gh repo clone "$repo_path" "$target_full_path" -- "${clone_args[@]}"
 		fi
 	done
 

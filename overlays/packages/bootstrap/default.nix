@@ -1,69 +1,52 @@
 {
-  writeShellApplication,
+  writeProgram,
   coreutils,
   git,
   gh,
-  nix,
   rustup,
-}:
-writeShellApplication {
-  name = "bootstrap";
-  runtimeInputs = [coreutils git gh nix rustup];
-  text = ''
-    #!/usr/bin/env bash
-    set -euo pipefail
+  lib,
+  stdenv,
+  makeWrapper,
+  bash,
+  nix,
+}: let
+  inherit (lib) getExe;
+in
+  stdenv.mkDerivation rec {
+    pname = "bootstrap";
+    version = "0.0.1";
+    src =
+      writeProgram pname {
+        replacements = {
+          inherit (stdenv) shell;
+          inherit pname;
+          FLAKE_URI_BASE = "github:aarnphm/dix";
+          gh = getExe gh;
+          nix = getExe nix;
+          rustup = getExe rustup;
+        };
+      }
+      ./bootstrap.sh;
+    strictDeps = true;
+    nativeBuildInputs = [makeWrapper];
+    buildInputs = [bash nix];
+    runtimeInputs = [coreutils git gh nix rustup];
+    installPhase = ''
+      mkdir -p $out/bin
+      ln -s $src/bin/${pname} $out/bin/${pname}
+    '';
 
-    usage() {
-      echo "Usage: $0 <darwin|ubuntu>"
-    }
+    postFixup = ''
+      wrapProgram $out/bin/${pname} \
+        --prefix PATH : "${lib.makeBinPath [rustup bash gh]}"
+    '';
 
-    if [ "$#" -ne 1 ]; then
-      usage
-      exit 1
-    fi
-
-    PROFILE="$1"
-
-    case "$PROFILE" in
-      darwin)
-        echo "Running nix-darwin switch for appl-mbp16..."
-        nix run nix-darwin/master#darwin-rebuild -- switch --flake github:aarnphm/dix#appl-mbp16 -v --show-trace -L
-        ;;
-      ubuntu)
-        echo "Running home-manager switch for ubuntu..."
-        nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu -v --show-trace -L
-        ;;
-      *)
-        usage
-        exit 1
-        ;;
-    esac
-
-    if ! gh auth status &>/dev/null; then
-      echo "Logging into GitHub via gh..."
-      gh auth login -p ssh
-    fi
-
-    if command -v rustup &>/dev/null; then
-      if ! rustup toolchain list | grep -q nightly; then
-        echo "Installing Rust nightly toolchain..."
-        rustup toolchain install nightly
-      fi
-    else
-      echo "rustup not found, skipping Rust nightly installation."
-    fi
-
-    NVIM_DIR="$HOME/.config/nvim"
-    if [ ! -d "$NVIM_DIR" ]; then
-      echo "Cloning Neovim configuration..."
-      gh repo clone aarnphm/editor "$NVIM_DIR"
-    fi
-
-    if [ -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
-      echo "Linking .vimrc into Neovim configuration..."
-      ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
-    fi
-
-    echo "Setup completed."
-  '';
-}
+    meta = with lib; {
+      mainProgram = "${pname}";
+      description = "aarnphm/dix bootstrap go brrrrr";
+      homepage = "https://github.com/aarnphm/dix";
+      license = licenses.asl20;
+      maintainers = with maintainers; [aarnphm];
+      platforms = platforms.unix;
+    };
+  }

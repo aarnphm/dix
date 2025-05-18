@@ -2,8 +2,8 @@
   pkgs,
   lib,
   user,
-  systemVar,
   inputs,
+  computerName,
   ...
 }: rec {
   imports = [
@@ -29,7 +29,7 @@
   nix-homebrew = {
     inherit user;
     enable = true;
-    enableRosetta = builtins.elem systemVar ["aarch64-darwin"];
+    enableRosetta = pkgs.isArm;
     autoMigrate = true;
     extraEnv = {
       HOMEBREW_NO_ANALYTICS = "1";
@@ -124,13 +124,13 @@
 
   # Networking
   networking = {
+    inherit computerName;
     dns = ["1.1.1.1" "8.8.8.8"];
     knownNetworkServices = [
       "Wi-Fi"
       "Thunderbolt Ethernet Slot 2"
     ];
-    computerName = "appl-mbp16";
-    hostName = "appl-mbp16";
+    hostName = computerName;
   };
 
   # add PAM

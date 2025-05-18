@@ -13,6 +13,8 @@ self: super: {
 
   isArm = builtins.match "aarch64-.*" super.stdenv.hostPlatform.system != null;
 
+  concatStringsSepNewLine = iterables: super.lib.concatStringsSep "\n" iterables;
+
   writeProgram = name: env: src:
     super.replaceVarsWith ({
         inherit name src;
