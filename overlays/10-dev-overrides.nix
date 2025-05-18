@@ -20,6 +20,7 @@ self: super: {
         inherit name src;
         dir = "bin";
         isExecutable = true;
+        meta.mainProgram = name;
       }
       // env);
 

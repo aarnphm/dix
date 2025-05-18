@@ -45,7 +45,7 @@ in {
       initContent = lib.mkOrder 550 ''
         ${lib.getExe pkgs.any-nix-shell} zsh --info-right | source /dev/stdin
         eval "$(${lib.getExe pkgs.oh-my-posh} init zsh --config ${config.xdg.configHome}/oh-my-posh/config.toml)"
-        source ${pkgs.dix.zsh-dix}/share/zsh/dix.plugin.zsh
+        source ${pkgs.zsh-dix}/share/zsh/dix.plugin.zsh
       '';
       plugins = [
         {
@@ -83,7 +83,7 @@ in {
       profileExtra = let
         sites =
           [
-            "${pkgs.dix.zsh-dix}/share/zsh/site-functions"
+            "${pkgs.zsh-dix}/share/zsh/site-functions"
             "${pkgs.zsh-completions}/share/zsh/site-functions"
           ]
           ++ optionals pkgs.stdenv.isDarwin ["/Applications/OrbStack.app/Contents/Resources/completions/zsh"];

@@ -29,10 +29,10 @@ with lib; {
         };
         credentials = {
           default = {
-            "credential_process" = "${lib.getExe pkgs.dix.aws-credentials} default";
+            "credential_process" = "${lib.getExe pkgs.aws-credentials} default";
           };
           bentoml-prod = {
-            "credential_process" = "${lib.getExe pkgs.dix.aws-credentials} bentoml_prod";
+            "credential_process" = "${lib.getExe pkgs.aws-credentials} bentoml_prod";
           };
         };
       };

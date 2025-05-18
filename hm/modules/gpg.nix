@@ -12,7 +12,7 @@ with lib; let
       "allow-loopback-pinentry"
       "pinentry-program ${lib.getExe (
         if enableTouchId
-        then pkgs.dix.pinentry-touchid
+        then pkgs.pinentry-touchid
         else pkgs.pinentry-all
       )}"
     ]);

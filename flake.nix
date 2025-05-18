@@ -162,7 +162,7 @@
             builtins.map (
               name: {
                 inherit name;
-                value = mkApp {drv = pkgs.dix.${name};};
+                value = mkApp {drv = pkgs.${name};};
               }
             ) [
               "lambda"

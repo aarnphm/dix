@@ -27,6 +27,7 @@ curl -fsSL https://raw.githubusercontent.com/aarnphm/dix/main/install.sh | bash
 ```
 
 This will:
+
 1. Download the latest release for your platform
 2. Extract the binary to `~/.local/bin/lm`
 3. Make it executable
@@ -34,6 +35,7 @@ This will:
 ## Version Management
 
 This package uses environment variables for versioning when building with GitHub Actions:
+
 - When tagged (e.g., `v1.0.0`): Version will be "1.0.0"
 - Default version: "0.0.0-dev" (used for local development)
 
@@ -62,10 +64,10 @@ To build the package locally:
 ```bash
 # Set version manually
 export LAMBDA_VERSION=1.0.0
-nix build .#dix.lambda
+nix build .#lambda
 
 # Or just use the default version
-nix build .#dix.lambda
+nix build .#lambda
 ```
 
 ## Integration with Nix/Darwin System
@@ -76,3 +78,4 @@ The Lambda CLI is automatically included in the system when:
 2. Using `home-manager switch` on any platform
 
 The version is determined by the `LAMBDA_VERSION` environment variable if set, otherwise it defaults to "0.0.0-dev".
+

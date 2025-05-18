@@ -100,9 +100,9 @@
     bitwarden-cli
 
     # dix packages overlays
-    dix.git-forest
-    dix.unicopy
-    dix.lambda
+    git-forest
+    unicopy
+    lambda
   ];
   darwinPackages = with pkgs; [
     # for some reason they don't have flock on darwin :(
@@ -118,7 +118,7 @@
     ghostscript
     # apps
     pinentry_mac
-    dix.pinentry-touchid
+    pinentry-touchid
   ];
   linuxPackages = with pkgs; [
     colima
@@ -265,7 +265,7 @@ in {
           light = ''--color=fg:#B7B5AC,bg:#FFFCF0,hl:#100F0F --color=fg+:#B7B5AC,bg+:#F2F0E5,hl+:#100F0F --color=border:#AF3029,header:#100F0F,gutter:#FFFCF0 --color=spinner:#3AA99F,info:#3AA99F,separator:#F2F0E5 --color=pointer:#D0A215,marker:#D14D41,prompt:#D0A215'';
           dark = ''--color=fg:#878580,bg:#100F0F,hl:#CECDC3 --color=fg+:#878580,bg+:#1C1B1A,hl+:#CECDC3 --color=border:#AF3029,header:#CECDC3,gutter:#100F0F --color=spinner:#24837B,info:#24837B,separator:#1C1B1A --color=pointer:#AD8301,marker:#AF3029,prompt:#AD8301'';
         };
-      }; 
+      };
 
       fzfConfig = pkgs.writeText "fzfrc" (pkgs.concatStringsSepNewLine [
         colorMapping.flexoki.${config.home.sessionVariables.XDG_SYSTEM_THEME}
@@ -356,7 +356,7 @@ in {
 
         # general
         cx = "chmod +x";
-        copy = lib.getExe pkgs.dix.unicopy;
+        copy = lib.getExe pkgs.unicopy;
 
         # aliases
         pip = ''${lib.getExe pkgs.uv} pip'';
@@ -374,13 +374,13 @@ in {
         );
 
         # useful
-        bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.dix.unicopy}'';
+        bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.unicopy}'';
         unlock-vault = ''bw unlock --check &>/dev/null || export BW_SESSION=''${BW_SESSION:-"$(bw unlock --passwordenv BW_MASTER --raw)"}'';
-        generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.dix.unicopy}";
+        generate-password = "bw generate --special --uppercase --minSpecial 12 --length 80 | ${lib.getExe pkgs.unicopy}";
         lock-workflow = ''${lib.getExe pkgs.fd} -Hg "*.y[a]ml" .github --exec-batch docker run --rm -v "''${PWD}":"''${PWD}" -w "''${PWD}" -e RATCHET_EXP_KEEP_NEWLINES=true ghcr.io/sethvargo/ratchet:0.9.2 update'';
         get-redirect = ''${lib.getExe pkgs.curl} -Ls -o /dev/null -w %{url_effective} $@'';
-        gpgpass = ''bw get notes gpg-personal-keys | ${lib.getExe pkgs.dix.unicopy}'';
-        sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.dix.unicopy}'';
+        gpgpass = ''bw get notes gpg-personal-keys | ${lib.getExe pkgs.unicopy}'';
+        sshpass = ''bw get notes gpg-age-ssh-key | ${lib.getExe pkgs.unicopy}'';
 
         # nix-commands
         ncg = "nix-collect-garbage -d";
@@ -390,7 +390,7 @@ in {
         python-format = ''ruff format --config "indent-width=2" --config "line-length=119" --config "preview=true"'';
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        gv = lib.getExe pkgs.dix.gvim;
+        gv = lib.getExe pkgs.gvim;
       };
   };
 }
