@@ -94,6 +94,7 @@
   nix.settings = {
     log-lines = 128;
     keep-going = true;
+    sandbox = false;
     keep-derivations = true;
     keep-outputs = true;
     trusted-users = [user];
