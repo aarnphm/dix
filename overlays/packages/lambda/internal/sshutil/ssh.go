@@ -137,7 +137,7 @@ func copySingleFileInternal(client *ssh.Client, expandedLocalPath string, remote
 	}()
 
 	remoteCmd := fmt.Sprintf("scp -qt %s", directory)
-	log.Infof("Copying local file '%s' (%d bytes, perm: %s) to remote '%s' via `scp`", expandedLocalPath, len(content), perms, remotePath)
+	log.Debugf("Copying local file '%s' (%d bytes, perm: %s) to remote '%s' via `scp`", expandedLocalPath, len(content), perms, remotePath)
 
 	var stderrBuf bytes.Buffer
 	session.Stderr = &stderrBuf
@@ -200,7 +200,7 @@ func CopyDirToRemote(client *ssh.Client, localDirPath, remoteDestDirPath string)
 		return fmt.Errorf("local path '%s' is not a directory, expected a directory. Use CopyFileToRemote for files", expandedLocalDirPath)
 	}
 
-	log.Infof("Copying local directory '%s' contents to remote directory '%s'", expandedLocalDirPath, remoteDestDirPath)
+	log.Debugf("Copying local directory '%s' contents to remote directory '%s'", expandedLocalDirPath, remoteDestDirPath)
 
 	// Ensure the base remote destination directory exists.
 	err = RunRemoteCommand(client, fmt.Sprintf("mkdir -p %s", remoteDestDirPath))

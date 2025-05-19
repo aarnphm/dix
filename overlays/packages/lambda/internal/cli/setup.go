@@ -125,7 +125,6 @@ var SetupCmd = &cobra.Command{
 			return fmt.Errorf("failed to establish SSH connection to %s: %w", ipAddress, err)
 		}
 		defer sshClient.Close()
-		log.Info("SSH connection established.")
 
 		// 4. Copy necessary files, only for detach setup.
 		if effectiveDetachSetup {
