@@ -156,7 +156,7 @@ if command -v gh &>/dev/null; then
 
 		if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
 			log_info "link .vimrc config"
-			ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
+			ln -s "$NVIM_DIR/.vimrc" "$HOME/.vimrc"
 		fi
 	fi
 fi
