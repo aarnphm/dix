@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/configutil"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/knownhosts"

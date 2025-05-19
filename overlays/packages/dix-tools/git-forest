@@ -8,6 +8,7 @@
 #	it under the terms of the GNU General Public License as published by
 #	the Free Software Foundation; either version 2 or 3 of the license.
 #
+# source: https://github.com/jwiegley/git-scripts/blob/master/git-forest
 use Getopt::Long;
 use Git;
 use strict;
@@ -639,3 +640,5 @@ sub UNTIE
 	print $fh "\n";
 	undef $self->{saved};
 }
+
+# vim: ft=perl

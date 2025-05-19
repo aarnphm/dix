@@ -15,7 +15,7 @@ A CLI tool for managing Lambda Cloud resources.
 If you have Nix installed, you can run the Lambda CLI directly:
 
 ```bash
-nix run github:aarnphm/dix#lambda
+nix run github:aarnphm/detachtools#lambda
 ```
 
 ### Direct Installation
@@ -23,7 +23,7 @@ nix run github:aarnphm/dix#lambda
 For systems without Nix, you can use our installer script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/aarnphm/dix/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/aarnphm/detachtools/main/install.sh | bash
 ```
 
 This will:

@@ -14,7 +14,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Aaron's zsh configuration";
-    homepage = "https://github.com/aarnphm/dix";
+    homepage = "https://github.com/aarnphm/detachtools";
     maintainers = with lib.maintainers; [aarnphm];
     platforms = lib.platforms.unix;
   };

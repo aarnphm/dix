@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
+	api "github.com/aarnphm/detachtools/overlays/packages/lambda/internal/apiclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

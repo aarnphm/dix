@@ -41,6 +41,7 @@ in {
           };
           env = {
             TERM = "xterm-256color";
+            XDG_SYSTEM_THEME = "dark";
           };
           scrolling = {
             history = 30000;

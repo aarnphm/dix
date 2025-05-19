@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
+	api "github.com/aarnphm/detachtools/overlays/packages/lambda/internal/apiclient"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/configutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -303,7 +303,7 @@ var CreateCmd = &cobra.Command{
 		connectCmd := fmt.Sprintf("lm connect %s", finalInstance.Name)
 		homeDir, _ := os.UserHomeDir()
 		bwPassPath := filepath.Join(homeDir, "bw.pass")
-		setupCmd := fmt.Sprintf("lm setup %s --dix", finalInstance.Name)
+		setupCmd := fmt.Sprintf("lm setup %s --detach", finalInstance.Name)
 
 		if jsonOutput {
 			output := map[string]interface{}{

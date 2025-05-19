@@ -100,7 +100,7 @@
     google-cloud-sdk
     bitwarden-cli
 
-    # dix packages overlays
+    # packages overlays
     git-forest
     unicopy
     lambda

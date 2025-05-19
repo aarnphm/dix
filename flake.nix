@@ -68,7 +68,7 @@
       nix-darwin.overlays.default
       atuin.overlays.default
       (import (home-manager + "/overlay.nix"))
-      # custom dix's overlays
+      # custom overlays
       (import ./overlays/10-dev-overrides.nix)
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
@@ -169,7 +169,7 @@
               "bootstrap"
             ]
           );
-          packages.${system} = with pkgs; {inherit dix;};
+          packages.${system} = with pkgs; {inherit lambda aws-credentials gvim;};
           checks.${system} = {
             pre-commit-check = git-hooks.lib.${system}.run {
               src = ./.;

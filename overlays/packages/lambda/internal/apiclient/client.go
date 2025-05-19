@@ -58,7 +58,7 @@ func (c *APIClient) Request(method, endpoint string, body any, result any) error
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("User-Agent", "dix-lambda-cli/0.1") // Add a user agent
+	req.Header.Set("User-Agent", "detach-lambda-cli/0.1")
 
 	log.Debugf("%s %s", method, url)
 	resp, err := c.client.Do(req)

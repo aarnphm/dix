@@ -9,9 +9,9 @@ import (
 	"strings"
 	"text/template"
 
-	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/sshutil"
+	api "github.com/aarnphm/detachtools/overlays/packages/lambda/internal/apiclient"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/configutil"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/sshutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -24,13 +24,13 @@ type remoteSetupParams struct {
 	RemotePassword      string
 	RemoteGpgPassphrase string
 	GhToken             string
-	DixSetup            bool
+	DetachSetup         bool
 	ForceSetup          bool
 }
 
 var (
-	dixFlag   bool
-	forceFlag bool
+	detachFlag bool
+	forceFlag  bool
 )
 
 var SetupCmd = &cobra.Command{
@@ -80,8 +80,8 @@ var SetupCmd = &cobra.Command{
 		ipAddress := targetInstance.IP
 		log.Infof("Found instance: %s (%s), IP: %s, Status: %s", targetInstance.Name, targetInstance.ID, ipAddress, targetInstance.Status)
 
-		// Determine effective dix setup setting
-		effectiveDixSetup := dixFlag
+		// Determine effective `detach` setup setting
+		effectiveDetachSetup := detachFlag
 
 		log.Info("Retrieving GitHub token from Bitwarden")
 		bwCmd := exec.Command("bw", "get", "notes", configutil.BitwardenNoteName)
@@ -127,8 +127,8 @@ var SetupCmd = &cobra.Command{
 		defer sshClient.Close()
 		log.Info("SSH connection established.")
 
-		// 4. Copy necessary files, only for dix setup.
-		if effectiveDixSetup {
+		// 4. Copy necessary files, only for detach setup.
+		if effectiveDetachSetup {
 			filesToCopy := map[string]string{
 				configutil.GetEnvWithDefault("SSH_KNOWN_HOSTS_FILE", "~/.ssh/known_hosts"):              "~/.ssh/known_hosts",
 				configutil.GetEnvWithDefault("SSH_ID_FILE", "~/.ssh/id_ed25519-github"):                 "~/.ssh/id_ed25519-github",
@@ -163,7 +163,7 @@ var SetupCmd = &cobra.Command{
 			RemotePassword:      configutil.RemotePassword,
 			RemoteGpgPassphrase: remoteGpgPassphrase,
 			GhToken:             ghToken,
-			DixSetup:            effectiveDixSetup,
+			DetachSetup:         effectiveDetachSetup,
 			ForceSetup:          forceFlag,
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
@@ -203,6 +203,6 @@ var SetupCmd = &cobra.Command{
 }
 
 func init() {
-	SetupCmd.Flags().BoolVar(&dixFlag, "dix", false, "Perform aarnphm/dix's specific setup steps")
+	SetupCmd.Flags().BoolVar(&detachFlag, "detach", false, "Perform aarnphm/detachtools's specific setup steps")
 	SetupCmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "Force setup even if already completed once")
 }

@@ -1,4 +1,4 @@
-module github.com/aarnphm/dix/overlays/packages/lambda
+module github.com/aarnphm/detachtools/overlays/packages/lambda
 
 go 1.24.2
 

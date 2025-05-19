@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/cli"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/cli"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/configutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

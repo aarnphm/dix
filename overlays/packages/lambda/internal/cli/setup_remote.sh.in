@@ -87,10 +87,10 @@ else
 	log_warn "Nix is already installed."
 fi
 
-{{ if .DixSetup }}
+{{ if .DetachSetup }}
 
 log_info "Running nix"
-nix run home-manager -- switch --flake github:aarnphm/dix#ubuntu --show-trace -L --option accept-flake-config true
+nix run home-manager -- switch --flake github:aarnphm/detachtools#ubuntu --show-trace -L --option accept-flake-config true
 log_info "Changing password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.
@@ -120,7 +120,7 @@ REPOS=(
 	"aarnphm/avante.nvim:neovim-plugins/avante.nvim:feat/flake"
 	"aarnphm/surf.nvim:neovim-plugins/surf.nvim"
 	"aarnphm/vllm:vllm"
-	"aarnphm/dix:dix"
+	"aarnphm/detachtools:detachtools"
 	"bentoml/BentoML:bentoml"
 	"bentoml/BentoVLLM:bentovllm"
 	"bentoml/bentocloud-homepage-news:bentovllm/bentocloud-homepage-news"

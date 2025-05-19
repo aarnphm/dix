@@ -20,8 +20,11 @@
   jq,
   bitwarden-cli,
   apt,
+  perl,
+  perl540Packages,
+  pkg-config,
 }: let
-  inherit (lib) getExe;
+  inherit (lib) getExe makeBinPath;
   version = flakeVersion;
 in {
   aws-credentials =
@@ -42,10 +45,42 @@ in {
       inherit version;
       replacements = {
         inherit (stdenv) shell;
-        FLAKE_URI_BASE = "github:aarnphm/dix";
+        FLAKE_URI_BASE = "github:aarnphm/detachtools";
       };
     }
     ./bootstrap.sh;
+
+  git-forest = stdenv.mkDerivation (finalAttrs: {
+    pname = "git-forest";
+    version = flakeVersion;
+
+    src = ./git-forest;
+
+    nativeBuildInputs = [makeWrapper pkg-config];
+    buildInputs = [perl git];
+
+    dontUnpack = true;
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/bin
+      cp ${finalAttrs.src} $out/bin/git-forest
+      chmod +x $out/bin/git-forest
+      wrapProgram $out/bin/git-forest \
+        --prefix PATH : ${makeBinPath [git perl]} \
+        --prefix PERL5LIB : "${with perl540Packages; makePerlPath [Git Error]}"
+
+      runHook postInstall
+    '';
+
+    meta = {
+      description = "git-forest, nicer way to see commit-history tree";
+      homepage = "https://github.com/aarnphm/detachtools";
+      maintainers = with lib.maintainers; [aarnphm];
+      platforms = lib.platforms.unix;
+    };
+  });
 
   gvim =
     writeProgram "gvim" {
@@ -75,9 +110,8 @@ in {
         );
       };
       meta = {
-        mainProgram = "copy";
         description = "copy with a twist";
-        homepage = "https://github.com/aarnphm/dix";
+        homepage = "https://github.com/aarnphm/detachtools";
         license = lib.licenses.asl20;
         maintainers = with lib.maintainers; [aarnphm];
       };

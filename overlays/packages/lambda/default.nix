@@ -45,7 +45,7 @@ buildGoModule rec {
 
   meta = with lib; {
     description = "Lambda Cloud operations tool";
-    homepage = "https://github.com/aarnphm/dix";
+    homepage = "https://github.com/aarnphm/detachtools";
     license = licenses.asl20;
     maintainers = with maintainers; [aarnphm];
     platforms = platforms.unix;

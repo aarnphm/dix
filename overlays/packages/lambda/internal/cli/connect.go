@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	api "github.com/aarnphm/dix/overlays/packages/lambda/internal/apiclient"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/configutil"
-	"github.com/aarnphm/dix/overlays/packages/lambda/internal/sshutil"
+	api "github.com/aarnphm/detachtools/overlays/packages/lambda/internal/apiclient"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/configutil"
+	"github.com/aarnphm/detachtools/overlays/packages/lambda/internal/sshutil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
