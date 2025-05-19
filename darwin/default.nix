@@ -80,6 +80,7 @@
     createHome = true;
   };
   ids.uids.nixbld = 400;
+  ids.gids.nixbld = 30000;
 
   environment = {
     shells = [pkgs.zsh];
