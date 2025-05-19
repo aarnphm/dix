@@ -45,7 +45,6 @@
     nodejs_24
     zulu17
     rustup
-    julia
     xz
     age
 
