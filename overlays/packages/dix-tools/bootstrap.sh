@@ -139,27 +139,33 @@ linux)
 	;;
 esac
 
-if ! gh auth status &>/dev/null; then
-	log_info "setup with gh"
-	gh auth login -p ssh
+if command -v gh &>/dev/null; then
+	if ! gh auth status &>/dev/null; then
+		log_info "setup with gh"
+		gh auth login -p ssh
+	fi
+
+	if command -v nvim &>/dev/null; then
+		NVIM_DIR="$HOME/.config/nvim"
+		if [ ! -d "$NVIM_DIR" ]; then
+			log_info "default nvim setup"
+			gh repo clone aarnphm/editor "$NVIM_DIR"
+			nvim --headless "+Lazy! sync" +qa
+			nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
+		fi
+
+		if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
+			log_info "link .vimrc config"
+			ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
+		fi
+	fi
 fi
 
-if ! rustup toolchain list | grep -q nightly; then
-	log_info "install rust toolchain nightly"
-	rustup toolchain install nightly
-fi
-
-NVIM_DIR="$HOME/.config/nvim"
-if [ ! -d "$NVIM_DIR" ]; then
-	log_info "default nvim setup"
-	gh repo clone aarnphm/editor "$NVIM_DIR"
-	nvim --headless "+Lazy! sync" +qa
-	nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
-fi
-
-if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
-	log_info "link .vimrc config"
-	ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
+if command -v rustup &>/dev/null; then
+	if ! rustup toolchain list | grep -q nightly; then
+		log_info "install rust toolchain nightly"
+		rustup toolchain install nightly
+	fi
 fi
 
 log_info "finished @ $SYSTEM_TYPE"

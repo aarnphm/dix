@@ -76,8 +76,6 @@
     home = "/Users/${user}";
     createHome = true;
   };
-  ids.uids.nixbld = 400;
-  ids.gids.nixbld = 30000;
 
   environment = {
     shells = [pkgs.zsh];
@@ -88,30 +86,33 @@
     sleep.display = 30;
   };
 
-  nix.settings = {
-    log-lines = 20;
-    keep-going = false;
-    sandbox = false;
-    trusted-users = [user];
-    max-jobs = "auto";
-    always-allow-substitutes = true;
-    bash-prompt-prefix = "(nix:$name)\\040";
-    experimental-features = ["nix-command" "flakes"];
-    extra-nix-path = ["nixpkgs=flake:nixpkgs"];
-    upgrade-nix-store-path-url = "https://install.determinate.systems/nix-upgrade/stable/universal";
-  };
+  nix = {
+    enable = false;
+    settings = {
+      log-lines = 20;
+      keep-going = false;
+      sandbox = false;
+      trusted-users = [user];
+      max-jobs = "auto";
+      always-allow-substitutes = true;
+      bash-prompt-prefix = "(nix:$name)\\040";
+      experimental-features = ["nix-command" "flakes"];
+      extra-nix-path = ["nixpkgs=flake:nixpkgs"];
+      upgrade-nix-store-path-url = "https://install.determinate.systems/nix-upgrade/stable/universal";
+    };
 
-  nix.gc = {
-    automatic = true;
-    interval.Hour = 6;
-    options = ''
-      --delete-older-than 3d --max-freed $((128 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | ${lib.getExe' pkgs.gawk "awk"} '{ print $4 }')))
-    '';
-  };
+    gc = {
+      automatic = false; # NOTE: need nix.enable
+      interval.Hour = 6;
+      options = ''
+        --delete-older-than 3d --max-freed $((128 * 1024**3 - 1024 * $(df -P -k /nix/store | tail -n 1 | ${lib.getExe' pkgs.gawk "awk"} '{ print $4 }')))
+      '';
+    };
 
-  nix.optimise = {
-    automatic = true;
-    interval.Hour = 6;
+    optimise = {
+      automatic = false; # NOTE: need nix.enable
+      interval.Hour = 6;
+    };
   };
 
   # Networking

@@ -5,8 +5,6 @@
   ...
 }:
 with lib; let
-  concatStringsSepNewLine = iterables: concatStringsSep "\n" iterables;
-
   fzfComplete = with pkgs;
     writeProgram "fzf_complete_realpath.zsh" {
       replacements = {
@@ -88,7 +86,7 @@ in {
           ]
           ++ optionals pkgs.stdenv.isDarwin ["/Applications/OrbStack.app/Contents/Resources/completions/zsh"];
       in
-        concatStringsSepNewLine [
+        pkgs.concatStringsSepNewLine [
           (concatStrings (map (sitePath: "fpath+=${sitePath}\n") sites))
         ];
     };

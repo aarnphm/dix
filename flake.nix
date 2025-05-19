@@ -2,7 +2,7 @@
   description = "appl-mbp16 and adjacents setup for Aaron";
 
   inputs = {
-    # system stuff
+    # system
     nixpkgs.url = "github:NixOS/nixpkgs/master";
     nix-darwin = {
       url = "github:LnL7/nix-darwin/master";
@@ -16,7 +16,19 @@
       url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # homebrew
+    # utilities
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # packages
+    atuin = {
+      url = "github:atuinsh/atuin";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
       inputs = {
@@ -24,23 +36,11 @@
         nix-darwin.follows = "nix-darwin";
       };
     };
-    # utilities
-    git-hooks = {
-      url = "github:cachix/git-hooks.nix/master";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         git-hooks.follows = "git-hooks";
-      };
-    };
-    # atuin
-    atuin = {
-      url = "github:atuinsh/atuin";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
       };
     };
   };
