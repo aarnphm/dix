@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - uses: cachix/install-nix-action@8887e596b4ee1134dae06b98d573bd674693f47c # ratchet:cachix/install-nix-action@v26
+      - uses: cachix/install-nix-action@526118121621777ccd86f79b04685a9319637641 # ratchet:cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-unstable
+          nix_path: nixpkgs=channel:master
       - run: nix flake update --debug
       - id: meta
         run: echo "sha=$(curl -SsL "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r ".sha")" >> $GITHUB_OUTPUT

@@ -58,10 +58,10 @@ jobs:
           fetch-depth: 0
 
       - name: Install Nix
-        uses: cachix/install-nix-action@8887e596b4ee1134dae06b98d573bd674693f47c # ratchet:cachix/install-nix-action@v26
+        uses: cachix/install-nix-action@526118121621777ccd86f79b04685a9319637641 # ratchet:cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          nix_path: nixpkgs=channel:nixos-unstable
+          nix_path: nixpkgs=channel:master
           extra_nix_config: |
             trusted-substituters = https://nix-community.cachix.org https://cache.nixos.org https://cuda-maintainers.cachix.org
             trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=
@@ -74,7 +74,7 @@ jobs:
 
       - name: Build Lambda CLI
         run: |
-          nix build .#dix.lambda --print-build-logs --accept-flake-config --show-trace -v -L
+          nix build .#lambda --print-build-logs --accept-flake-config --show-trace -v -L
 
       - name: Package Binary
         run: |
