@@ -14,9 +14,6 @@
   programs.zsh = {
     enable = true;
   };
-  programs.nix-index = {
-    enable = true;
-  };
   gpg.enable = true;
 
   nix-homebrew = {
@@ -92,8 +89,8 @@
   };
 
   nix.settings = {
-    log-lines = 128;
-    keep-going = true;
+    log-lines = 20;
+    keep-going = false;
     sandbox = false;
     keep-derivations = true;
     keep-outputs = true;
