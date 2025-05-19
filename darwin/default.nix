@@ -14,6 +14,9 @@
   programs.zsh = {
     enable = true;
   };
+  programs.nix-index = {
+    enable = true;
+  };
   gpg.enable = true;
 
   nix-homebrew = {
@@ -87,11 +90,16 @@
     sleep.display = 30;
   };
 
+  nix.nrBuildUsers = 32;
+
   nix.settings = {
-    log-lines = 50;
-    keep-going = false;
+    log-lines = 128;
+    keep-going = true;
+    keep-derivations = true;
+    keep-outputs = true;
     trusted-users = [user];
-    sandbox = false;
+    sandbox = true;
+    extra-sandbox-paths = ["/private/tmp" "/private/var/tmp" "/usr/bin/env"];
     max-jobs = "auto";
     always-allow-substitutes = true;
     bash-prompt-prefix = "(nix:$name)\\040";
@@ -134,10 +142,14 @@
 
   # System preferences
   system = {
-    stateVersion = 4;
+    stateVersion = 6;
     # Set Git commit hash for darwin-version.
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
     primaryUser = user;
+
+    keyboard = {
+      enableKeyMapping = true;
+    };
 
     # default settings within System Preferences
     defaults = {
@@ -145,6 +157,7 @@
         KeyRepeat = 1;
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticSpellingCorrectionEnabled = false;
+        NSAutomaticInlinePredictionEnabled = true;
       };
       dock = {
         autohide = true;
@@ -153,16 +166,20 @@
         magnification = true;
         mineffect = "genie";
         orientation = "bottom";
-        showhidden = false;
-        show-recents = false;
+        showhidden = true;
+        show-recents = true;
+        mru-spaces = true;
       };
       finder = {
         AppleShowAllFiles = true;
-        QuitMenuItem = false;
+        AppleShowAllExtensions = true;
+        QuitMenuItem = true;
+        FXEnableExtensionChangeWarning = false;
       };
       trackpad = {
         Clicking = true;
         TrackpadRightClick = true;
+        TrackpadThreeFingerDrag = true;
       };
     };
   };
