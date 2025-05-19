@@ -1,5 +1,5 @@
 self: final: prev: {
-  flakeVersion = self.rev or self.shortRev or self.dirtyShortRev or self.lastModified or "0.0.0-unknown";
+  flakeVersion = self.shortRev or self.dirtyShortRev or self.lastModifiedDate or "0.0.0-unknown";
 
   upgraded = selfPkg: superPkg:
     if builtins.compareVersions superPkg.version selfPkg.version < 1

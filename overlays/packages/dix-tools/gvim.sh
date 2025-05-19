@@ -73,11 +73,11 @@ if [ -n "$remote_address" ]; then
 	remote_ip="${remote_address##*@}"
 	nvim_listen_address="0.0.0.0"
 
-	echo "Checking for existing nvim instance on $remote_address:$port..."
+	echo "Checking for existing nvim instance on $remote_address:$port"
 	if ssh "$remote_address" "nc -z localhost $port" >/dev/null 2>&1; then
 		echo "Existing nvim instance detected on $remote_address:$port. Skipping nvim startup."
 	else
-		echo "No existing nvim instance found. Starting nvim on $remote_address..."
+		echo "No existing nvim instance found. Starting nvim on $remote_address"
 		nvim_exec_cmd_parts=("nvim" "--headless" "--listen" "${nvim_listen_address}:${port}")
 		if [ -n "$file_path_arg" ]; then
 			# Escape single quotes for the remote sh -c execution context
@@ -94,6 +94,7 @@ if [ -n "$remote_address" ]; then
 
 		env_literal='if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; elif [ -e "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"; fi; '
 
+		echo "Command: ${nvim_final_command}"
 		ssh "$remote_address" "bash -c '${env_literal}nohup ${nvim_final_command} > ~/.gvim_remote_nvim.log 2>&1 &'"
 
 		echo -n "Waiting for nvim to start on $remote_address (port $port)"
@@ -120,24 +121,30 @@ if [ -n "$remote_address" ]; then
 		nvim --server "${remote_ip}:${port}" ${file_path_arg:+--remote "$file_path_arg"}
 		echo "Terminal nvim client exited. The remote nvim process on $remote_address might still be running."
 	else
-		echo "Spawning Neovide: neovide --remote-tcp=${remote_ip}:${port}"
-		@neovide@ --remote-tcp="${remote_ip}:${port}"
+		neovide_base_cmd_remote="@neovide@ --remote-tcp=\"${remote_ip}:${port}\""
+		if [ -n "$file_path_arg" ]; then
+			echo "Spawning Neovide: $neovide_base_cmd_remote \"$file_path_arg\""
+			@neovide@ --remote-tcp="${remote_ip}:${port}" "$file_path_arg"
+		else
+			echo "Spawning Neovide: $neovide_base_cmd_remote"
+			@neovide@ --remote-tcp="${remote_ip}:${port}"
+		fi
 		echo "Neovide exited. The remote nvim process on $remote_address might still be running."
 	fi
 
 	echo "You may need to manually kill it, e.g.:"
-	echo "ssh $remote_address \"pkill -f '${nvim_exec_cmd_parts[0]}.*--listen ${nvim_listen_address}:${port}'\""
+	echo "ssh $remote_address \"pkill -f 'nvim.*--listen ${nvim_listen_address}:${port}'\""
 
 else
 	echo "Local mode: file '$file_path_arg'"
 	nvim_listen_address="127.0.0.1"
 
 	# Check if nvim is already running locally
-	echo "Checking for existing local nvim instance on $nvim_listen_address:$port..."
+	echo "Checking for existing local nvim instance on $nvim_listen_address:$port"
 	if nc -z $nvim_listen_address $port >/dev/null 2>&1; then
 		echo "Existing local nvim instance detected on $nvim_listen_address:$port. Skipping nvim startup."
 	else
-		echo "No existing local nvim instance found. Starting local nvim..."
+		echo "No existing local nvim instance found. Starting local nvim"
 		if [ -n "$file_path_arg" ]; then
 			nvim --headless --listen "$nvim_listen_address:$port" "$file_path_arg" &
 		else
@@ -166,8 +173,14 @@ else
 		nvim --server "${nvim_listen_address}:${port}" ${file_path_arg:+--remote "$file_path_arg"}
 		echo "Terminal nvim client exited. Local nvim process might still be running."
 	else
-		echo "Spawning Neovide: neovide --server=${nvim_listen_address}:${port}"
-		@neovide@ --server="${nvim_listen_address}:${port}"
+		neovide_base_cmd_local="@neovide@ --server=\"${nvim_listen_address}:${port}\""
+		if [ -n "$file_path_arg" ]; then
+			echo "Spawning Neovide: $neovide_base_cmd_local \"$file_path_arg\""
+			@neovide@ --server="${nvim_listen_address}:${port}" "$file_path_arg"
+		else
+			echo "Spawning Neovide: $neovide_base_cmd_local"
+			@neovide@ --server="${nvim_listen_address}:${port}"
+		fi
 		echo "Neovide exited. Local nvim process might still be running."
 	fi
 fi
