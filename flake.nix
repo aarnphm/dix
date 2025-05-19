@@ -73,77 +73,62 @@
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/30-derivations.nix)
     ];
+    forPackages = system:
+      import nixpkgs {
+        inherit system overlays;
+        config = {
+          allowUnfree = true;
+          allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
+          allowUnsupportedSystem = true;
+        };
+      };
   in
     builtins.foldl' nixpkgs.lib.recursiveUpdate {
       # NOTE: This will change some of your default packages, so proceed with CAUTION.
       overlays.default = nixpkgs.lib.composeManyExtensions overlays;
-      darwinConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
-        builtins.map (computerName: let
-          user = "aarnphm";
+
+      darwinConfigurations = builtins.listToAttrs (builtins.map (computerName: let
+        user = "aarnphm";
+      in {
+        name = computerName;
+        value = nix-darwin.lib.darwinSystem rec {
           system = "aarch64-darwin";
-          pkgs = import nixpkgs {
-            inherit system overlays;
-            config = {
-              allowUnfree = true;
-              allowUnsupportedSystem = true;
-            };
-          };
+          pkgs = forPackages system;
           specialArgs = {inherit self inputs pkgs user computerName;};
-        in {
-          "${computerName}" = nix-darwin.lib.darwinSystem {
-            inherit system pkgs specialArgs;
+          modules = [
+            home-manager.darwinModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users."${user}".imports = [./hm];
+                backupFileExtension = "backup-from-hm";
+                extraSpecialArgs = specialArgs;
+                verbose = true;
+              };
+            }
+            ./darwin
+          ];
+        };
+      }) ["appl-mbp16" "bentoml"]);
+
+      homeConfigurations = builtins.listToAttrs (builtins.map (
+        user: {
+          name = user;
+          value = home-manager.lib.homeManagerConfiguration rec {
+            pkgs = forPackages "x86_64-linux";
+            extraSpecialArgs = {inherit self inputs pkgs user;};
             modules = [
-              home-manager.darwinModules.home-manager
-              {
-                home-manager = {
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  users."${user}".imports = [./hm];
-                  backupFileExtension = "backup-from-hm";
-                  extraSpecialArgs = specialArgs;
-                  verbose = true;
-                };
-              }
-              ./darwin
+              nix.homeModules.default
+              ./hm
             ];
           };
-        }) ["appl-mbp16" "bentoml"]
-      );
-      homeConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
-        builtins.map (
-          user: let
-            system = "x86_64-linux";
-            pkgs = import nixpkgs {
-              inherit system overlays;
-              config = {
-                allowUnfree = true;
-                allowBroken = true;
-              };
-            };
-            specialArgs = {inherit self inputs pkgs user;};
-          in {
-            ${user} = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              extraSpecialArgs = specialArgs;
-              modules = [
-                nix.homeModules.default
-                ./hm
-              ];
-            };
-          }
-        ) ["ubuntu" "paperspace"]
-      );
+        }
+      ) ["ubuntu" "paperspace"]);
     } (
       builtins.map (
         system: let
-          pkgs = import nixpkgs {
-            inherit system overlays;
-            config = {
-              allowUnfree = true;
-              allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
-              allowUnsupportedSystem = true;
-            };
-          };
+          pkgs = forPackages system;
           # App builder
           mkApp = {
             drv,
@@ -152,9 +137,11 @@
           }: {
             type = "app";
             program = "${drv}${exePath}";
+            description = ''detachtools, of ${name}'';
           };
         in {
           formatter.${system} = pkgs.alejandra;
+
           apps.${system} = builtins.listToAttrs (
             builtins.map (
               name: {
@@ -168,7 +155,11 @@
               "bootstrap"
             ]
           );
-          packages.${system} = with pkgs; {inherit lambda aws-credentials gvim;};
+
+          packages.${system} = with pkgs; {
+            inherit lambda aws-credentials gvim;
+          };
+
           checks.${system} = {
             pre-commit-check = git-hooks.lib.${system}.run {
               src = ./.;

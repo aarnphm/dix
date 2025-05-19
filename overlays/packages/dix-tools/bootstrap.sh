@@ -5,7 +5,7 @@ set -euo pipefail
 flakeUri="@FLAKE_URI_BASE@"
 
 usage() {
-	echo "Usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>]"
+	echo "usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>]"
 }
 
 ERROR_COLOR="\033[0;31m" # Red
@@ -120,7 +120,9 @@ linux)
 	exit 1
 	;;
 esac
-log_info "system configuration for $SYSTEM_TYPE"
+
+TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
+log_info "setup @ $SYSTEM_TYPE at $TIMESTAMP"
 
 flake="${flakeUri}#${FLAKE_TARGET}"
 if [[ $flake =~ ^(.*)\#([^\#\"]*)$ ]]; then
@@ -130,11 +132,6 @@ fi
 
 case "$SYSTEM_TYPE" in
 darwin)
-	if [[ $(id -u) -eq 0 ]]; then
-		# On macOS, `sudo(8)` preserves `$HOME` by default, which causes Nix
-		# to output warnings.
-		HOME=~root
-	fi
 	SUDO_USER=aarnphm sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake "$flake#$flakeAttr" --show-trace -v -L --option accept-flake-config true
 	;;
 linux)
@@ -143,26 +140,26 @@ linux)
 esac
 
 if ! gh auth status &>/dev/null; then
-	log_info "Logging into GitHub via gh"
+	log_info "setup with gh"
 	gh auth login -p ssh
 fi
 
 if ! rustup toolchain list | grep -q nightly; then
-	log_info "Installing Rust nightly toolchain"
+	log_info "install rust toolchain nightly"
 	rustup toolchain install nightly
 fi
 
 NVIM_DIR="$HOME/.config/nvim"
 if [ ! -d "$NVIM_DIR" ]; then
-	log_info "Run default nvim setup"
+	log_info "default nvim setup"
 	gh repo clone aarnphm/editor "$NVIM_DIR"
 	nvim --headless "+Lazy! sync" +qa
 	nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
 fi
 
 if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
-	log_info "Link default vimrc config"
+	log_info "link .vimrc config"
 	ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
 fi
 
-log_info "Setup completed for $SYSTEM_TYPE"
+log_info "finished @ $SYSTEM_TYPE"
