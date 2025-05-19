@@ -92,8 +92,6 @@
     log-lines = 20;
     keep-going = false;
     sandbox = false;
-    keep-derivations = true;
-    keep-outputs = true;
     trusted-users = [user];
     max-jobs = "auto";
     always-allow-substitutes = true;
