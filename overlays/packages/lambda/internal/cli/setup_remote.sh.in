@@ -164,6 +164,17 @@ if command -v gh &>/dev/null; then
 	fi
 fi
 
+log_info "setup vllm"
+
+pushd vllm &>/dev/null
+uv venv .venv -p 3.11 --seed
+source .venv/bin/activate
+uv pip install pre-commit
+VLLM_USE_PRECOMPILED=True uv pip install -e . -v
+pre-commit install
+deactivate
+popd &>/dev/null
+
 popd >/dev/null
 
 mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
