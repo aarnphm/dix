@@ -59,45 +59,45 @@ log_debug() {
 	log "DEBUG" "RMT" "$message"
 }
 
-log_info "Starting Remote Setup"
+log_info "init"
 
 {{ if not .ForceSetup }}
 if [[ -f ~/.lambda-setup-once ]]; then
-	log_warn "Setup has been ran once. Use 'lm connect $INSTANCE_ID' or the --force flag instead."
+	log_warn "use 'lm connect $INSTANCE_ID' or the --force flag instead."
 	exit 0
 fi
 {{ else }}
-log_info "Force flag detected, proceeding with setup even if .lambda-setup-once exists."
+log_warn "proceeding with setup (force=true)"
 {{ end }}
 
-log_info "Setting up Nix, waiting for 5 seconds to make sure environment is loaded."
+log_info "sleep for 5 seconds to make sure environment is loaded before sourcing nix."
 sleep 5
 if ! command -v nix &>/dev/null && ! [[ -f /nix/receipt.json ]]; then
 	curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux --no-confirm
 	if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
 		. "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 	else
-		log_warn "Could not find nix-daemon.sh to source. Nix commands might fail. Attempting to source common user profile"
+		log_warn "could not find nix-daemon.sh. nix commands might fail. attempting to source common user profile"
 		if [[ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
 			. "$HOME/.nix-profile/etc/profile.d/nix.sh"
 		fi
 	fi
-	log_info "Nix installed."
+	log_info "nix installed."
 else
-	log_warn "Nix is already installed."
+	log_warn "nix is already installed."
 fi
 
 {{ if .DetachSetup }}
 
-log_info "Running nix"
+log_info "setup"
 nix run home-manager -- switch --flake github:aarnphm/detachtools#ubuntu --show-trace -L --option accept-flake-config true
-log_info "Changing password for {{ .RemoteUser }}"
+log_info "Update default password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.
 if echo "{{ .RemoteUser }}:{{ .RemotePassword }}" | sudo chpasswd; then
-	log_info "Password changed successfully."
+	log_info "password changed successfully."
 else
-	log_warn "Failed to change password using chpasswd. Manual intervention might be required."
+	log_warn "failed to change password. manual intervention might be required."
 fi
 
 # Source again after home-manager potentially changed profiles
@@ -108,10 +108,8 @@ if [[ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
 elif [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
 	. "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 else
-	log_warn "Could not find nix profile to source after HM switch."
+	log_warn "could not find nix profile to source after home-manager switch"
 fi
-
-log_info "Authenticating GitHub CLI and setup workspace"
 
 WORKSPACE_DIR="$HOME/workspace"
 mkdir -p "$WORKSPACE_DIR"
@@ -131,10 +129,10 @@ pushd "$WORKSPACE_DIR" >/dev/null
 
 if command -v gh &>/dev/null; then
 	if ! gh auth status &>/dev/null; then
-		log_info "Logging into GitHub CLI using token"
+		log_info "setup gh CLI"
 		(echo "{{ .GhToken }}" | gh auth login -p ssh --with-token) &>/dev/null || true
 	else
-		log_info "GitHub CLI already authenticated"
+		log_warn "gh already authenticated"
 	fi
 
 	for item in "${REPOS[@]}"; do
@@ -143,22 +141,22 @@ if command -v gh &>/dev/null; then
 		target_full_path="$WORKSPACE_DIR/$target_dir"
 
 		if [[ -d "$target_full_path" ]]; then
-			log_info "Directory $target_full_path already exists, skipping clone."
+			log_warn "directory $target_full_path already exists."
 		else
 			mkdir -p "$(dirname "$target_full_path")"
-			log_info "Cloning $repo_path into $target_full_path..."
+			log_info "cloning $repo_path into $target_full_path..."
 
 			clone_args=()
 			if [[ -n "$target_branch" ]]; then
 				clone_args=("--branch" "$target_branch")
-				log_info "Using branch: $target_branch"
+				log_info "using branch: $target_branch"
 			fi
 
 			gh repo clone "$repo_path" "$target_full_path" -- "${clone_args[@]}"
 		fi
 	done
 
-	log_info "Cloning Neovim config..."
+	log_info "setup neovim config"
 	if [[ -d "$HOME/.config/nvim" ]]; then
 		log_info "~/.config/nvim already exists, skipping clone."
 	else
@@ -170,13 +168,13 @@ popd >/dev/null
 
 mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
 
-log_info "Import default GPG keys for remote machine"
+log_info "setup remote gpg key"
 echo '{{ .RemoteGpgPassphrase }}' >/tmp/gpg_passphrase
 cat /tmp/gpg_passphrase | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --import ~/gpg-private-lambdalabs.key
 rm /tmp/gpg_passphrase && rm ~/gpg-private-lambdalabs.key
 gpgconf --kill all
 
-log_info "Setup neovim dependencies and install rust toolchains"
+log_info "setup editor and rust toolchain"
 nvim --headless "+Lazy! sync" +qa
 nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
 rustup toolchain install nightly
@@ -190,12 +188,12 @@ git switch feat/flake
 nix run ~/workspace/neovim-plugins/avante.nvim#plugin --show-trace -L --accept-flake-config true
 popd >/dev/null
 
-log_info "Changing shell for {{ .RemoteUser }}"
+log_info "update default shell to zsh for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
 
 {{ end }}
 
 touch ~/.lambda-setup-once
 
-log_info "Remote Setup Finished"
+log_info "finished."
 exit 0
