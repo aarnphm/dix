@@ -1,16 +1,5 @@
-final: prev: {
-  flakeVersion = (
-    if (final ? lastModifiedDate && final ? rev) # Check rev to see if we are on a clean commit
-    then
-      (
-        let
-          year = builtins.substring 0 4 final.lastModifiedDate;
-          month = builtins.substring 4 2 final.lastModifiedDate;
-          day = builtins.substring 6 2 final.lastModifiedDate;
-        in "unstable-${year}-${month}-${day}"
-      )
-    else "dirty"
-  );
+self: final: prev: {
+  flakeVersion = self.rev or self.shortRev or self.dirtyShortRev or self.lastModified or "0.0.0-unknown";
 
   upgraded = selfPkg: superPkg:
     if builtins.compareVersions superPkg.version selfPkg.version < 1

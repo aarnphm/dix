@@ -110,6 +110,7 @@ in {
         );
       };
       meta = {
+        mainProgram = "unicopy";
         description = "copy with a twist";
         homepage = "https://github.com/aarnphm/detachtools";
         license = lib.licenses.asl20;

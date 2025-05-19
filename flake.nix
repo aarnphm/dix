@@ -69,7 +69,7 @@
       atuin.overlays.default
       (import (home-manager + "/overlay.nix"))
       # custom overlays
-      (import ./overlays/10-dev-overrides.nix)
+      (import ./overlays/10-dev-overrides.nix {inherit self;})
       (import ./overlays/20-packages-overrides.nix)
       (import ./overlays/20-recurse-overrides.nix)
       (import ./overlays/30-derivations.nix)
