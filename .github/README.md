@@ -33,6 +33,8 @@ I also include some standalone tools that can be installed, such as `lambda`.
 Some packages include certain override:
 
 - `gvim`: This will add support for remote via `--address`. More information with `gvim -h`
+- to add a new derivation, uses `nix run github:nix-community/nix-init -- -u <url> -n ./overlays`
+- to run update, uses `nix run github:Mic92/nix-update`
 
 ### lambda.
 
