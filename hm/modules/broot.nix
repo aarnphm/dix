@@ -19,7 +19,7 @@ with lib; {
         enableZshIntegration = true;
         settings = {
           modal = true;
-          default_flags = "-gh";
+          default_flags = "-g";
           syntax_theme =
             if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
             then "OceanDark"
