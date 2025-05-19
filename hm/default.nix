@@ -10,9 +10,9 @@
     # editor
     vim
     gvim
-    helix
     bun
     uv
+    ty
 
     # kubernetes and container
     kubernetes-helm
@@ -205,6 +205,10 @@ in {
     nix-direnv.enable = true;
     enableBashIntegration = true;
   };
+  helix = {
+    enable = true;
+    evil = true;
+  };
 
   alacritty.enable = true;
   bat.enable = true;
@@ -213,7 +217,6 @@ in {
   direnv.enable = true;
   git.enable = true;
   gpg.enable = true;
-  helix.enable = true;
   ssh.enable = true;
   zsh.enable = true;
   atuin.enable = true;

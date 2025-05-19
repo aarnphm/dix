@@ -11,50 +11,177 @@ with lib; {
       default = false;
       description = mdDoc ''helix configuration'';
     };
+    evil = mkOption {
+      type = types.bool;
+      default = false;
+      description = mdDoc ''Enable evil mode'';
+    };
   };
 
   config = mkIf config.helix.enable {
     programs.helix = {
       enable = true;
+      package =
+        if config.helix.evil
+        then pkgs.evil-helix
+        else pkgs.helix;
+      extraPackages = with pkgs; [
+        # go
+        gopls
+        golangci-lint-langserver
+        delve
+        # markdown
+        markdown-oxide
+        # nix
+        nil
+        alejandra
+        # latex
+        texlab
+        # ts, tsx, js, jsx, json
+        vscode-langservers-extracted
+        vtsls
+        jq-lsp
+        # bash
+        bash-language-server
+        # python
+        ruff
+        ty
+        basedpyright
+        rustup
+        # toml
+        taplo
+        # zig
+        zls
+      ];
+      languages = {
+        language-server = {
+          vtsls = {
+            command = "vtsls";
+            args = ["--stdio"];
+          };
+          ruff = {
+            command = "ruff";
+            args = ["server"];
+          };
+          ty = {
+            command = "ty";
+            args = ["server"];
+          };
+          basedpyright = {
+            command = "basedpyright-langserver";
+            args = ["--stdio"];
+            config = {
+              analysis = {
+                autoSearchPaths = true;
+                useLibraryCodeForTypes = true;
+                diagnosticMode = "openFilesOnly";
+              };
+            };
+          };
+        };
+        language = [
+          {
+            name = "lua";
+            scope = "source.lua";
+            auto-format = false;
+          }
+          {
+            name = "ts";
+            scope = "source.ts";
+            file-types = ["ts" "tsx" "js" "jsx"];
+            auto-format = true;
+            indent = {
+              tab-width = 2;
+              unit = " ";
+            };
+            language-servers = ["vtsls"];
+          }
+          {
+            name = "nix";
+            scope = "source.nix";
+            formatter = {command = "alejandra";};
+            auto-format = true;
+            language-servers = ["nil"];
+          }
+          {
+            name = "python";
+            language-id = "python";
+            scope = "source.python";
+            injection-regex = "python";
+            roots = ["pyproject.toml" "setup.py" "ty.toml" "uv.lock" "pyrightconfig.json" "requirements.txt" ".venv/"];
+            comment-token = "#";
+            file-types = ["py" "ipynb"];
+            shebangs = ["python"];
+            indent = {
+              tab-width = 2;
+              unit = " ";
+            };
+            auto-format = true;
+            formatter = {
+              command = "ruff";
+              args = ["format" "-"];
+            };
+            language-servers = ["ruff" "ty" "basedpyright"];
+          }
+        ];
+      };
       settings = {
         theme =
           if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-          then "flexoki-dark"
-          else "flexoki-light";
-        editor = {
-          line-number = "relative";
-          cursorline = true;
-          text-width = 119;
-          whitespace = {
-            render = {
-              space = "all";
-              tab = "all";
-              nbsp = "none";
-              nnbsp = "none";
-              newline = "none";
+          then "flexoki_dark"
+          else "flexoki_light";
+        editor =
+          lib.optionalAttrs config.helix.evil {
+            evil = true;
+          }
+          // {
+            line-number = "relative";
+            cursorline = true;
+            text-width = 119;
+            inline-diagnostics = {
+              cursor-line = "warning";
             };
-            characters = {
-              space = "·";
-              nbsp = "⍽";
-              nnbsp = "␣";
-              tab = "→";
-              newline = "⏎";
-              tabpad = "·";
+            whitespace = {
+              render = {
+                space = "all";
+                tab = "all";
+                nbsp = "none";
+                nnbsp = "none";
+                newline = "none";
+              };
+              characters = {
+                space = "·";
+                nbsp = "⍽";
+                nnbsp = "␣";
+                tab = "→";
+                newline = "⏎";
+                tabpad = "·";
+              };
+            };
+            indent-guides = {
+              render = true;
+              character = "╎";
+              skip-levels = 1;
+            };
+            lsp = {
+              display-progress-messages = true;
+              display-inlay-hints = true;
             };
           };
-          indent-guides = {
-            render = true;
-            character = "╎";
-            skip-levels = 1;
+        keys = {
+          normal = {
+            C-s = ":w";
           };
-          lsp = {
-            display-progress-messages = true;
-            display-inlay-hints = true;
+          insert = {
+            j = {
+              k = "normal_mode";
+              j = "normal_mode";
+            };
           };
         };
       };
       themes = {
-        flexoki-light = let
+        flexoki_light = let
           tx = "#100F0F";
           tx-2 = "#6F6E69";
           tx-3 = "#B7B5AC";
@@ -77,75 +204,75 @@ with lib; {
             inherit tx tx-2 tx-3 ui-3 ui-2 ui bg-2 bg;
             inherit re orr ye gr cy bl pu ma;
           };
-          ui.background = {bg = "bg";};
-          ui.cursor = {
+          "ui.background" = {bg = "bg";};
+          "ui.cursor" = {
             fg = "tx";
             bg = "tx-3";
           };
-          ui.cursor.primary = {
+          "ui.cursor.primary" = {
             fg = "bg";
             bg = "tx";
           };
-          ui.cursor.match = {modifiers = ["bold"];};
+          "ui.cursor.match" = {modifiers = ["bold"];};
           "ui.linenr" = "tx-3";
           "ui.linenr.selected" = "tx";
-          ui.selection = {bg = "ui-2";};
-          ui.statusline = {
+          "ui.selection" = {bg = "ui-2";};
+          "ui.statusline" = {
             fg = "tx";
             bg = "bg-2";
           };
-          ui.statusline.normal = {
+          "ui.statusline.normal" = {
             fg = "bg";
             bg = "bl";
           };
-          ui.statusline.insert = {
+          "ui.statusline.insert" = {
             fg = "bg";
             bg = "orr";
           };
-          ui.statusline.select = {
+          "ui.statusline.select" = {
             fg = "bg";
             bg = "ma";
           };
-          ui.cursorline = {bg = "bg-2";};
-          ui.popup = {
+          "ui.cursorline" = {bg = "bg-2";};
+          "ui.popup" = {
             fg = "tx";
             bg = "bg-2";
           };
-          ui.window = "tx";
-          ui.help = {
+          "ui.window" = "tx";
+          "ui.help" = {
             fg = "tx";
             bg = "bg";
           };
-          ui.text = "tx";
+          "ui.text" = "tx";
           "ui.text.focus" = {
             bg = "bg-2";
             fg = "tx";
           };
           "ui.text.info" = "tx";
-          ui.virtual.whitespace = "bg-2";
-          ui.virtual.ruler = {bg = "bg-2";};
-          ui.virtual.inlay-hint = {
+          "ui.virtual.whitespace" = "bg-2";
+          "ui.virtual.ruler" = {bg = "bg-2";};
+          "ui.virtual.inlay-hint" = {
             bg = "bg-2";
             fg = "tx-3";
           };
-          ui.virtual.jump-label = {
+          "ui.virtual.jump-label" = {
             bg = "bg-2";
             modifiers = ["bold"];
           };
-          ui.menu = {
+          "ui.menu" = {
             bg = "bg";
             fg = "tx";
           };
-          ui.menu.selected = {
+          "ui.menu.selected" = {
             bg = "ui";
             fg = "tx";
           };
-          ui.debug = {
+          "ui.debug" = {
             bg = "bg";
             fg = "orr";
           };
-          ui.highlight.frameline = {bg = "ye";};
-          diagnostic.hint = {
+          "ui.highlight.frameline" = {bg = "ye";};
+          "diagnostic.hint" = {
             underline = {
               color = "bl";
               style = "curl";
@@ -233,7 +360,7 @@ with lib; {
           "diff.minus" = "re";
           "diff.delta" = "ye";
         };
-        flexoki-dark = let
+        flexoki_dark = let
           tx = "#CECDC3";
           tx-2 = "#878580";
           tx-3 = "#575653";
@@ -252,7 +379,7 @@ with lib; {
           pu = "#8B7EC8";
           ma = "#CE5D97";
         in {
-          inherits = "flexoki-light";
+          inherits = "flexoki_light";
           palette = {
             inherit tx tx-2 tx-3 ui-3 ui-2 ui bg-2 bg;
             inherit re orr ye gr cy bl pu ma;
