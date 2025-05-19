@@ -80,9 +80,15 @@
     rm-improved
     mmv
     fd
+    dust
+    duf
+    broot
     fzf
     bat
     sd
+    procs
+    xh
+    mupdf
     ripgrep
     hexyl
     catimg
@@ -202,6 +208,7 @@ in {
 
   alacritty.enable = true;
   bat.enable = true;
+  broot.enable = true;
   btop.enable = true;
   direnv.enable = true;
   git.enable = true;
@@ -308,9 +315,9 @@ in {
       # ls-replacement
       ls = lib.getExe pkgs.eza;
       ll = "${lib.getExe pkgs.eza} -Ml --almost-all --group-directories-first -sName --icons=always";
-      sudo = "nocorrect sudo";
-      tree = "${lib.getExe pkgs.eza} --almost-all --group-directories-first --tree";
       mtree = "${lib.getExe pkgs.eza} --almost-all -Ml --group-directories-first --tree";
+      sudo = "nocorrect sudo";
+      tree = lib.getExe pkgs.broot;
 
       # safe rm
       rm = "${lib.getExe pkgs.rm-improved} --graveyard ${config.home.homeDirectory}/.local/share/Trash";

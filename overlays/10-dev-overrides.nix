@@ -1,4 +1,4 @@
-self: final: prev: {
+{self}: final: prev: {
   flakeVersion = self.shortRev or self.dirtyShortRev or self.lastModifiedDate or "0.0.0-unknown";
 
   upgraded = selfPkg: superPkg:
