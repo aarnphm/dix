@@ -90,8 +90,6 @@
     sleep.display = 30;
   };
 
-  nix.nrBuildUsers = 32;
-
   nix.settings = {
     log-lines = 128;
     keep-going = true;
