@@ -97,8 +97,6 @@
     keep-derivations = true;
     keep-outputs = true;
     trusted-users = [user];
-    sandbox = true;
-    extra-sandbox-paths = ["/private/tmp" "/private/var/tmp" "/usr/bin/env"];
     max-jobs = "auto";
     always-allow-substitutes = true;
     bash-prompt-prefix = "(nix:$name)\\040";
