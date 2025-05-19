@@ -3,21 +3,21 @@
 set -eo pipefail
 
 usage() {
-  echo "Usage: @pname@ [profile]"
-  echo
-  echo "Note: profile will be used to be retrieved from bitwarden aws-{profile}-...."
+	echo "Usage: @pname@ [profile]"
+	echo
+	echo "Note: profile will be used to be retrieved from bitwarden aws-{profile}-...."
 }
 
 # Check if no options are passed
 if [ $# -eq 0 ]; then
-  usage
-  exit 1
+	usage
+	exit 1
 fi
 
 if [ $# -gt 1 ]; then
-  echo "Error: Too many arguments provided."
-  usage
-  exit 1
+	echo "Error: Too many arguments provided."
+	usage
+	exit 1
 fi
 
 # Assign the profile argument to a variable

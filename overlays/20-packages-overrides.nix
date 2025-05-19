@@ -1,10 +1,9 @@
-self: super: {
-  dix = super.dix or {};
-  bitwarden-cli = super.bitwarden-cli.overrideAttrs (
+final: prev: {
+  bitwarden-cli = prev.bitwarden-cli.overrideAttrs (
     oldAttrs:
-      with super.llvmPackages_18; {
+      with prev.llvmPackages_18; {
         inherit stdenv;
-        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [stdenv.cc super.installShellFiles];
+        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [stdenv.cc prev.installShellFiles];
         postInstall =
           (oldAttrs.postInstall or "")
           + ''
@@ -12,7 +11,7 @@ self: super: {
           '';
       }
   );
-  gitstatus = super.gitstatus.overrideAttrs (oldAttrs: {
+  gitstatus = prev.gitstatus.overrideAttrs (oldAttrs: {
     installPhase =
       oldAttrs.installPhase
       + ''
@@ -20,8 +19,8 @@ self: super: {
         install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
       '';
   });
-  nodejs_24 = super.nodejs_24.overrideAttrs (oldAttrs: {
-    nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [super.installShellFiles];
+  nodejs_24 = prev.nodejs_24.overrideAttrs (oldAttrs: {
+    nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [prev.installShellFiles];
     postInstall =
       (oldAttrs.postInstall or "")
       + ''

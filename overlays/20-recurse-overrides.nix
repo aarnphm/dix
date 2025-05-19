@@ -1,8 +1,6 @@
-self: super: {
-  dix = super.recurseIntoAttrs (super.dix or {});
-
+final: prev: {
   julia_19 =
-    if super.stdenv.isDarwin
+    if prev.stdenv.isDarwin
     then null
-    else super.recurseIntoAttrs super.julia_19;
+    else prev.recurseIntoAttrs prev.julia_19;
 }

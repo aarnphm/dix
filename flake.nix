@@ -62,16 +62,12 @@
     atuin,
     ...
   } @ inputs: let
-    # Create overlays
     overlays = [
-      (self: super: {
-        dix = super.dix or {};
-        neovim-stable = super.neovim;
-      })
       # additional packages
       neovim.overlays.default
       nix-darwin.overlays.default
       atuin.overlays.default
+      (import (home-manager + "/overlay.nix"))
       # custom dix's overlays
       (import ./overlays/10-dev-overrides.nix)
       (import ./overlays/20-packages-overrides.nix)
@@ -80,6 +76,8 @@
     ];
   in
     builtins.foldl' nixpkgs.lib.recursiveUpdate {
+      # NOTE: This will change some of your default packages, so proceed with CAUTION.
+      overlays.default = nixpkgs.lib.composeManyExtensions overlays;
       darwinConfigurations = builtins.foldl' nixpkgs.lib.recursiveUpdate {} (
         builtins.map (computerName: let
           user = "aarnphm";

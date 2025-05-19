@@ -1,19 +1,14 @@
-self: super: let
+final: prev: let
   lambdaVersion = let
     envVersion = builtins.getEnv "LAMBDA_VERSION";
-    fallbackVersion = "0.0.0-dev";
+    fallbackVersion = prev.flakeVersion;
   in
     if envVersion != ""
     then envVersion
     else fallbackVersion;
 in {
-  inherit (super.callPackage ./packages/dix-tools {}) bootstrap;
-  aws-credentials = super.callPackage ./packages/aws-credentials {};
-  ubuntu-nvidia = super.callPackage ./packages/ubuntu-nvidia {};
-  unicopy = super.callPackage ./packages/unicopy {};
-  git-forest = super.callPackage ./packages/git-forest {};
-  zsh-dix = super.callPackage ./packages/zsh-dix {};
-  pinentry-touchid = super.callPackage ./packages/pinentry-touchid {};
-  gvim = super.callPackage ./packages/gvim {};
-  lambda = super.callPackage ./packages/lambda {version = lambdaVersion;};
+  inherit (prev.callPackage ./packages/dix-tools {}) bootstrap gvim unicopy pinentry-touchid ubuntu-nvidia aws-credentials;
+  git-forest = prev.callPackage ./packages/git-forest {};
+  zsh-dix = prev.callPackage ./packages/zsh-dix {};
+  lambda = prev.callPackage ./packages/lambda {version = lambdaVersion;};
 }

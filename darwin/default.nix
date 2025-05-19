@@ -5,7 +5,7 @@
   inputs,
   computerName,
   ...
-}: rec {
+}: {
   imports = [
     ./modules
     inputs.nix-homebrew.darwinModules.nix-homebrew
@@ -13,16 +13,6 @@
 
   programs.zsh = {
     enable = true;
-    shellInit = ''
-      zmodload zsh/mapfile
-      bwpassfile="${users.users.${user}.home}/bw.pass"
-      if [[ -f "$bwpassfile" ]]; then
-        bitwarden=("''${(f@)mapfile[$bwpassfile]}")
-        export BW_MASTER=$bitwarden[1]
-        export BW_CLIENTID=$bitwarden[2]
-        export BW_CLIENTSECRET=$bitwarden[3]
-      fi
-    '';
   };
   gpg.enable = true;
 
@@ -93,8 +83,12 @@
     systemPath = ["/opt/homebrew/bin" "/opt/homebrew/sbin"];
   };
 
+  power = {
+    sleep.display = 30;
+  };
+
   nix.settings = {
-    log-lines = 20;
+    log-lines = 50;
     keep-going = false;
     trusted-users = [user];
     sandbox = false;
@@ -119,9 +113,6 @@
     interval.Hour = 6;
   };
 
-  # Set Git commit hash for darwin-version.
-  system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
-
   # Networking
   networking = {
     inherit computerName;
@@ -134,12 +125,19 @@
   };
 
   # add PAM
-  security.pam.services.sudo_local.touchIdAuth = true;
+  security = {
+    pam.services.sudo_local = {
+      touchIdAuth = true;
+      watchIdAuth = true;
+    };
+  };
 
   # System preferences
   system = {
     stateVersion = 4;
-    activationScripts.extraUserActivation.text = ''sudo chsh -s ${pkgs.zsh}/bin/zsh'';
+    # Set Git commit hash for darwin-version.
+    configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
+    primaryUser = user;
 
     # default settings within System Preferences
     defaults = {

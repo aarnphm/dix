@@ -1,5 +1,16 @@
-self: super: {
-  flakeVersion = input: "${builtins.substring 0 8 (input.lastModifiedDate or input.lastModified or "19700101")}.${input.shortRev or "dirty"}";
+final: prev: {
+  flakeVersion = (
+    if (final ? lastModifiedDate && final ? rev) # Check rev to see if we are on a clean commit
+    then
+      (
+        let
+          year = builtins.substring 0 4 final.lastModifiedDate;
+          month = builtins.substring 4 2 final.lastModifiedDate;
+          day = builtins.substring 6 2 final.lastModifiedDate;
+        in "unstable-${year}-${month}-${day}"
+      )
+    else "dirty"
+  );
 
   upgraded = selfPkg: superPkg:
     if builtins.compareVersions superPkg.version selfPkg.version < 1
@@ -11,12 +22,12 @@ self: super: {
     then selfPkg
     else (builtins.trace "note: ${selfPkg.name} override is outdated!" selfPkg);
 
-  isArm = builtins.match "aarch64-.*" super.stdenv.hostPlatform.system != null;
+  isArm = builtins.match "aarch64-.*" prev.stdenv.hostPlatform.system != null;
 
-  concatStringsSepNewLine = iterables: super.lib.concatStringsSep "\n" iterables;
+  concatStringsSepNewLine = iterables: prev.lib.concatStringsSep "\n" iterables;
 
   writeProgram = name: env: src:
-    super.replaceVarsWith ({
+    prev.replaceVarsWith ({
         inherit name src;
         dir = "bin";
         isExecutable = true;
@@ -36,7 +47,7 @@ self: super: {
     sourceRoot ? ".",
     ...
   }:
-    with super;
+    with prev;
       stdenv.mkDerivation {
         inherit src sourceRoot postInstall;
         name = "${name}-${version}";
@@ -76,7 +87,7 @@ self: super: {
 
           runHook postInstall
         '';
-        meta = with self.lib; {
+        meta = with final.lib; {
           inherit homepage description;
           maintainers = with maintainers; [aarnphm];
           platforms = platforms.darwin;
@@ -88,7 +99,7 @@ self: super: {
     src,
     version,
   }:
-    with super;
+    with prev;
       stdenv.mkDerivation {
         inherit name src version;
         buildCommand = ''

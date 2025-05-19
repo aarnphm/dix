@@ -2,14 +2,13 @@
   stdenv,
   lib,
   flakeVersion,
-  git,
   perl,
   makeWrapper,
   perl538Packages,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "git-forest";
-  version = flakeVersion git;
+  version = flakeVersion;
 
   src = ./.;
 

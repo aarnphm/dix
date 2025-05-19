@@ -1,52 +1,183 @@
 {
   writeProgram,
+  writeShellApplication,
+  lib,
+  fetchurl,
+  isArm,
+  makeWrapper,
+  flakeVersion,
+  runCommand,
   coreutils,
   gh,
   rustup,
-  lib,
+  unzip,
   stdenv,
-  makeWrapper,
+  neovide,
+  xclip,
   bash,
   nix,
   git,
   jq,
-  profile ? "/nix/var/nix/profiles/system",
-  # This should be kept in sync with the default
-  # `environment.systemPath`. We err on side of including conditional
-  # things like the profile directories, since they’re more likely to
-  # help than hurt, and this default is mostly used for fresh
-  # installations anyway.
-  systemPath ?
-    lib.concatStringsSep ":" [
-      "$HOME/.nix-profile/bin"
-      "/etc/profiles/per-user/$USER/bin"
-      "/run/current-system/sw/bin"
-      "/nix/var/nix/profiles/default/bin"
-      "/usr/local/bin"
-      "/usr/bin"
-      "/bin"
-      "/usr/sbin"
-      "/sbin"
-      "/opt/homebrew/bin"
-      "/opt/homebrew/sbin"
-    ],
-  # This should be kept in sync with the default `nix.nixPath`.
-  nixPath ?
-    lib.concatStringsSep ":" [
-      "darwin-config=/etc/nix-darwin/configuration.nix"
-      "/nix/var/nix/profiles/per-user/root/channels"
-    ],
+  bitwarden-cli,
+  apt,
 }: let
-  extraPath = lib.makeBinPath [rustup bash gh jq nix git coreutils];
-  path = "${extraPath}:${systemPath}";
+  inherit (lib) getExe;
+  version = flakeVersion;
 in {
+  aws-credentials =
+    writeProgram "aws-credentials" rec {
+      inherit version;
+      pname = "aws-credentials";
+      replacements = {
+        inherit (stdenv) shell;
+        inherit pname;
+        bw = getExe bitwarden-cli;
+        jq = getExe jq;
+      };
+    }
+    ./aws-credentials.sh;
+
   bootstrap =
     writeProgram "bootstrap" {
+      inherit version;
       replacements = {
-        inherit path nixPath profile;
         inherit (stdenv) shell;
         FLAKE_URI_BASE = "github:aarnphm/dix";
       };
     }
     ./bootstrap.sh;
+
+  gvim =
+    writeProgram "gvim" {
+      inherit version;
+      replacements = {
+        inherit (stdenv) shell;
+        neovide = getExe neovide;
+      };
+    }
+    ./gvim.sh;
+
+  unicopy =
+    writeProgram "unicopy" {
+      inherit version;
+      replacements = {
+        inherit (stdenv) shell;
+        xclip = getExe xclip;
+        pbcopy = getExe (
+          runCommand "impureHostDarwinCopy"
+          {
+            meta = {mainProgram = "pbcopy";};
+          }
+          ''
+            mkdir -p $out/bin
+            ln -s /usr/bin/pbcopy $out/bin
+          ''
+        );
+      };
+      meta = {
+        mainProgram = "copy";
+        description = "copy with a twist";
+        homepage = "https://github.com/aarnphm/dix";
+        license = lib.licenses.asl20;
+        maintainers = with lib.maintainers; [aarnphm];
+      };
+    }
+    ./copy.sh;
+
+  pinentry-touchid = stdenv.mkDerivation (finalAttrs: {
+    version = "0.0.3";
+    name = "pinentry-touchid";
+
+    src = fetchurl {
+      url = "https://github.com/jorgelbg/pinentry-touchid/releases/download/v${finalAttrs.version}/pinentry-touchid_${finalAttrs.version}_macos_${
+        if isArm
+        then "arm64"
+        else "amd64"
+      }.tar.gz";
+      sha256 = "sha256-bxwkoC6DbORe6uQCeFMoqYngq6ZKsjrj7SUdgmm9d3I=";
+    };
+    sourceRoot = ".";
+
+    buildInputs = [unzip];
+    unpackCmd = ''
+      unzip $curSrc pinentry-touchid
+    '';
+    installPhase = ''
+      ls -rthla
+      mkdir -p $out/bin
+      cp pinentry-touchid $out/bin/
+    '';
+
+    meta = with lib; {
+      description = "Pinentry TouchID for Mac";
+      license = licenses.asl20;
+      homepage = "https://github.com/jorgelbg/pinentry-touchid";
+      platforms = platforms.darwin;
+      mainProgram = "pinentry-touchid";
+    };
+  });
+
+  ubuntu-nvidia = writeShellApplication rec {
+    inherit version;
+    name = "ubuntu-nvidia";
+    runtimeInputs = [
+      apt
+      (runCommand "ubuntuDriverHost" {} ''
+        mkdir -p $out/bin
+        ln -s /usr/bin/ubuntu-drivers $out/bin
+      '')
+    ];
+    text = ''
+      if ! command -v ubuntu-drivers &>/dev/null; then
+        echo "This derivation is designed to be run on Ubuntu only."
+        exit 1
+      fi
+
+      if [ $# -ne 1 ]; then
+        AVAILABLE_DRIVERS=$(ubuntu-drivers list)
+
+        echo ""
+        echo "Usage: ${name} <driver_name>"
+        echo ""
+        echo "Available drivers:"
+        echo ""
+        echo "$AVAILABLE_DRIVERS"
+        exit 1
+      fi
+
+      DEBUG="''${DEBUG:-false}"
+
+      # check if DEBUG is set, then use set -x, otherwise ignore
+      if [ "$DEBUG" = true ]; then
+        set -x
+        echo "running path: $0"
+      fi
+
+      DRIVER_NAME="nvidia-driver-$1"
+      DRIVER_PACKAGE="nvidia:$1"
+      UTILS_PACKAGE="nvidia-utils-$1"
+
+      # Use ubuntu-drivers to find the appropriate driver package
+      NVIDIA_PACKAGE="$(ubuntu-drivers devices | grep "$DRIVER_NAME" | awk '{print $3}')"
+
+      if [ -z "$NVIDIA_PACKAGE" ]; then
+        echo "Error: Driver '$DRIVER_NAME' not found."
+        exit 1
+      fi
+
+      # Check if the driver name contains "-server"
+      if [[ "$DRIVER_NAME" == *"-server"* ]]; then
+        GPGPU_FLAG="--gpgpu"
+      else
+        GPGPU_FLAG=""
+      fi
+
+      # Install the NVIDIA driver package using apt
+      sudo ubuntu-drivers install "$GPGPU_FLAG" "$DRIVER_PACKAGE"
+      sudo apt update && sudo apt install -y "$UTILS_PACKAGE"
+
+      echo "NVIDIA driver '$DRIVER_NAME' has been installed."
+      echo "Please reboot your system for the changes to take effect."
+    '';
+  };
 }

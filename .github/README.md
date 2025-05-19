@@ -11,11 +11,28 @@ nix run github:aarnphm/dix#bootstrap -- darwin # or ubuntu
 nix run github:aarnphm/dix#lambda -- --help # Run CLI to interact with Lambda Cloud
 ```
 
-I'm using atuin to manage shell history, some custom fzf with zsh, rg + neovim + fd + nix to manage setup across multiple systems.
+Stack:
+
+- atuin to manage shell history
+- gh + git + eza
+- fzf + zsh + rg + neovim + fd + nix to manage setup across multiple systems.
+
+## bootstrap.
+
+bootstrap is a helper to run a few tools on setup or rebuild based on Linux/Darwin. It is a wrapper around nix-darwin/home-manager functionality, albeit it behaves somewhat the same with a few additional flags/optimization.
+Ofc you can just run `nix run home-manager` or `nix run nix-darwin/master#darwin-rebuild`, but I'm lazy...
+
+```bash
+nix run github:aarnphm/dix#bootstrap -- <darwin|ubuntu> --flake ~/workspace/dix # or any flake uri
+```
 
 ## notes.
 
-I also include a few standalone tools that can be installed, such as `lambda`.
+I also include some standalone tools that can be installed, such as `lambda`.
+
+Some packages include certain override:
+
+- `gvim`: This will add support for remote via `--address`. More information with `gvim -h`
 
 ### lambda.
 

@@ -2,13 +2,33 @@
 
 set -euo pipefail
 
-export PATH=@path@
-export NIX_PATH=${NIX_PATH:-@nixPath@}
-profile=@profile@
+flakeUri="@FLAKE_URI_BASE@"
 
 usage() {
-	echo "Usage: bootstrap <darwin|linux> [target_name]"
+	echo "Usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>]"
 }
+
+POSITIONAL_ARGS=()
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	--flake)
+		if [[ -n "$2" && "$2" != --* ]]; then
+			flakeUri="$2"
+			shift
+			shift
+		else
+			echo "Error: --flake requires a non-empty argument." >&2
+			usage
+			exit 1
+		fi
+		;;
+	*)
+		POSITIONAL_ARGS+=("$1")
+		shift
+		;;
+	esac
+done
+set -- "${POSITIONAL_ARGS[@]}"
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
 	usage
@@ -22,14 +42,8 @@ FLAKE_TARGET=""
 extraBuildFlags=(-v --show-trace --no-link)
 extraLockFlags=(-L)
 
-echo "building the system configuration..." >&2
 case "$SYSTEM_TYPE" in
 darwin)
-	if [[ $(id -u) -eq 0 ]]; then
-		# On macOS, `sudo(8)` preserves `$HOME` by default, which causes Nix
-		# to output warnings.
-		HOME=~root
-	fi
 	if [ -z "$TARGET_NAME" ]; then
 		FLAKE_TARGET="appl-mbp16"
 	else
@@ -48,20 +62,27 @@ linux)
 	exit 1
 	;;
 esac
+echo "building system configuration for $SYSTEM_TYPE..." >&2
 
-flake="@FLAKE_URI_BASE@#${FLAKE_TARGET}"
+flake="${flakeUri}#${FLAKE_TARGET}"
 if [[ $flake =~ ^(.*)\#([^\#\"]*)$ ]]; then
 	flake="${BASH_REMATCH[1]}"
 	flakeAttr="${BASH_REMATCH[2]}"
 fi
-flakeAttr=darwinConfigurations.${flakeAttr}
 
-systemConfig=$(nix --extra-experimental-features 'nix-command flakes' build --json "${extraBuildFlags[@]}" "${extraLockFlags[@]}" -- "$flake#$flakeAttr.system" | jq -r '.[0].outputs.out')
-[[ -x $systemConfig/activate-user ]] && echo "$systemConfig/activate-user"
-flake="@FLAKE_URI_BASE@#${FLAKE_TARGET}"
-if [ -z "$systemConfig" ]; then exit 0; fi
-nix-env -p "$profile" --set "$systemConfig"
-"$systemConfig/activate"
+case "$SYSTEM_TYPE" in
+darwin)
+	if [[ $(id -u) -eq 0 ]]; then
+		# On macOS, `sudo(8)` preserves `$HOME` by default, which causes Nix
+		# to output warnings.
+		HOME=~root
+	fi
+	SUDO_USER=aarnphm sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake "$flake#$flakeAttr" --show-trace -v -L --option accept-flake-config true
+	;;
+linux)
+	nix run home-manager/master -- switch --flake "$flake#$flakeAttr" --show-trace -v -L --option accept-flake-config true
+	;;
+esac
 
 if ! gh auth status &>/dev/null; then
 	echo "Logging into GitHub via gh..."
@@ -75,13 +96,11 @@ fi
 
 NVIM_DIR="$HOME/.config/nvim"
 if [ ! -d "$NVIM_DIR" ]; then
-	echo "Cloning Neovim configuration..."
 	gh repo clone aarnphm/editor "$NVIM_DIR"
 fi
 
-if [ -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
-	echo "Linking .vimrc into Neovim configuration..."
+if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
 	ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
 fi
 
-echo "Setup completed."
+echo "Setup completed for $SYSTEM_TYPE"
