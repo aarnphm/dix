@@ -1,9 +1,9 @@
 {self}: final: prev: {
   flakeVersion = let
-    fallbackVersion = self.shortRev or self.dirtyShortRev or self.lastModifiedDate or "unknown";
+    commit = self.shortRev or self.dirtyShortRev or "dirty";
+    date = self.lastModifiedDate or self.lastModified or "19700101";
     releaseVersion = (prev.lib.importJSON ../version.json).release;
-  in
-    "${releaseVersion}.dev+g${fallbackVersion}";
+  in "${releaseVersion}.dev+${builtins.substring 0 8 date}.${commit}";
 
   upgraded = selfPkg: superPkg:
     if builtins.compareVersions superPkg.version selfPkg.version < 1
