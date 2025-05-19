@@ -91,25 +91,13 @@ func RunRemoteCommand(client *ssh.Client, command string) error {
 	return nil
 }
 
-// CopyFileToRemote copies a local file to the remote host using SCP protocol over SSH.
-func CopyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
-	expandedLocalPath, err := configutil.ExpandPath(localPath)
-	if err != nil {
-		return fmt.Errorf("expanding local path '%s': %w", localPath, err)
-	}
-
-	fileInfo, err := os.Stat(expandedLocalPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Warnf("Local file '%s' does not exist, skipping copy.", expandedLocalPath)
-			return nil // Not a fatal error if the file doesn't exist
-		}
-		return fmt.Errorf("stat local file '%s': %w", expandedLocalPath, err)
-	}
-
-	// Check if it's a directory - we don't support directory copy yet
-	if fileInfo.IsDir() {
-		return fmt.Errorf("copying directories is not supported: '%s'", expandedLocalPath)
+// copySingleFileInternal handles the SCP process for a single file.
+// expandedLocalPath must be an existing file. localFileInfo is its os.FileInfo.
+// remotePath is the full target path for the file on the remote server.
+func copySingleFileInternal(client *ssh.Client, expandedLocalPath string, remotePath string, localFileInfo os.FileInfo) error {
+	if localFileInfo.IsDir() {
+		// This function should not be called for directories directly by external callers.
+		return fmt.Errorf("copySingleFileInternal called with a directory: '%s', this should be handled by directory-specific copy logic", expandedLocalPath)
 	}
 
 	fileBytes, err := os.ReadFile(expandedLocalPath)
@@ -118,14 +106,16 @@ func CopyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
 	}
 
 	content := fileBytes
-	perms := fmt.Sprintf("%04o", fileInfo.Mode().Perm())
+	perms := fmt.Sprintf("%04o", localFileInfo.Mode().Perm())
 	filename := filepath.Base(remotePath)
 	directory := filepath.Dir(remotePath)
 
-	// Ensure remote directory exists (optional, add if needed)
-	mkdirCmd := fmt.Sprintf("mkdir -p %s", directory)
-	if err := RunRemoteCommand(client, mkdirCmd); err != nil {
-		log.Warnf("Failed to ensure remote directory %s exists (might be okay): %v", directory, err)
+	// Ensure remote target directory for the file exists
+	if directory != "." && directory != "/" { // Avoid "mkdir -p ." or "mkdir -p /"
+		mkdirCmd := fmt.Sprintf("mkdir -p %s", directory)
+		if err := RunRemoteCommand(client, mkdirCmd); err != nil {
+			log.Warnf("Failed to ensure remote directory %s exists for file copy (might be okay): %v", directory, err)
+		}
 	}
 
 	session, err := client.NewSession()
@@ -139,7 +129,6 @@ func CopyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
 		return fmt.Errorf("failed to get stdin pipe: %w", err)
 	}
 
-	// Use a separate goroutine to handle writing to stdin
 	go func() {
 		defer stdin.Close()
 		fmt.Fprintf(stdin, "C%s %d %s\n", perms, len(content), filename)
@@ -150,13 +139,11 @@ func CopyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
 	remoteCmd := fmt.Sprintf("scp -qt %s", directory)
 	log.Infof("Copying local file '%s' (%d bytes, perm: %s) to remote '%s' via `scp`", expandedLocalPath, len(content), perms, remotePath)
 
-	// Capture stderr for better error reporting
 	var stderrBuf bytes.Buffer
 	session.Stderr = &stderrBuf
 
 	err = session.Run(remoteCmd)
 	if err != nil {
-		// Include stderr in the error message if available
 		stderrStr := strings.TrimSpace(stderrBuf.String())
 		if stderrStr != "" {
 			return fmt.Errorf("failed to run remote scp command '%s' for '%s': %w. Stderr: %s", remoteCmd, remotePath, err, stderrStr)
@@ -166,6 +153,97 @@ func CopyFileToRemote(client *ssh.Client, localPath, remotePath string) error {
 
 	log.Debugf("Successfully copied '%s' to '%s'", expandedLocalPath, remotePath)
 	return nil
+}
+
+// CopyFileToRemote copies a single local file to the remote host.
+// remoteFilePath is the full path where the file should be saved on the remote.
+func CopyFileToRemote(client *ssh.Client, localFilePath, remoteFilePath string) error {
+	expandedLocalPath, err := configutil.ExpandPath(localFilePath)
+	if err != nil {
+		return fmt.Errorf("expanding local file path '%s': %w", localFilePath, err)
+	}
+
+	fileInfo, err := os.Stat(expandedLocalPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Warnf("Local file '%s' does not exist, skipping copy.", expandedLocalPath)
+			return nil // Not a fatal error if the source file doesn't exist
+		}
+		return fmt.Errorf("stat local file '%s': %w", expandedLocalPath, err)
+	}
+
+	if fileInfo.IsDir() {
+		return fmt.Errorf("local path '%s' is a directory, expected a file. Use CopyDirToRemote for directories", expandedLocalPath)
+	}
+
+	return copySingleFileInternal(client, expandedLocalPath, remoteFilePath, fileInfo)
+}
+
+// CopyDirToRemote copies the contents of a local directory to a specified remote directory.
+// remoteDestDirPath is the path on the remote server where the contents of localDirPath will be placed.
+func CopyDirToRemote(client *ssh.Client, localDirPath, remoteDestDirPath string) error {
+	expandedLocalDirPath, err := configutil.ExpandPath(localDirPath)
+	if err != nil {
+		return fmt.Errorf("expanding local directory path '%s': %w", localDirPath, err)
+	}
+
+	dirInfo, err := os.Stat(expandedLocalDirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Warnf("Local directory '%s' does not exist, skipping copy.", expandedLocalDirPath)
+			return nil
+		}
+		return fmt.Errorf("stat local directory '%s': %w", expandedLocalDirPath, err)
+	}
+
+	if !dirInfo.IsDir() {
+		return fmt.Errorf("local path '%s' is not a directory, expected a directory. Use CopyFileToRemote for files", expandedLocalDirPath)
+	}
+
+	log.Infof("Copying local directory '%s' contents to remote directory '%s'", expandedLocalDirPath, remoteDestDirPath)
+
+	// Ensure the base remote destination directory exists.
+	err = RunRemoteCommand(client, fmt.Sprintf("mkdir -p %s", remoteDestDirPath))
+	if err != nil {
+		return fmt.Errorf("failed to create base remote directory '%s': %w", remoteDestDirPath, err)
+	}
+
+	return filepath.WalkDir(expandedLocalDirPath, func(currentLocalItemPath string, d os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return fmt.Errorf("error walking local path '%s': %w", currentLocalItemPath, walkErr)
+		}
+
+		relativePath, err := filepath.Rel(expandedLocalDirPath, currentLocalItemPath)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path for '%s' from base '%s': %w", currentLocalItemPath, expandedLocalDirPath, err)
+		}
+
+		currentRemoteItemPath := filepath.Join(remoteDestDirPath, relativePath)
+
+		if d.IsDir() {
+			// If it's the root of the walk (relativePath is "."), it's already created by mkdir -p above.
+			// For other subdirectories, create them.
+			if relativePath != "." {
+				log.Debugf("Creating remote directory: %s", currentRemoteItemPath)
+				mkDirCmd := fmt.Sprintf("mkdir -p %s", currentRemoteItemPath)
+				if err := RunRemoteCommand(client, mkDirCmd); err != nil {
+					// Log warning but continue, as it might exist or not be critical for subsequent file copies
+					log.Warnf("Failed to create remote subdirectory %s (might be okay): %v", currentRemoteItemPath, err)
+				}
+			}
+		} else { // It's a file
+			itemInfo, statErr := d.Info()
+			if statErr != nil {
+				return fmt.Errorf("failed to get FileInfo for '%s': %w", currentLocalItemPath, statErr)
+			}
+			log.Debugf("Copying file %s to %s", currentLocalItemPath, currentRemoteItemPath)
+			copyErr := copySingleFileInternal(client, currentLocalItemPath, currentRemoteItemPath, itemInfo)
+			if copyErr != nil {
+				return fmt.Errorf("failed to copy file '%s' to '%s': %w", currentLocalItemPath, currentRemoteItemPath, copyErr)
+			}
+		}
+		return nil
+	})
 }
 
 // CopyContentToRemote copies byte content to a remote file using SCP protocol over SSH.

@@ -149,9 +149,23 @@ var SetupCmd = &cobra.Command{
 					continue
 				}
 
-				err = sshutil.CopyFileToRemote(sshClient, expandedLocal, remote)
+				// Determine if it's a file or directory
+				fileInfo, err := os.Stat(expandedLocal)
 				if err != nil {
-					return fmt.Errorf("failed to copy file '%s' to '%s': %w", expandedLocal, remote, err)
+					log.Warnf("Could not stat local path '%s', skipping copy: %v", expandedLocal, err)
+					continue
+				}
+
+				if fileInfo.IsDir() {
+					err = sshutil.CopyDirToRemote(sshClient, expandedLocal, remote)
+					if err != nil {
+						return fmt.Errorf("failed to copy directory '%s' to '%s': %w", expandedLocal, remote, err)
+					}
+				} else {
+					err = sshutil.CopyFileToRemote(sshClient, expandedLocal, remote)
+					if err != nil {
+						return fmt.Errorf("failed to copy file '%s' to '%s': %w", expandedLocal, remote, err)
+					}
 				}
 			}
 		}
