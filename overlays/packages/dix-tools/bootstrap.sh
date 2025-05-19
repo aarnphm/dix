@@ -8,6 +8,64 @@ usage() {
 	echo "Usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>]"
 }
 
+ERROR_COLOR="\033[0;31m" # Red
+LOG_COLOR="\033[0;32m"   # Green
+WARN_COLOR="\033[0;34m"  # Blue
+DEBUG_COLOR="\033[0;35m" # Purple
+RESET_COLOR="\033[0m"
+
+log() {
+	local level=$1
+	local caller=$2
+	local message=$3
+
+	# Convert caller to uppercase
+	caller=$(echo "$caller" | tr '[:lower:]' '[:upper:]')
+
+	# Set color based on log level
+	local color=""
+	case $level in
+	"ERROR")
+		color=$ERROR_COLOR
+		;;
+	"INFO")
+		color=$LOG_COLOR
+		;;
+	"WARN" | "WARNING")
+		color=$WARN_COLOR
+		;;
+	"DEBUG")
+		color=$DEBUG_COLOR
+		;;
+	*)
+		color=$RESET_COLOR
+		;;
+	esac
+
+	# Print formatted log message
+	echo -e "${color}[${caller}]${RESET_COLOR} ${message}"
+}
+
+log_info() {
+	local message=$1
+	log "INFO" "DETACH" "$message"
+}
+
+log_warn() {
+	local message=$1
+	log "WARN" "DETACH" "$message"
+}
+
+log_error() {
+	local message=$1
+	log "ERROR" "DETACH" "$message"
+}
+
+log_debug() {
+	local message=$1
+	log "DEBUG" "DETACH" "$message"
+}
+
 POSITIONAL_ARGS=()
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -17,7 +75,7 @@ while [[ $# -gt 0 ]]; do
 			shift
 			shift
 		else
-			echo "Error: --flake requires a non-empty argument." >&2
+			log_error "--flake requires a non-empty argument."
 			usage
 			exit 1
 		fi
@@ -62,7 +120,7 @@ linux)
 	exit 1
 	;;
 esac
-echo "building system configuration for $SYSTEM_TYPE..." >&2
+log_info "system configuration for $SYSTEM_TYPE"
 
 flake="${flakeUri}#${FLAKE_TARGET}"
 if [[ $flake =~ ^(.*)\#([^\#\"]*)$ ]]; then
@@ -85,22 +143,26 @@ linux)
 esac
 
 if ! gh auth status &>/dev/null; then
-	echo "Logging into GitHub via gh..."
+	log_info "Logging into GitHub via gh"
 	gh auth login -p ssh
 fi
 
 if ! rustup toolchain list | grep -q nightly; then
-	echo "Installing Rust nightly toolchain..."
+	log_info "Installing Rust nightly toolchain"
 	rustup toolchain install nightly
 fi
 
 NVIM_DIR="$HOME/.config/nvim"
 if [ ! -d "$NVIM_DIR" ]; then
+	log_info "Run default nvim setup"
 	gh repo clone aarnphm/editor "$NVIM_DIR"
+	nvim --headless "+Lazy! sync" +qa
+	nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'
 fi
 
 if [ ! -f "$HOME/.vimrc" ] && [ ! -L "$NVIM_DIR/.vimrc" ]; then
+	log_info "Link default vimrc config"
 	ln -s "$HOME/.vimrc" "$NVIM_DIR/.vimrc"
 fi
 
-echo "Setup completed for $SYSTEM_TYPE"
+log_info "Setup completed for $SYSTEM_TYPE"
