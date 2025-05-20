@@ -23,4 +23,3 @@ jobs:
           name: "aarnphm/detachtools"
           rolling: true
           visibility: "public"
-          include-output-paths: true
