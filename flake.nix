@@ -19,7 +19,12 @@
     # utilities
     git-hooks = {
       url = "github:cachix/git-hooks.nix/master";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
+    fh = {
+      url = "https://flakehub.com/f/DeterminateSystems/fh/*";
     };
 
     # packages
@@ -67,6 +72,7 @@
     neovim,
     atuin,
     ghostty,
+    fh,
     ...
   } @ inputs: let
     overlays =

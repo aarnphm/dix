@@ -48,6 +48,7 @@
     rustup
     xz
     age
+    fh
 
     # tools for language, lsp, linter, etc.
     tree-sitter
