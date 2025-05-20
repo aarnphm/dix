@@ -6,9 +6,9 @@
 with lib; let
   theme =
     if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-    then "${config.home.homeDirectory}/.config/alacritty/flexoki-dark.toml"
-    else "${config.home.homeDirectory}/.config/alacritty/flexoki-light.toml";
-  family = "BerkeleyMono Nerd Font Mono"; # "BerkeleyMono Nerd Font Mono" | "JetBrainsMono NFM"
+    then ./config/alacritty/flexoki-dark.toml
+    else ./config/alacritty/flexoki-light.toml;
+  family = "BerkeleyMono Nerd Font Mono"; # "JetBrainsMono NFM"
 in {
   options.alacritty = {
     enable = mkOption {
