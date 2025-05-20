@@ -5,7 +5,7 @@ set -euo pipefail
 flakeUri="@FLAKE_URI_BASE@"
 
 usage() {
-	echo "usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>]"
+	echo "usage: bootstrap <darwin|linux> [target_name] [--flake <flake_uri>] [--impure]"
 }
 
 ERROR_COLOR="\033[0;31m" # Red
@@ -66,6 +66,10 @@ log_debug() {
 	log "DEBUG" "DETACH" "$message"
 }
 
+FLAKE_TARGET=""
+extraBuildFlags=(-v --show-trace)
+extraLockFlags=(-L)
+
 POSITIONAL_ARGS=()
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -79,6 +83,11 @@ while [[ $# -gt 0 ]]; do
 			usage
 			exit 1
 		fi
+		;;
+	--impure)
+		extraBuildFlags+=("--impure")
+		log_info "using --impure mode (for ghostty if on darwin)"
+		shift
 		;;
 	*)
 		POSITIONAL_ARGS+=("$1")
@@ -95,10 +104,6 @@ fi
 
 SYSTEM_TYPE="$1"
 TARGET_NAME="${2:-}"
-
-FLAKE_TARGET=""
-extraBuildFlags=(-v --show-trace --no-link)
-extraLockFlags=(-L)
 
 case "$SYSTEM_TYPE" in
 darwin)
@@ -132,10 +137,10 @@ fi
 
 case "$SYSTEM_TYPE" in
 darwin)
-	SUDO_USER=aarnphm sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake "$flake#$flakeAttr" --show-trace -v -L --option accept-flake-config true
+	sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake "$flake#$flakeAttr" "${extraBuildFlags[@]}" "${extraLockFlags[@]}" --option accept-flake-config true
 	;;
 linux)
-	nix run home-manager/master -- switch --flake "$flake#$flakeAttr" --show-trace -v -L --option accept-flake-config true
+	nix run home-manager/master -- switch --flake "$flake#$flakeAttr" "${extraBuildFlags[@]}" "${extraLockFlags[@]}" --option accept-flake-config true
 	;;
 esac
 

@@ -25,6 +25,16 @@ with lib; {
             then "OceanDark"
             else "OceanLight";
           icon_theme = "nerdfont";
+          special_paths = {
+            ".git" = {
+              show = "never";
+              list = "never";
+            };
+            "~/.config" = {
+              show = "always";
+              list = "always";
+            };
+          };
           transformers = [
             {
               input_extensions = ["pdf"];

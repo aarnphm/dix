@@ -29,6 +29,12 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs = {
+        nixpkgs-unstable.follows = "nixpkgs";
+      };
+    };
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
       inputs = {
@@ -60,19 +66,19 @@
     git-hooks,
     neovim,
     atuin,
+    ghostty,
     ...
   } @ inputs: let
-    overlays = [
+    overlays =
       # additional packages
-      neovim.overlays.default
-      nix-darwin.overlays.default
-      atuin.overlays.default
-      (import (home-manager + "/overlay.nix"))
+      [
+        neovim.overlays.default
+        nix-darwin.overlays.default
+        atuin.overlays.default
+        ghostty.overlays.default
+      ]
       # custom overlays
-      (import ./overlays/10-dev-overrides.nix {inherit self;})
-      (import ./overlays/20-packages-overrides.nix)
-      (import ./overlays/30-derivations.nix)
-    ];
+      ++ (import ./overlays {inherit self;});
     forPackages = system:
       import nixpkgs {
         inherit system overlays;

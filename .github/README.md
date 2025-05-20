@@ -36,6 +36,8 @@ Some packages include certain override:
 - to add a new derivation, uses `nix run github:nix-community/nix-init -- -u <url> -n ./overlays`
 - to run update, uses `nix run github:Mic92/nix-update`
 
+On MacOS, to add support to Ghostty, we have to build in impure mode for now
+
 ### lambda.
 
 If you don't use Nix or only need the `lambda` tool, you can install it directly:

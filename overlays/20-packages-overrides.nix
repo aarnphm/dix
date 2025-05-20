@@ -1,4 +1,4 @@
-final: prev: {
+{self}: final: prev: {
   bitwarden-cli = prev.bitwarden-cli.overrideAttrs (
     oldAttrs:
       with prev.llvmPackages_18; {

@@ -1,4 +1,4 @@
-final: prev: let
+{self}: final: prev: let
   lambdaVersion = let
     envVersion = builtins.getEnv "LAMBDA_VERSION";
   in

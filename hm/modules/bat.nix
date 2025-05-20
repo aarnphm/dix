@@ -15,20 +15,28 @@ with lib; {
 
   config = mkIf config.bat.enable {
     programs = {
-      bat = {
-        enable = true;
-        config = {
-          theme =
-            if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
-            then "gruvbox-dark"
-            else "gruvbox-light";
-          map-syntax = [
-            ".ignore:Git Ignore"
-            "config:Git Config"
-          ];
-          pager = "${lib.getExe pkgs.less} --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+      bat =
+        {
+          enable = true;
+          config = {
+            theme =
+              if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
+              then "gruvbox-dark"
+              else "gruvbox-light";
+            map-syntax = [
+              ".ignore:Git Ignore"
+              "config:Git Config"
+              "${config.xdg.configHome}/ghostty/config:Ghostty Config"
+            ];
+            pager = "${lib.getExe pkgs.less} --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+          };
+        }
+        // lib.optionals pkgs.stdenv.isDarwin {
+          syntaxes.ghostty = {
+            src = "/Applications/Ghostty.app/Contents/Resources/";
+            file = "bat/syntaxes/ghostty.sublime-syntax";
+          };
         };
-      };
     };
   };
 }

@@ -123,7 +123,6 @@
     texliveFull
     mermaid-cli
     ghostscript
-    home-manager
     # apps
     pinentry_mac
     pinentry-touchid
@@ -216,6 +215,7 @@ in {
   btop.enable = true;
   direnv.enable = true;
   git.enable = true;
+  ghostty.enable = true;
   gpg.enable = true;
   ssh.enable = true;
   zsh.enable = true;
