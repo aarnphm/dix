@@ -392,6 +392,10 @@ in {
         then pkgs.pinentry_mac
         else pkgs.pinentry-all
       );
+      ghostty =
+        if pkgs.stdenv.isDarwin
+        then ''$GHOSTTY_BIN_DIR/ghostty''
+        else lib.getExe pkgs.ghostty;
 
       # useful
       bwpass = ''[[ -f ${config.home.homeDirectory}/bw.master ]] && cat ${config.home.homeDirectory}/bw.master | sed -n 1p | ${lib.getExe pkgs.unicopy}'';
