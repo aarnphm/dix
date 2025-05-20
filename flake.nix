@@ -141,7 +141,6 @@
       builtins.map (
         system: let
           pkgs = forPackages system;
-          # App builder
           mkApp = {
             drv,
             name ? drv.pname or drv.name,
@@ -149,7 +148,6 @@
           }: {
             type = "app";
             program = "${drv}${exePath}";
-            description = ''detachtools, of ${name}'';
           };
         in {
           formatter.${system} = pkgs.alejandra;
@@ -158,11 +156,17 @@
             builtins.map (
               name: {
                 inherit name;
-                value = mkApp {drv = pkgs.${name};};
+                value =
+                  mkApp {drv = pkgs.${name};}
+                  // {
+                    meta = {
+                      mainProgram = name;
+                      description = "tooling system, with ${name}";
+                    };
+                  };
               }
             ) [
               "lambda"
-              "ubuntu-nvidia"
               "aws-credentials"
               "bootstrap"
             ]
@@ -174,7 +178,10 @@
 
           checks.${system} = {
             pre-commit-check = git-hooks.lib.${system}.run {
-              src = ./.;
+              src = builtins.path {
+                path = ./.;
+                name = "source";
+              };
               hooks = {
                 alejandra.enable = true;
                 statix.enable = true;

@@ -14,9 +14,7 @@
 
   loadOverlay = fileName: let
     filePath = currentOverlaysDir + "/${fileName}";
-    importedValue = import filePath;
   in
-    importedValue {inherit self;};
+    import filePath {inherit self;};
 in
   builtins.map loadOverlay sortedNixFileNames
-

@@ -1,4 +1,4 @@
-name: "Publish every Git push to main to FlakeHub"
+name: publish-flakehub
 on:
   push:
     branches:
@@ -10,11 +10,16 @@ jobs:
       id-token: "write"
       contents: "read"
     steps:
-      - uses: "actions/checkout@v4"
-      - uses: "DeterminateSystems/determinate-nix-action@v3"
-      - uses: "DeterminateSystems/flakehub-push@main"
+      - uses: "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683" # ratchet:actions/checkout@v4
+      - uses: cachix/install-nix-action@526118121621777ccd86f79b04685a9319637641 # ratchet:cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:master
+          extra_nix_config: |
+            trusted-substituters = https://nix-community.cachix.org https://cache.nixos.org https://cuda-maintainers.cachix.org
+            trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E=
+      - uses: "DeterminateSystems/flakehub-push@7c8d7b207cd9ed3a615190d62749b7c455bac14f" # ratchet:DeterminateSystems/flakehub-push@main
         with:
           name: "aarnphm/detachtools"
           rolling: true
           visibility: "public"
-          include-output-paths: true

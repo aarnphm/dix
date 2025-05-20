@@ -153,7 +153,6 @@ in {
   });
 
   ubuntu-nvidia = writeShellApplication rec {
-    inherit version;
     name = "ubuntu-nvidia";
     runtimeInputs = [
       apt
