@@ -45,7 +45,6 @@
     protobuf
     nodejs_24
     zulu17
-    rustup
     xz
     age
     fh
@@ -117,6 +116,7 @@
     flock
     undmg
     xar
+    rustup
     cpio
     mas
     mactop
