@@ -185,7 +185,7 @@ cat /tmp/gpg_passphrase | gpg --batch --passphrase-fd 0 --pinentry-mode loopback
 rm /tmp/gpg_passphrase && rm ~/gpg-private-lambdalabs.key
 gpgconf --kill all
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile complete --no-modify-path --default-toolchain nightly
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile complete --no-modify-path --default-toolchain nightly -y
 
 log_info "setup editor and rust toolchain"
 nvim --headless "+Lazy! sync" +qa
