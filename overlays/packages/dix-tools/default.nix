@@ -9,7 +9,6 @@
   runCommand,
   coreutils,
   gh,
-  rustup,
   unzip,
   stdenv,
   neovide,

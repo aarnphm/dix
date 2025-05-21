@@ -89,8 +89,8 @@ fi
 
 {{ if .DetachSetup }}
 
-log_info "setup"
-nix run home-manager -- switch --flake github:aarnphm/detachtools#ubuntu --show-trace -L --option accept-flake-config true
+log_info "setup detachtools"
+nix run github:aarnphm/detachtools#bootstrap -- linux
 log_info "Update default password for {{ .RemoteUser }}"
 # Note: passwd requires interaction or specific flags depending on the system.
 # Using chpasswd is generally more script-friendly.

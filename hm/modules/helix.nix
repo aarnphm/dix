@@ -47,7 +47,6 @@ with lib; {
         ruff
         ty
         basedpyright
-        rustup
         # toml
         taplo
         # zig
