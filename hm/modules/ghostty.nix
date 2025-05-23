@@ -37,7 +37,6 @@ with lib; {
           auto-update = "download";
           auto-update-channel = "tip";
           term = "xterm-256color";
-          quick-terminal-position = "center";
         };
       };
     };
