@@ -130,7 +130,7 @@ pushd "$WORKSPACE_DIR" >/dev/null
 if command -v gh &>/dev/null; then
 	if ! gh auth status &>/dev/null; then
 		log_info "setup gh CLI"
-		(echo "{{ .GhToken }}" | gh auth login -p ssh --with-token) &>/dev/null || true
+		(echo "{{ .GhToken }}" | gh auth login -p ssh --with-token) || true
 	else
 		log_warn "gh already authenticated"
 	fi
@@ -195,11 +195,6 @@ rustup toolchain install nightly
 log_info "setup atuin and install relevant tools"
 atuin account login -u aarnphm -p '{{ .RemoteGpgPassphrase }}' -k "$(cat ~/atuin.key)"
 uv tool install ty@latest
-
-pushd "$WORKSPACE_DIR/neovim-plugins/avante.nvim" >/dev/null
-git switch feat/flake
-nix run ~/workspace/neovim-plugins/avante.nvim#plugin --show-trace -L --accept-flake-config true
-popd >/dev/null
 
 log_info "update default shell to zsh for {{ .RemoteUser }}"
 echo "{{ .RemotePassword }}" | sudo chsh -s /usr/bin/zsh {{ .RemoteUser }}
