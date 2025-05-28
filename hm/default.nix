@@ -70,7 +70,7 @@
     direnv
     curl
     jq
-    yq
+    yq-go
     gh
     btop
     zip
@@ -131,7 +131,6 @@
   linuxPackages = with pkgs; [
     colima
     lima
-    nvtopPackages.full
     pinentry-all
     # NOTE: on darwin we need to use Apple provided from xcrun
     coreutils-full
