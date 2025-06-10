@@ -44,6 +44,7 @@
     go
     protobuf
     nodejs_24
+    pnpm
     zulu17
     xz
     age
@@ -62,6 +63,8 @@
     llvm_18
     openblas
     enchant
+    python313Packages.pylatexenc
+    pastel
 
     # terminal
     any-nix-shell

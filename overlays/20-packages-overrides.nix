@@ -19,16 +19,4 @@
         install -Dm444 gitstatus.prompt.zsh -t $out/share/gitstatus/
       '';
   });
-  nodejs_24 =
-    if prev.stdenv.isDarwin
-    then
-      prev.nodejs_24.overrideAttrs (oldAttrs: {
-        nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [prev.installShellFiles];
-        postInstall =
-          (oldAttrs.postInstall or "")
-          + ''
-            $out/bin/corepack enable --install-directory=$out/bin
-          '';
-      })
-    else prev.nodejs_24;
 }
