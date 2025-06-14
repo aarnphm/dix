@@ -8,7 +8,7 @@
 }: {
   imports = [
     ./modules
-    # inputs.nix-homebrew.darwinModules.nix-homebrew
+    inputs.nix-homebrew.darwinModules.nix-homebrew
   ];
 
   programs.zsh = {
@@ -16,15 +16,15 @@
   };
   gpg.enable = true;
 
-  # nix-homebrew = {
-  #   inherit user;
-  #   enable = true;
-  #   enableRosetta = pkgs.isArm;
-  #   autoMigrate = true;
-  #   extraEnv = {
-  #     HOMEBREW_NO_ANALYTICS = "1";
-  #   };
-  # };
+  nix-homebrew = {
+    inherit user;
+    enable = true;
+    enableRosetta = pkgs.isArm;
+    autoMigrate = true;
+    extraEnv = {
+      HOMEBREW_NO_ANALYTICS = "1";
+    };
+  };
 
   homebrew = {
     enable = true;
@@ -154,14 +154,12 @@
         NSAutomaticInlinePredictionEnabled = true;
       };
       dock = {
-        autohide = true;
-        largesize = 48;
-        tilesize = 24;
+        autohide = false;
         magnification = true;
-        mineffect = "genie";
-        orientation = "bottom";
+        mineffect = "scale";
+        orientation = "left";
         showhidden = true;
-        show-recents = true;
+        show-recents = false;
         mru-spaces = true;
       };
       finder = {

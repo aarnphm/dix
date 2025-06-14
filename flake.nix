@@ -36,16 +36,9 @@
     };
     ghostty = {
       url = "github:ghostty-org/ghostty";
-      inputs = {
-        nixpkgs-unstable.follows = "nixpkgs";
-      };
     };
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        nix-darwin.follows = "nix-darwin";
-      };
     };
     neovim = {
       url = "github:nix-community/neovim-nightly-overlay";
@@ -90,7 +83,7 @@
         inherit system overlays;
         config = {
           allowUnfree = true;
-          allowBroken = !(builtins.elem system nixpkgs.lib.platforms.darwin);
+          allowBroken = true;
           allowUnsupportedSystem = true;
         };
       };

@@ -112,7 +112,9 @@ else
 fi
 
 WORKSPACE_DIR="$HOME/workspace"
+LLM_D_META="$WORKSPACE_DIR/llm-d-meta"
 mkdir -p "$WORKSPACE_DIR"
+mkdir -p "$LLM_D_META"
 
 REPOS=(
 	"aarnphm/avante.nvim:neovim-plugins/avante.nvim:feat/flake"
@@ -121,8 +123,20 @@ REPOS=(
 	"aarnphm/detachtools:detachtools"
 	"bentoml/BentoML:bentoml"
 	"bentoml/BentoVLLM:bentovllm"
+	"bentoml/BentoSGLang:bentosglang"
+	"bentoml/BentoLMDeploy:bentolmdeploy"
 	"bentoml/bentocloud-homepage-news:bentovllm/bentocloud-homepage-news"
 	"bentoml/openllm-models:openllm-models"
+	"bentoml/revia-codes:revia-codes"
+	"bentoml/OrangeBentos:orangebentos"
+	"llm-d/llm-d:llm-d-meta/llm-d"
+	"llm-d/llm-d-deployer:llm-d-meta/llm-d-deployer"
+	"llm-d/llm-d-inference-scheduler:llm-d-meta/llm-d-inference-scheduler"
+	"llm-d/llm-d-kv-cache-manager:llm-d-meta/llm-d-kv-cache-manager"
+	"llm-d/llm-d-routing-sidecar:llm-d-meta/llm-d-routing-sidecar"
+	"llm-d/llm-d-model-service:llm-d-meta/llm-d-model-service"
+	"llm-d/llm-d-benchmark:llm-d-meta/llm-d-benchmark"
+	"llm-d/llm-d-inference-sim:llm-d-meta/llm-d-inference-sim"
 )
 
 pushd "$WORKSPACE_DIR" >/dev/null

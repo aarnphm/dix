@@ -33,6 +33,7 @@ bindkey '^?'    backward-delete-char
 bindkey '^H'    backward-delete-char
 bindkey '^[[3~' delete-char
 bindkey '^[[3;5~' delete-word
+bindkey '^[^?' backward-kill-word
 
 ## jump ##
 bindkey  '^[[H' beginning-of-line
