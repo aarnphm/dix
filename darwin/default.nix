@@ -57,6 +57,7 @@
       "raycast"
       "karabiner-elements"
       "zed@preview"
+      "middleclick"
     ];
     # nix run nixpkgs#mas -- search <apps>
     masApps = {

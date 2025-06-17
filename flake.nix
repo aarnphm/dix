@@ -74,7 +74,6 @@
         neovim.overlays.default
         nix-darwin.overlays.default
         atuin.overlays.default
-        ghostty.overlays.default
       ]
       # custom overlays
       ++ (import ./overlays {inherit self;});
