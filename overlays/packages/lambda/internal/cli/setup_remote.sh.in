@@ -120,6 +120,7 @@ REPOS=(
 	"aarnphm/avante.nvim:neovim-plugins/avante.nvim:feat/flake"
 	"aarnphm/surf.nvim:neovim-plugins/surf.nvim"
 	"aarnphm/vllm:vllm"
+	"sgl-project/sglang:sglang"
 	"aarnphm/detachtools:detachtools"
 	"bentoml/BentoML:bentoml"
 	"bentoml/BentoVLLM:bentovllm"
@@ -186,6 +187,13 @@ source .venv/bin/activate
 uv pip install pre-commit
 VLLM_USE_PRECOMPILED=True uv pip install -e . -v
 pre-commit install
+deactivate
+popd &>/dev/null
+
+pushd sglang &>/dev/null
+uv venv .venv -p 3.11 --seed
+source .venv/bin/activate
+uv pip install -e . -v
 deactivate
 popd &>/dev/null
 

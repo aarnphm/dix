@@ -34,9 +34,6 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-    };
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
     };
@@ -64,7 +61,6 @@
     git-hooks,
     neovim,
     atuin,
-    ghostty,
     fh,
     ...
   } @ inputs: let
