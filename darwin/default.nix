@@ -157,7 +157,7 @@
         autohide = false;
         magnification = true;
         mineffect = "scale";
-        orientation = "left";
+        orientation = "bottom";
         showhidden = true;
         show-recents = false;
         mru-spaces = true;
