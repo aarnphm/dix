@@ -5,19 +5,8 @@ on:
       - "main"
 jobs:
   flakehub-publish:
-    name: publish to flakehub for ${{matrix.system}}
-    strategy:
-      matrix:
-        include:
-          - system: x86_64-linux
-            os: ubuntu-latest
-          - system: aarch64-linux
-            os: ubuntu-24.04-arm
-          - system: x86_64-darwin
-            os: macos-13
-          - system: aarch64-darwin
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
+    name: publish to flakehub
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
