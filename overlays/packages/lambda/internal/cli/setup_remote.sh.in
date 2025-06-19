@@ -200,6 +200,8 @@ cat /tmp/gpg_passphrase | gpg --batch --passphrase-fd 0 --pinentry-mode loopback
 rm /tmp/gpg_passphrase && rm ~/gpg-private-lambdalabs.key
 gpgconf --kill all
 
+sudo apt-get install -y libssl-dev pkg-config
+
 log_info "setup editor and rust toolchain"
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile complete --no-modify-path --default-toolchain nightly -y
 . "$HOME/.cargo/env"
@@ -208,7 +210,6 @@ rustup toolchain install nightly
 pushd $WORKSPACE_DIR/sglang &>/dev/null
 uv venv .venv -p 3.11 --seed
 source .venv/bin/activate
-sudo apt-get install -y libssl-dev
 uv pip install --compile-bytecode -e python -v
 uv pip install --compile-bytecode -e sgl-router -v
 uv pip install --compile-bytecode -e sgl-pdlb -v
