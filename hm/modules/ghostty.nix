@@ -24,6 +24,9 @@ with lib; {
             then "flexoki-dark"
             else "flexoki-light";
           font-family = "BerkeleyMono Nerd Font Mono";
+          font-size = 18;
+          window-width = 120;
+          window-height = 120;
           keybind = [
             "cmd+s=new_split:left"
             "shift+cmd+s=new_split:up"

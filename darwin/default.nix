@@ -155,7 +155,7 @@
         NSAutomaticInlinePredictionEnabled = true;
       };
       dock = {
-        autohide = false;
+        autohide = true;
         magnification = true;
         mineffect = "scale";
         orientation = "bottom";
