@@ -24,7 +24,7 @@ with lib; {
             then "flexoki-dark"
             else "flexoki-light";
           font-family = "BerkeleyMono Nerd Font Mono";
-          font-size = 18;
+          font-size = 14;
           window-width = 120;
           window-height = 120;
           keybind = [
