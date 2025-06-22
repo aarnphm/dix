@@ -22,6 +22,9 @@
         nixpkgs.follows = "nixpkgs";
       };
     };
+    fh = {
+      url = "https://flakehub.com/f/DeterminateSystems/fh/*";
+    };
 
     # packages
     atuin = {
@@ -57,6 +60,7 @@
     git-hooks,
     neovim,
     atuin,
+    fh,
     ...
   } @ inputs: let
     overlays =
@@ -65,6 +69,17 @@
         neovim.overlays.default
         nix-darwin.overlays.default
         atuin.overlays.default
+        fh.overlays.default
+        (final: prev: {
+          determinate-nixd = prev.determinate-nixd.overrideAttrs (oldAttrs: {
+            postInstall = ''
+              installShellCompletion --cmd determinate-nixd \
+                --bash <("$out/bin/fh" completion bash) \
+                --zsh <("$out/bin/fh" completion zsh) \
+                --fish <("$out/bin/fh" completion fish)
+            '';
+          });
+        })
       ]
       # custom overlays
       ++ (import ./overlays {inherit self;});
