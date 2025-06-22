@@ -136,7 +136,6 @@
     # default settings within System Preferences
     defaults = {
       NSGlobalDomain = {
-        KeyRepeat = 1;
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticSpellingCorrectionEnabled = false;
         NSAutomaticInlinePredictionEnabled = true;
