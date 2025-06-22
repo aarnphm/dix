@@ -6,25 +6,12 @@
   computerName,
   ...
 }: {
-  imports = [
-    ./modules
-    inputs.nix-homebrew.darwinModules.nix-homebrew
-  ];
+  imports = [./modules];
 
   programs.zsh = {
     enable = true;
   };
   gpg.enable = true;
-
-  nix-homebrew = {
-    inherit user;
-    enable = true;
-    enableRosetta = pkgs.isArm;
-    autoMigrate = true;
-    extraEnv = {
-      HOMEBREW_NO_ANALYTICS = "1";
-    };
-  };
 
   homebrew = {
     enable = true;

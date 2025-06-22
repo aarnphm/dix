@@ -12,9 +12,8 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix = {
-      url = "https://flakehub.com/f/DeterminateSystems/nix/2.0";
-      inputs.nixpkgs.follows = "nixpkgs";
+    determinate = {
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
     # utilities
     git-hooks = {
@@ -22,9 +21,6 @@
       inputs = {
         nixpkgs.follows = "nixpkgs";
       };
-    };
-    fh = {
-      url = "https://flakehub.com/f/DeterminateSystems/fh/*";
     };
 
     # packages
@@ -54,14 +50,13 @@
   # meta function: https://github.com/NixOS/nixpkgs/blob/master/lib/meta.nix
   outputs = {
     self,
-    nix,
+    determinate,
     nix-darwin,
     nixpkgs,
     home-manager,
     git-hooks,
     neovim,
     atuin,
-    fh,
     ...
   } @ inputs: let
     overlays =
@@ -107,6 +102,18 @@
                 verbose = true;
               };
             }
+            inputs.nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                inherit user;
+                enable = true;
+                enableRosetta = true;
+                autoMigrate = true;
+                extraEnv = {
+                  HOMEBREW_NO_ANALYTICS = "1";
+                };
+              };
+            }
             ./darwin
           ];
         };
@@ -118,10 +125,7 @@
           value = home-manager.lib.homeManagerConfiguration rec {
             pkgs = forPackages "x86_64-linux";
             extraSpecialArgs = {inherit self inputs pkgs user;};
-            modules = [
-              nix.homeModules.default
-              ./hm
-            ];
+            modules = [./hm];
           };
         }
       ) ["ubuntu" "paperspace"]);

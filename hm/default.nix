@@ -48,7 +48,6 @@
     zulu17
     xz
     age
-    fh
 
     # tools for language, lsp, linter, etc.
     tree-sitter
@@ -204,15 +203,10 @@ in {
 
   programs.direnv = {
     enable = true;
-    nix-direnv.enable = true;
+    nix-direnv.enable = false;
     enableBashIntegration = true;
   };
-  helix = {
-    enable = true;
-    evil = true;
-  };
 
-  alacritty.enable = true;
   bat.enable = true;
   broot.enable = true;
   btop.enable = true;
