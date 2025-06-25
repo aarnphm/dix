@@ -24,7 +24,7 @@ with lib; {
             then "flexoki-dark"
             else "flexoki-light";
           font-family = "BerkeleyMono Nerd Font Mono";
-          font-size = 14;
+          font-size = 12;
           window-width = 120;
           window-height = 120;
           keybind = [
@@ -40,7 +40,7 @@ with lib; {
           auto-update = "download";
           auto-update-channel = "tip";
           term = "xterm-256color";
-          quick-terminal-position = "left";
+          quick-terminal-position = "right";
           quick-terminal-screen = "mouse";
           quick-terminal-animation-duration = 0;
         };
