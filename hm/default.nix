@@ -155,7 +155,6 @@
       BENTOML_DO_NOT_TRACK = "True";
       BENTOML_BUNDLE_LOCAL_BUILD = "True";
 
-      UV_COMPILE_BYTECODE = 1;
       UV_NO_PROGRESS = 1;
 
       # Editors
