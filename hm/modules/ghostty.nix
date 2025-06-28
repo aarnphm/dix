@@ -23,8 +23,9 @@ with lib; {
             if config.home.sessionVariables.XDG_SYSTEM_THEME == "dark"
             then "flexoki-dark"
             else "flexoki-light";
-          font-family = "BerkeleyMono Nerd Font Mono";
+          font-family = "Berkeley Mono";
           font-size = 14;
+          window-inherit-font-size = true;
           window-width = 120;
           window-height = 120;
           keybind = [
@@ -32,12 +33,10 @@ with lib; {
             "shift+cmd+s=new_split:up"
             "global:cmd+shift+grave_accent=toggle_quick_terminal"
           ];
-          cursor-style = "block";
-          macos-icon = "paper";
+          macos-icon = "xray";
           macos-icon-frame = "chrome";
           macos-titlebar-style = "tabs";
-          scrollback-limit = 40000;
-          auto-update = "download";
+          scrollback-limit = 2048000000;
           auto-update-channel = "tip";
           term = "xterm-256color";
           quick-terminal-position = "right";
