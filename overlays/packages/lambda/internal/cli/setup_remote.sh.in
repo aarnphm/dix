@@ -212,7 +212,7 @@ popd &>/dev/null
 pushd $WORKSPACE_DIR/sglang &>/dev/null
 uv venv .venv -p 3.11 --seed
 source .venv/bin/activate
-uv pip install --compile-bytecode -e python -v
+uv pip install --compile-bytecode -e "python[all]" -v
 uv pip install --compile-bytecode -e sgl-router -v
 uv pip install --compile-bytecode -e sgl-pdlb -v
 uv pip install --compile-bytecode sgl-kernel -i https://docs.sglang.ai/whl/cu118 -v
