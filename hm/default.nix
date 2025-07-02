@@ -124,7 +124,7 @@
     mas
     mactop
     imagemagick
-    texliveFull
+    # texliveFull
     mermaid-cli
     ghostscript
     # apps

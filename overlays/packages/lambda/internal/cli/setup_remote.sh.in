@@ -179,17 +179,6 @@ if command -v gh &>/dev/null; then
 	fi
 fi
 
-log_info "setup vllm"
-
-# pushd vllm &>/dev/null
-# uv venv .venv -p 3.11 --seed
-# source .venv/bin/activate
-# uv pip install pre-commit
-# VLLM_USE_PRECOMPILED=True uv pip install -e . -v
-# pre-commit install
-# deactivate
-# popd &>/dev/null
-
 popd >/dev/null
 
 mkdir -p $HOME/.local/share/bentoml/ && mv ~/.yatai.yaml $HOME/.local/share/bentoml/.yatai.yaml
@@ -207,15 +196,30 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile c
 . "$HOME/.cargo/env"
 rustup toolchain install nightly
 
-# pushd $WORKSPACE_DIR/sglang &>/dev/null
-# uv venv .venv -p 3.11 --seed
-# source .venv/bin/activate
-# uv pip install --compile-bytecode -e python -v
-# uv pip install --compile-bytecode -e sgl-router -v
-# uv pip install --compile-bytecode -e sgl-pdlb -v
-# uv pip install --compile-bytecode sgl-kernel -i https://docs.sglang.ai/whl/cu118 -v
-# deactivate
-# popd &>/dev/null
+{{ if .EngineSetup }}
+
+log_info "setup vllm"
+
+pushd $WORKSPACE_DIR/vllm &>/dev/null
+uv venv .venv -p 3.11 --seed
+source .venv/bin/activate
+uv pip install pre-commit
+VLLM_USE_PRECOMPILED=True uv pip install -e . -v
+pre-commit install
+deactivate
+popd &>/dev/null
+
+pushd $WORKSPACE_DIR/sglang &>/dev/null
+uv venv .venv -p 3.11 --seed
+source .venv/bin/activate
+uv pip install --compile-bytecode -e python -v
+uv pip install --compile-bytecode -e sgl-router -v
+uv pip install --compile-bytecode -e sgl-pdlb -v
+uv pip install --compile-bytecode sgl-kernel -i https://docs.sglang.ai/whl/cu118 -v
+deactivate
+popd &>/dev/null
+
+{{ end }}
 
 nvim --headless "+Lazy! sync" +qa
 nvim --headless -c 'lua require("nvim-treesitter.install").update({ with_sync = true }); vim.cmd("quitall")'

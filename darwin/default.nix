@@ -74,21 +74,21 @@
     sleep.display = 30;
   };
 
+  nix.settings = {
+    log-lines = 20;
+    keep-going = false;
+    sandbox = false;
+    trusted-users = [user];
+    max-jobs = "auto";
+    always-allow-substitutes = true;
+    bash-prompt-prefix = "(nix:$name)\\040";
+    experimental-features = ["nix-command" "flakes"];
+    extra-nix-path = ["nixpkgs=flake:nixpkgs"];
+    upgrade-nix-store-path-url = "https://install.determinate.systems/nix-upgrade/stable/universal";
+  };
+
   nix = {
     enable = false;
-    settings = {
-      log-lines = 20;
-      keep-going = false;
-      sandbox = false;
-      trusted-users = [user];
-      max-jobs = "auto";
-      always-allow-substitutes = true;
-      bash-prompt-prefix = "(nix:$name)\\040";
-      experimental-features = ["nix-command" "flakes"];
-      extra-nix-path = ["nixpkgs=flake:nixpkgs"];
-      upgrade-nix-store-path-url = "https://install.determinate.systems/nix-upgrade/stable/universal";
-    };
-
     gc = {
       automatic = false; # NOTE: need nix.enable
       interval.Hour = 6;

@@ -1,3 +1,4 @@
+// Package cli holds utilities to interact with LambdaLabs.
 package cli
 
 import (
@@ -25,12 +26,14 @@ type remoteSetupParams struct {
 	RemoteGpgPassphrase string
 	GhToken             string
 	DetachSetup         bool
+	EngineSetup         bool
 	ForceSetup          bool
 }
 
 var (
 	detachFlag bool
 	forceFlag  bool
+	engineFlag bool
 )
 
 var SetupCmd = &cobra.Command{
@@ -177,6 +180,7 @@ var SetupCmd = &cobra.Command{
 			RemoteGpgPassphrase: remoteGpgPassphrase,
 			GhToken:             ghToken,
 			DetachSetup:         effectiveDetachSetup,
+			EngineSetup:         engineFlag,
 			ForceSetup:          forceFlag,
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
@@ -217,5 +221,6 @@ var SetupCmd = &cobra.Command{
 
 func init() {
 	SetupCmd.Flags().BoolVar(&detachFlag, "detach", false, "Perform aarnphm/detachtools's specific setup steps")
+	SetupCmd.Flags().BoolVar(&engineFlag, "engine", false, "Whether to setup engine (vllm, sglang)")
 	SetupCmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "Force setup even if already completed once")
 }
