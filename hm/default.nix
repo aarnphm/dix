@@ -44,7 +44,6 @@
     # languages
     go
     protobuf
-    nodejs_24
     pnpm
     zulu17
     xz
@@ -130,6 +129,7 @@
     # apps
     pinentry_mac
     pinentry-touchid
+    nodejs_24
   ];
   linuxPackages = with pkgs; [
     colima
