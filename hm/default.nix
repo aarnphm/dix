@@ -33,6 +33,7 @@
     buildifier
     awscli2
     atuin
+    nodejs_24
 
     # git
     git
@@ -129,7 +130,6 @@
     # apps
     pinentry_mac
     pinentry-touchid
-    nodejs_24
   ];
   linuxPackages = with pkgs; [
     colima
