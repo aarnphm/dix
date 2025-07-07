@@ -26,6 +26,7 @@
       "pngpaste"
       "asciidoctor"
       "plantuml"
+      "ddclient"
     ];
     casks = [
       "arc"
@@ -121,6 +122,8 @@
       watchIdAuth = true;
     };
   };
+
+  services.openssh.enable = true;
 
   # System preferences
   system = {

@@ -47,7 +47,7 @@ in {
             if pkgs.stdenv.isDarwin
             then "18974753009D2BFA"
             else "DEFC62745C797989";
-          signByDefault = true;
+          signByDefault = false;
         };
         ignores = [
           ".git"
