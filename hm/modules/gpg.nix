@@ -5,16 +5,25 @@
   ...
 }:
 with lib; let
+  pinentry-meta = pkgs.writeShellScriptBin "pinentry-meta" ''
+    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n $SSH_TTY ]; then
+      exec ${lib.getExe pkgs.pinentry-curses} "$@"
+    elif [ "$TERM" = "dumb" ] || [ -z "$DISPLAY" ]; then
+      exec ${lib.getExe pkgs.pinentry-tty} "$@"
+    else
+      exec ${
+      if pkgs.stdenv.isLinux
+      then pkgs.pinentry-all
+      else pkgs.pinentry-touchid
+    } "$@"
+    fi
+  '';
   gpgAgentConfig = enableTouchId:
     pkgs.writeText "gpg-agent.conf" (lib.concatStringsSep "\n" [
       "default-cache-ttl 600"
       "max-cache-ttl 7200"
       "allow-loopback-pinentry"
-      "pinentry-program ${lib.getExe (
-        if enableTouchId
-        then pkgs.pinentry-touchid
-        else pkgs.pinentry-all
-      )}"
+      "pinentry-program ${lib.getExe pinentry-meta}"
     ]);
 in {
   options.gpg = {
@@ -42,6 +51,7 @@ in {
         };
       };
       home.file.".gnupg/gpg-agent.conf".source = gpgAgentConfig pkgs.stdenv.isDarwin;
+      services.gpg-agent.pinentry.package = pinentry-meta;
     }
     // lib.optionalAttrs pkgs.stdenv.isLinux {
       services.gpg-agent = {
@@ -50,7 +60,6 @@ in {
         verbose = true;
         defaultCacheTtl = 600;
         maxCacheTtl = 7200;
-        pinentryPackage = pkgs.pinentry-all;
         extraConfig = ''
           allow-loopback-pinentry
         '';
