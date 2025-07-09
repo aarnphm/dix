@@ -6,10 +6,8 @@
 }:
 with lib; let
   pinentry-meta = pkgs.writeShellScriptBin "pinentry-meta" ''
-    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n $SSH_TTY ]; then
+    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
       exec ${lib.getExe pkgs.pinentry-curses} "$@"
-    elif [ "$TERM" = "dumb" ] || [ -z "$DISPLAY" ]; then
-      exec ${lib.getExe pkgs.pinentry-tty} "$@"
     else
       exec ${
       if pkgs.stdenv.isLinux

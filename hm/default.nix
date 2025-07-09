@@ -207,6 +207,7 @@ in {
     enableBashIntegration = true;
   };
 
+  alacritty.enable = true;
   bat.enable = true;
   broot.enable = true;
   btop.enable = true;
