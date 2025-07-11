@@ -115,7 +115,7 @@ darwin)
 	;;
 linux)
 	if [ -z "$TARGET_NAME" ]; then
-		FLAKE_TARGET="ubuntu"
+		FLAKE_TARGET="aarnphm"
 	else
 		FLAKE_TARGET="$TARGET_NAME"
 	fi

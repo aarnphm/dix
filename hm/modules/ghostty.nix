@@ -31,6 +31,7 @@ with lib; {
           keybind = [
             "cmd+s=new_split:left"
             "shift+cmd+s=new_split:up"
+            "shift+enter=text:\n"
             "global:cmd+shift+grave_accent=toggle_quick_terminal"
           ];
           macos-icon = "xray";

@@ -143,7 +143,7 @@
             modules = [./hm];
           };
         }
-      ) ["ubuntu" "paperspace"]);
+      ) ["aarnphm" "paperspace"]);
     } (
       builtins.map (
         system: let

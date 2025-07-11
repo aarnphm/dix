@@ -27,6 +27,7 @@
       "asciidoctor"
       "plantuml"
       "ddclient"
+      "mas"
     ];
     casks = [
       "arc"
@@ -49,13 +50,13 @@
     ];
     # nix run nixpkgs#mas -- search <apps>
     masApps = {
-      Bitwarden = 1352778147;
-      TestFlight = 899247664;
-      Messenger = 1480068668;
-      DaisyDisk = 411643860;
-      "WhatsApp Messenger" = 310633997;
-      "Slack for Desktop" = 803453959;
-      "NordVPN - VPN for privacy" = 905953485;
+      # Bitwarden = 1352778147;
+      # TestFlight = 899247664;
+      # Messenger = 1480068668;
+      # DaisyDisk = 411643860;
+      # "WhatsApp Messenger" = 310633997;
+      # "Slack for Desktop" = 803453959;
+      # "NordVPN - VPN for privacy" = 905953485;
     };
   };
 

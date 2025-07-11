@@ -10,9 +10,11 @@ with lib; let
       exec ${lib.getExe pkgs.pinentry-curses} "$@"
     else
       exec ${
-      if pkgs.stdenv.isLinux
-      then pkgs.pinentry-all
-      else pkgs.pinentry-touchid
+      lib.getExe (
+        if pkgs.stdenv.isLinux
+        then pkgs.pinentry-all
+        else pkgs.pinentry-touchid
+      )
     } "$@"
     fi
   '';
