@@ -113,6 +113,7 @@
     git-forest
     unicopy
     lambda
+    nebius
   ];
   darwinPackages = with pkgs; [
     # for some reason they don't have flock on darwin :(

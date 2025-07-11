@@ -6,7 +6,7 @@
     then envVersion
     else prev.flakeVersion;
 in {
-  inherit (prev.callPackage ./packages/dix-tools {}) bootstrap gvim unicopy pinentry-touchid ubuntu-nvidia aws-credentials git-forest;
+  inherit (prev.callPackage ./packages/dix-tools {}) bootstrap gvim unicopy pinentry-touchid ubuntu-nvidia aws-credentials git-forest nebius;
   zsh-dix = prev.callPackage ./packages/zsh-dix {};
   lambda = prev.callPackage ./packages/lambda {version = lambdaVersion;};
 }

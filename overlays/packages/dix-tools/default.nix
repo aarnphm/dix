@@ -22,6 +22,7 @@
   perl,
   perl540Packages,
   pkg-config,
+  installShellFiles,
 }: let
   inherit (lib) getExe makeBinPath;
   version = flakeVersion;
@@ -148,6 +149,54 @@ in {
       homepage = "https://github.com/jorgelbg/pinentry-touchid";
       platforms = platforms.darwin;
       mainProgram = "pinentry-touchid";
+    };
+  });
+
+  nebius = stdenv.mkDerivation (finalAttrs: let
+    pname = "nebius";
+    version = "0.12.85";
+    os =
+      if stdenv.isDarwin
+      then "darwin"
+      else "linux";
+    arch =
+      if stdenv.hostPlatform.isAarch64
+      then "arm64"
+      else "x86_64";
+  in {
+    inherit pname version;
+
+    src = fetchurl {
+      url = "https://storage.eu-north1.nebius.cloud/cli/release/${version}/${os}/${arch}/${pname}";
+      sha256 = "sha256-EmP6mhvQNws3ITrAHEtrjORZhcvwx+iOR8rJeDleZ7Y="; # lib.fakeSha256;
+    };
+
+    dontUnpack = true;
+
+    nativeBuildInputs = [installShellFiles];
+
+    installPhase =
+      ''
+        runHook preInstall
+        install -Dm755 $src $out/bin/${pname}
+      ''
+      + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+        installShellCompletion --cmd ${pname} \
+          --bash <($out/bin/${pname} completion bash) \
+          --fish <($out/bin/${pname} completion fish) \
+          --zsh <($out/bin/${pname} completion zsh)
+      ''
+      + ''
+        runHook postInstall
+      '';
+
+    meta = with lib; {
+      description = "Nebius CLI";
+      homepage = "https://nebius.ai";
+      license = licenses.asl20;
+      maintainers = with maintainers; [aarnphm];
+      platforms = platforms.unix;
+      mainProgram = pname;
     };
   });
 
