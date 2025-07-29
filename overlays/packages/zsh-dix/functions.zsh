@@ -53,6 +53,28 @@ ssh() {
   __exec_command_with_tmux "ssh $args"
 }
 
+nebius-vm() {
+  local NAME="$1"
+  local USER="${2:-$USER}"
+
+  # pull the public IP for the requested instance
+  local IP
+  IP=$(jq -r --arg name "$NAME" '
+      .items[]
+      | select(.metadata.id == $name)
+      | .status.network_interfaces[0].public_ip_address.address
+      | split("/")
+      | .[0]
+  ' -)
+
+  if [[ -z "$IP" || "$IP" == "null" ]]; then
+      printf "❌  No public IP found for \"%s\" in %s\n" "$NAME" "$CLOUD_JSON" >&2
+      return 1
+  fi
+
+  printf "%s@%s" "$USER" "$IP"
+}
+
 comment() {
   sed -i "$1"' s/^/#/' "$2"
 }
