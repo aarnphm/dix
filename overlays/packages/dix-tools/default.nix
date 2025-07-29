@@ -168,7 +168,10 @@ in {
 
     src = fetchurl {
       url = "https://storage.eu-north1.nebius.cloud/cli/release/${version}/${os}/${arch}/${pname}";
-      sha256 = "sha256-5L/ZjUa/7VmECU3RowsW4DCErLzc0QYp/CnpZK8UJtM="; # lib.fakeSha256;
+      sha256 =
+        if stdenv.isDarwin
+        then "sha256-5L/ZjUa/7VmECU3RowsW4DCErLzc0QYp/CnpZK8UJtM="
+        else "sha256-m1+uCwWJXdVH3VHBed8tgPjdH1K05UkM9Um9Vglgxww="; # lib.fakeSha256;
     };
 
     dontUnpack = true;
