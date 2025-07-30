@@ -28,12 +28,14 @@ type remoteSetupParams struct {
 	DetachSetup         bool
 	EngineSetup         bool
 	ForceSetup          bool
+	NixUser             string
 }
 
 var (
-	detachFlag bool
-	forceFlag  bool
-	engineFlag bool
+	detachFlag  bool
+	forceFlag   bool
+	engineFlag  bool
+	nixUserFlag string
 )
 
 var SetupCmd = &cobra.Command{
@@ -182,6 +184,7 @@ var SetupCmd = &cobra.Command{
 			DetachSetup:         effectiveDetachSetup,
 			EngineSetup:         engineFlag,
 			ForceSetup:          forceFlag,
+			NixUser:             nixUserFlag,
 		}
 		tmpl, err := template.New("remoteScript").Parse(remoteSetupScriptTemplate)
 		if err != nil {
@@ -223,4 +226,5 @@ func init() {
 	SetupCmd.Flags().BoolVar(&detachFlag, "detach", false, "Perform aarnphm/detachtools's specific setup steps")
 	SetupCmd.Flags().BoolVar(&engineFlag, "engine", false, "Whether to setup engine (vllm, sglang)")
 	SetupCmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "Force setup even if already completed once")
+	SetupCmd.Flags().StringVar(&nixUserFlag, "user", "aarnphm", "Nix user to bootstrap")
 }
