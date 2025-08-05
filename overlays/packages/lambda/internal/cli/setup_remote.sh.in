@@ -119,6 +119,7 @@ mkdir -p "$LLM_D_META"
 REPOS=(
 	"aarnphm/avante.nvim:neovim-plugins/avante.nvim:feat/flake"
 	"aarnphm/surf.nvim:neovim-plugins/surf.nvim"
+	"aarnphm/luasnip-latex-snippets.nvim:neovim-plugins/luasnip-latex-snippets.nvim"
 	"aarnphm/vllm:vllm-meta/vllm"
 	"vllm-project/vllm:vllm-meta/upstream"
 	"vllm-project/production-stack:vllm-meta/production-stack"
