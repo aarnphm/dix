@@ -382,7 +382,7 @@ in {
       b = ''bentoml'';
       k = lib.getExe pkgs.kubectl;
       cat = lib.getExe pkgs.bat;
-      hf = ''${lib.getExe' pkgs.uv "uvx"} --from 'huggingface-hub[cli]' --quiet huggingface-cli'';
+      hf = ''${lib.getExe' pkgs.uv "uvx"} --from 'huggingface-hub[cli]' --quiet hf'';
       jupytertext = ''${lib.getExe' pkgs.uv "uvx"} jupytertext'';
       ipynb = ''${lib.getExe' pkgs.uv "uvx"} --from 'jupyter_core' jupyter notebook --autoreload --debug'';
       ipy = "ipython --autoindent";
